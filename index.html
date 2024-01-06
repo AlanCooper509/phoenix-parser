@@ -1,0 +1,833 @@
+<!doctype html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="d-flex px-2 pt-2">
+        <div>
+            <img src="https://www.piugame.com/data/avatar_img/4f617606e7751b2dc2559d80f09c40bf.png" style="width: 140px; height: 105px; border-radius: 0.5em"/>
+        </div>
+        <div style="padding-left: 1.5em">
+            <div id="gametitle" style="font-weight: 900; font-size: 1.238em; font-family: 'Oxanium', cursive; color: #99cccc">
+            </div>
+            <div id="gameid" style="font-size: 2.175em; font-family: 'Oxanium', cursive">
+            </div>
+            <i id="upDATE" style="color: #aaaaaa">
+            </i>
+        </div>
+    </div>
+    <hr>
+    <div class="container">
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab" aria-controls="overview" aria-selected="true">Overview</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="comparison-tab" data-bs-toggle="tab" data-bs-target="#comparison" type="button" role="tab" aria-controls="comparison" aria-selected="false">Comparisons</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tracker-tab" data-bs-toggle="tab" data-bs-target="#tracker" type="button" role="tab" aria-controls="tracker" aria-selected="false">Progression</button>
+          </li>
+        </ul>
+        <div class="tab-content" id="myTabContent">
+            <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="overview-tab">
+                <div class="row align-items-center justify-content-center">
+                    <div class="col-4">
+                    </div>
+                    <div class="col-8 mb-4" style="min-width: 800px">
+                        <canvas id="chart1"></canvas>
+                        <div class="d-flex pt-4 align-items-center justify-content-center">
+                            <div class="px-1 text-center">
+                                <label for="min">Min Level:</label>
+                                <input id="min" type="number" value="1" min="1" max="28" onchange="updateGraph1('min')" style="padding-left: 6px"></input>
+                            </div>
+                            <div class="px-1 text-center">
+                                <label for="max">Max Level:</label>
+                                <input id="max" type="number" value="28" min="1" max="28" onchange="updateGraph1('max')" style="padding-left: 6px"></input>
+                            </div>
+                            <div class="px-4 text-center">
+                                <label for="chartType">Select Chart Type:</label>
+                                <select name="chartType" id="chartType" onchange="updateGraph1(this.value)">
+                                    <option value="bothtypes">Singles and Doubles</option>
+                                    <option value="singles">Singles</option>
+                                    <option value="doubles">Doubles</option>
+                                    <option value="coop">Co-Op</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="comparison" role="tabpanel" aria-labelledby="comparison-tab">
+                <div class="p-3">
+                    (in progress)
+                </div>
+            </div>
+            <div class="tab-pane fade" id="tracker" role="tabpanel" aria-labelledby="tracker-tab">
+                <div class="container">
+                    <h3 class="pt-3">Title Progression</h3>
+                    <div class="accordion" id="progressAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="advancedheading">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#advancedCollapse" aria-expanded="true" aria-controls="advancedCollapse">
+                                    Advanced Trackers
+                                </button>
+                            </h2>
+                            <div id="advancedCollapse" class="accordion-collapse collapse show" aria-labelledby="advancedheading">
+                                <div class="accordion-body container">
+                                    <div class="row">
+                                        <div class="col-md-2"></div>
+                                        <div class="col-md-8 py-4">
+                                            <h4>
+                                                Level 20:
+                                            </h4>
+                                            <div class="d-flex justify-content-end px-2">
+                                                <div style="width: 26.25%;">
+                                                    <canvas id="adv1chart"></canvas>
+                                                </div>
+                                                <div style="width: 26.25%;">
+                                                    <canvas id="adv2chart"></canvas>
+                                                </div>
+                                                <div style="width: 26.25%;">
+                                                    <canvas id="adv3chart"></canvas>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2"></div>
+                                    </div>
+                                    <hr>
+                                    <div class="row">
+                                        <div class="col-md-2"></div>
+                                        <div class="col-md-8 py-4">
+                                            <h4>
+                                                Level 21:
+                                            </h4>
+                                            <div class="d-flex justify-content-end px-2">
+                                                <div style="width: 26.25%;">
+                                                    <canvas id="adv4chart"></canvas>
+                                                </div>
+                                                <div style="width: 26.25%;">
+                                                    <canvas id="adv5chart"></canvas>
+                                                </div>
+                                                <div style="width: 26.25%;">
+                                                    <canvas id="adv6chart"></canvas>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2"></div>
+                                    </div>
+                                    <hr>
+                                    <div class="row">
+                                        <div class="col-md-2"></div>
+                                        <div class="col-md-8 py-4">
+                                            <h4>
+                                                Level 22:
+                                            </h4>
+                                            <div class="d-flex justify-content-end px-2">
+                                                <div style="width: 26.25%;">
+                                                    <canvas id="adv7chart"></canvas>
+                                                </div>
+                                                <div style="width: 26.25%;">
+                                                    <canvas id="adv8chart"></canvas>
+                                                </div>
+                                                <div style="width: 26.25%;">
+                                                    <canvas id="adv9chart"></canvas>
+                                                </div>
+                                                <div style="width: 26.25%;">
+                                                    <canvas id="adv10chart"></canvas>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="expertheadingOne">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#expertCollapseOne" aria-expanded="true" aria-controls="expertCollapseOne">
+                                    Expert Trackers
+                                </button>
+                            </h2>
+                            <div id="expertCollapseOne" class="accordion-collapse collapse show" aria-labelledby="expertheadingOne">
+                                <div class="accordion-body container">
+                                    <div class="row">
+                                        <div class="col-md-6 py-4">
+                                            <h4>
+                                                Level 23: 
+                                            </h4>
+                                            <span class="float-right" id="rating23"></span>
+                                            <div style="height: 5vh">
+                                                <canvas id="progress23"></canvas>
+                                            </div>
+                                            <div class="d-flex justify-content-end px-2">
+                                                <div style="width: 35%;">
+                                                    <canvas id="ratio23"></canvas>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 py-4">
+                                            <h4>
+                                                Level 24:
+                                            </h4>
+                                            <div class="d-flex justify-content-end px-2">
+                                                <div style="width: 35%;">
+                                                    <canvas id="exp3chart"></canvas>
+                                                </div>
+                                                <div style="width: 35%;">
+                                                    <canvas id="exp4chart"></canvas>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <hr>
+                                    <div class="row">
+                                        <div class="col-md-6 py-4">
+                                            <h4>
+                                                Level 25:
+                                            </h4>
+                                            <div class="d-flex justify-content-end px-2">
+                                                <div style="width: 35%;">
+                                                    <canvas id="exp5chart"></canvas>
+                                                </div>
+                                                <div style="width: 35%;">
+                                                    <canvas id="exp6chart"></canvas>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 py-4">
+                                            <h4>
+                                                Level 26:
+                                            </h4>
+                                            <div class="d-flex justify-content-end px-2">
+                                                <div style="width: 35%;">
+                                                    <canvas id="exp7chart"></canvas>
+                                                </div>
+                                                <div style="width: 35%;">
+                                                    <canvas id="exp8chart"></canvas>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <hr>
+                                    <div class="row">
+                                        <div class="col-md-3"></div>
+                                        <div class="col-md-6 py-4">
+                                           <h4>
+                                                Level 27:
+                                            </h4>
+                                            <div class="d-flex justify-content-end px-2">
+                                                <div style="width: 35%;">
+                                                    <canvas id="exp9chart"></canvas>
+                                                </div>
+                                                <div style="width: 35%;">
+                                                    <canvas id="exp10chart"></canvas>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <hr>
+</body>
+
+<!-- Bootstrap 5.0.2 -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+
+<!-- Chart.js (as of writing: v4.4.1) -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+const _levelCounts = {
+    "01": {"total": 18,	 "singles": 18,  "doubles": 0},
+    "02": {"total": 36,	 "singles": 36,  "doubles": 0},
+    "03": {"total": 91,  "singles": 91,  "doubles": 0},
+    "04": {"total": 142, "singles": 141, "doubles": 1},
+    "05": {"total": 84,  "singles": 75,  "doubles": 9},
+    "06": {"total": 118, "singles": 104, "doubles": 14},
+    "07": {"total": 140, "singles": 125, "doubles": 15},
+    "08": {"total": 102, "singles": 83,  "doubles": 19},
+    "09": {"total": 99,  "singles": 81,  "doubles": 18},
+    "10": {"total": 123, "singles": 90,  "doubles": 33},
+    "11": {"total": 144, "singles": 97,  "doubles": 47},
+    "12": {"total": 143, "singles": 83,  "doubles": 60},
+    "13": {"total": 135, "singles": 63,  "doubles": 72},
+    "14": {"total": 116, "singles": 61,  "doubles": 55},
+    "15": {"total": 178, "singles": 108, "doubles": 70},
+    "16": {"total": 224, "singles": 146, "doubles": 78},
+    "17": {"total": 261, "singles": 168, "doubles": 93},
+    "18": {"total": 291, "singles": 148, "doubles": 143},
+    "19": {"total": 247, "singles": 135, "doubles": 112},
+    "20": {"total": 208, "singles": 95,  "doubles": 113},
+    "21": {"total": 207, "singles": 106, "doubles": 101},
+    "22": {"total": 154, "singles": 58,  "doubles": 96},
+    "23": {"total": 113, "singles": 34,  "doubles": 79},
+    "24": {"total": 74,  "singles": 13,  "doubles": 61},
+    "25": {"total": 42,  "singles": 8,   "doubles": 34},
+    "26": {"total": 22,  "singles": 1,   "doubles": 21},
+    "27": {"total": 6,   "singles": 0,   "doubles": 6},
+    "28": {"total": 2,   "singles": 0,   "doubles": 2}
+}
+let _info;
+let _data;
+let _graph1;
+
+function updateGraph1(changedInput) {
+    function validateAllInputs(changedInput) {
+        let chartType = document.getElementById("chartType").value;
+        let min = document.getElementById("min");
+        let max = document.getElementById("max");
+        let value = -1, cutoff = -1;
+        switch (changedInput) {
+            case "min":
+                value = parseInt(min.value);
+                cutoff = parseInt(max.value);
+                min.value = value < 1 ? 1 : value > 28 ? 28 : value > cutoff ? cutoff : value;
+                break;
+            case "max":
+                value = parseInt(max.value);
+                cutoff = parseInt(min.value);
+                max.value = value < 1 ? 1 : value > 28 ? 28 : value < cutoff ? cutoff : value;
+                break;
+            default:
+                break;
+        }
+        return {"min": parseInt(min.value), "max": parseInt(max.value), "chartType": chartType}
+    }
+    function makeLevelLabels(inputs) {
+        let labels = [];
+        for (let i = inputs["min"]; i <= inputs["max"]; i++) {
+            let label = i < 10 ? `0${i}` : i.toString();
+            labels.push(label);
+        }
+        return labels;
+    }
+    function drawGraph1(chartType, labels) {
+        function getAveragesForKeys(chartType, labels) {
+            let averages = [];
+            for (const idx in labels) {
+                switch (chartType) {
+                    case ("bothtypes"):
+                        averages.push(_data[labels[idx]] ? _data[labels[idx]]["average"] : NaN);
+                        break;
+                    case ("singles"):
+                        averages.push(_data[labels[idx]] ? _data[labels[idx]]["singles"]["average"] : NaN);
+                        break;
+                    case ("doubles"):
+                        averages.push(_data[labels[idx]] ? _data[labels[idx]]["doubles"]["average"] : NaN);
+                        break;
+                }
+            }
+            return averages;
+        }
+        function getClearPercentForKeys(chartType, labels) {
+            let percentages = [];
+            for (const idx in labels) {
+                switch (chartType) {
+                    case ("bothtypes"):
+                        percentages.push(_data[labels[idx]] ? _data[labels[idx]]["clear"] : 0.00);
+                        break;
+                    case ("singles"):
+                        percentages.push(_data[labels[idx]] ? _data[labels[idx]]["singles"]["clear"] : 0.00);
+                        break;
+                    case ("doubles"):
+                        percentages.push(_data[labels[idx]] ? _data[labels[idx]]["doubles"]["clear"] : 0.00);
+                        break;
+                }
+            }
+            return percentages;
+        }
+        function makeTitle(name, chartType) {
+            let typeText = '';
+            switch (chartType) {
+                case "bothtypes":
+                    typeText = "Singles and Doubles";
+                    break;
+                case "singles":
+                    typeText = "Singles";
+                    break;
+                case "doubles":
+                    typeText = "Doubles";
+                    break;
+                case "coop":
+                    typeText = "Co-Op";
+                    break;
+            }
+            return [`${name} (${typeText})`];
+        }
+        function makeSubtitle(lastUpdated) {
+            let rightPadding = " ".repeat(24);
+            return `Last Synced: ${lastUpdated}${rightPadding}`;
+        }
+        function updateGraph(labels, avgValues, pctValues, name, subtitle) {
+            function initGraph(labels, lineValues, barValues, title, subtitle) {
+                const ctx = document.getElementById('chart1');
+                return new Chart(ctx, {
+                    data: {
+                        labels: labels,
+                        datasets: [
+                        {
+                            type: "line",
+                            label:  "AVG SCORE",
+                            data: lineValues,
+                            borderWidth: 1,
+                            yAxisID: "y"
+                        },
+                        {
+                            type: "bar",
+                            label: "% CLEARED",
+                            data: barValues,
+                            yAxisID: "y1"
+                        }]
+                    },
+                    options: {
+                        color: "#dee2e6",
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: title,
+                                color: "#dee2e6",
+                                font: {
+                                  size: 20
+                                }
+                            },
+                            subtitle: {
+                                display: true,
+                                text: subtitle,
+                                align: "end",
+                                color: "#aaaaaa",
+                                font: {
+                                    style: 'italic'
+                                }
+                            },
+                            chartAreaBorder: {
+                                borderColor: '#cacaca',
+                                borderWidth: 1
+                            }
+                        },
+                        scaleShowValues: true,
+                        scales: {
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: "Level",
+                                    color: "#dee2e6",
+                                    font: {
+                                        size: 16
+                                    }
+                                },
+                                ticks: {
+                                    color: "#d4d4d4",
+                                    autoSkip: false
+                                },
+                                grid: {
+                                    color: "#202020"
+                                }
+                            },
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: "Average Score",
+                                    color: "#dee2e6",
+                                    font: {
+                                        size: 16
+                                    }
+                                },
+                                min: 850000,
+                                max: 1000000,
+                                ticks: {
+                                    color: "#d4d4d4",
+                                    stepSize: 10000
+                                },
+                                grid: {
+                                    color: "#202020"
+                                }
+                            },
+                            y1: {
+                                title: {
+                                    display: true,
+                                    text: "Cleared",
+                                    color: "#dee2e6",
+                                    font: {
+                                        size: 16
+                                    }
+                                },
+                                position: 'right',
+                                min: 0.00,
+                                max: 1.00,
+                                ticks: {
+                                    color: "#d4d4d4",
+                                    format: {
+                                        style: "percent"
+                                    }
+                                },
+                                grid: {
+                                  drawOnChartArea: false
+                                }
+                            }
+                        }
+                    },
+                    plugins: [{
+                        id: 'chartAreaBorder',
+                        afterDraw(chart, args, options) {
+                            const {ctx, chartArea: {left, top, width, height}} = chart;
+                            ctx.save();
+                            ctx.strokeStyle = options.borderColor;
+                            ctx.lineWidth = options.borderWidth;
+                            ctx.setLineDash(options.borderDash || []);
+                            ctx.lineDashOffset = options.borderDashOffset;
+                            ctx.strokeRect(left, top, width, height);
+                            ctx.restore();
+                        }
+                    }]
+                });
+            }
+            function updateGraphData(label, lineData, barData, title, subtitle) {
+                _graph1.options.plugins.title.text = title;
+                _graph1.options.plugins.subtitle.text = subtitle;
+                _graph1.data.labels = labels;
+                _graph1.data.datasets[0].data = lineData;
+                _graph1.data.datasets[1].data = barData;
+                _graph1.update();
+            }
+            if (!_graph1) { 
+                _graph1 = initGraph(labels, avgValues, pctValues, name, subtitle);
+            } else { 
+                updateGraphData(labels, avgValues, pctValues, name, subtitle);
+            }
+        }
+
+        let avgValues = getAveragesForKeys(chartType, labels);
+        let pctClearValues = getClearPercentForKeys(chartType, labels);
+        console.log(_info);
+        let graphTitle = makeTitle(_info["player"], chartType);
+        let graphSubtitle = makeSubtitle(_info["last_updated"]);
+        updateGraph(labels, avgValues, pctClearValues, graphTitle, graphSubtitle);
+    }
+    
+    let inputs = validateAllInputs(changedInput);
+    let labels = makeLevelLabels(inputs);
+    drawGraph1(inputs["chartType"], labels);
+}
+
+function updateProgressGraph(chartId, rating) {
+    const ctx = document.getElementById(chartId);
+    return new Chart(ctx, {
+        type: "bar",
+        data: {
+            labels: ["Rating"],
+            datasets: [{
+                data: [rating],
+                backgroundColor: "rgba(255,99,132,1)",
+                borderRadius: Number.MAX_VALUE,
+                barPercentage: 0.5
+            }]
+        },
+        options: {
+            plugins: {
+                legend: {
+                    display: false,
+                }
+            },
+            indexAxis: 'y',
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    display: false,
+                },
+                x: {
+                    position: "top",
+                    border: {
+                        display: false
+                    },
+                    min: 0,
+                    max: 45000,
+                    grid: {
+                        color: "white",
+                        display: true
+                    },
+                    ticks: {
+                        color: "white",
+                        stepSize: 15000,
+                        callback: (val) => {
+                            if(val==15000) {
+                                return "Adv8 (15,000)"
+                            } else if (val==30000) {
+                                return "Adv9 (30,000)"
+                            } else if (val==45000) {
+                                return "Adv10 (45,000)"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+function updateCircleGraph(chartId, data, title) {
+    function initGraph() {
+        const ctx = document.getElementById(chartId);
+        return new Chart(ctx, {
+            type: "doughnut",
+            data: {
+                labels: ['Singles', 'Doubles', 'Remaining'],
+                datasets: [{
+                    data: data,
+                    backgroundColor: [
+                      'rgba(250, 0, 0, 1.0)',
+                      'rgba(30, 250, 0, 1.0)',
+                      'rgba(25, 25, 25, 0.2)'
+                    ],
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    title: {
+                        display: true,
+                        text: title[0],
+                        font: {
+                            size: 16
+                        },
+                        color: "#dee2e6"
+                    },
+                    subtitle: {
+                        display: true,
+                        text: title[1],
+                        font: {
+                            size: 12
+                        },
+                        color: "#dee2e6",
+                        padding: {
+                            top: -10,
+                            bottom: 10
+                        }
+                    }
+                }
+            }
+        })
+    }
+    initGraph();
+}
+
+function init() {
+    function initData() {
+        const info = String.raw`{"player": "TUSA", "number": "#7085", "title": "[GIMMICK] EXPERT", "last_updated": "12/21/23"}`;
+        const input = String.raw`[{"name": "MilK", "type": "s", "level": "20", "score": "969,208", "grade": "aaa_p", "plate": "tg"}, {"name": "Energy Synergy Matrix", "type": "s", "level": "20", "score": "984,824", "grade": "ss", "plate": "mg"}, {"name": "WHISPER", "type": "s", "level": "19", "score": "988,277", "grade": "ss_p", "plate": "mg"}, {"name": "Imprinting", "type": "d", "level": "24", "score": "955,582", "grade": "aaa", "plate": "fg"}, {"name": "iRELLiA", "type": "s", "level": "22", "score": "973,086", "grade": "s", "plate": "fg"}, {"name": "Curiosity Overdrive", "type": "d", "level": "22", "score": "974,609", "grade": "s", "plate": "tg"}, {"name": "Versailles", "type": "d", "level": "23", "score": "955,468", "grade": "aaa", "plate": "fg"}, {"name": "Yo! Say!! Fairy!!!", "type": "d", "level": "22", "score": "952,026", "grade": "aaa", "plate": "rg"}, {"name": "Yog-Sothoth", "type": "s", "level": "21", "score": "958,189", "grade": "aaa", "plate": "tg"}, {"name": "KUGUTSU", "type": "s", "level": "18", "score": "995,185", "grade": "sss_p", "plate": "eg"}, {"name": "GOODTEK", "type": "s", "level": "18", "score": "999,600", "grade": "sss_p", "plate": "ug"}, {"name": "Galaxy Collapse", "type": "s", "level": "18", "score": "975,377", "grade": "s_p", "plate": "mg"}, {"name": "Energy Synergy Matrix", "type": "s", "level": "18", "score": "996,424", "grade": "sss_p", "plate": "ug"}, {"name": "Halcyon", "type": "s", "level": "18", "score": "996,241", "grade": "sss_p", "plate": "ug"}, {"name": "Amphitryon", "type": "s", "level": "18", "score": "995,728", "grade": "sss_p", "plate": "ug"}, {"name": "Gothique Resonance", "type": "s", "level": "18", "score": "996,331", "grade": "sss_p", "plate": "ug"}, {"name": "Mental Rider", "type": "d", "level": "24", "score": "946,903", "grade": "aa_p", "plate": "rg"}, {"name": "Nxde", "type": "s", "level": "16", "score": "998,561", "grade": "sss_p", "plate": "ug"}, {"name": "CO5M1C R4ILR0AD", "type": "s", "level": "18", "score": "992,704", "grade": "sss", "plate": "ug"}, {"name": "V3", "type": "d", "level": "24", "score": "956,852", "grade": "aaa", "plate": "fg"}, {"name": "Rock the house - SHORT CUT -", "type": "s", "level": "18", "score": "996,038", "grade": "sss_p", "plate": "eg"}, {"name": "Accident", "type": "d", "level": "20", "score": "985,455", "grade": "ss_p", "plate": "sg"}, {"name": "Tales of Pumpnia", "type": "s", "level": "20", "score": "995,001", "grade": "sss_p", "plate": "mg"}, {"name": "R.I.P", "type": "s", "level": "22", "score": "963,892", "grade": "aaa_p", "plate": "fg"}, {"name": "GOODBOUNCE", "type": "s", "level": "20", "score": "993,336", "grade": "sss", "plate": "mg"}, {"name": "Barber's Madness", "type": "s", "level": "22", "score": "976,773", "grade": "s_p", "plate": "tg"}, {"name": "Energy Synergy Matrix", "type": "d", "level": "22", "score": "978,580", "grade": "s_p", "plate": "mg"}, {"name": "STORM", "type": "d", "level": "19", "score": "993,416", "grade": "sss", "plate": "eg"}, {"name": "Lohxia", "type": "d", "level": "22", "score": "962,343", "grade": "aaa_p", "plate": "fg"}, {"name": "Utsushiyo No Kaze feat. Kana", "type": "d", "level": "20", "score": "984,552", "grade": "ss", "plate": "mg"}, {"name": "VECTOR", "type": "s", "level": "22", "score": "955,479", "grade": "aaa", "plate": "fg"}, {"name": "Neo Catharsis", "type": "s", "level": "22", "score": "971,266", "grade": "s", "plate": "mg"}, {"name": "Etude Op 10-4", "type": "s", "level": "22", "score": "951,473", "grade": "aaa", "plate": "fg"}, {"name": "Crossing Delta", "type": "s", "level": "20", "score": "989,165", "grade": "ss_p", "plate": "sg"}, {"name": "STORM", "type": "s", "level": "17", "score": "998,332", "grade": "sss_p", "plate": "ug"}, {"name": "Yeo rae a", "type": "s", "level": "13", "score": "998,215", "grade": "sss_p", "plate": "ug"}, {"name": "8 6", "type": "s", "level": "16", "score": "996,510", "grade": "sss_p", "plate": "mg"}, {"name": "Ugly Dee", "type": "s", "level": "17", "score": "994,973", "grade": "sss", "plate": "mg"}, {"name": "Come to Me", "type": "s", "level": "17", "score": "995,683", "grade": "sss_p", "plate": "mg"}, {"name": "Miss S' story", "type": "s", "level": "19", "score": "997,512", "grade": "sss_p", "plate": "ug"}, {"name": "Nakakapagpabagabag", "type": "s", "level": "19", "score": "991,266", "grade": "sss", "plate": "eg"}, {"name": "Everybody Got 2 Know", "type": "s", "level": "21", "score": "994,190", "grade": "sss", "plate": "eg"}, {"name": "Pop The Track - SHORT CUT -", "type": "s", "level": "18", "score": "997,696", "grade": "sss_p", "plate": "ug"}, {"name": "Stardust Overdrive - SHORT CUT -", "type": "s", "level": "16", "score": "996,816", "grade": "sss_p", "plate": "ug"}, {"name": "Euphorianic - SHORT CUT -", "type": "s", "level": "17", "score": "1,000,000", "grade": "sss_p", "plate": "pg"}, {"name": "Slam", "type": "s", "level": "18", "score": "979,530", "grade": "s_p", "plate": "mg"}, {"name": "Lohxia", "type": "s", "level": "21", "score": "963,180", "grade": "aaa_p", "plate": "fg"}, {"name": "Versailles", "type": "s", "level": "20", "score": "993,970", "grade": "sss", "plate": "mg"}, {"name": "Timing", "type": "s", "level": "18", "score": "988,458", "grade": "ss_p", "plate": "sg"}, {"name": "BATTLE NO.1", "type": "s", "level": "22", "score": "943,286", "grade": "aa_p", "plate": "tg"}, {"name": "Do U Know That-Old School", "type": "d", "level": "20", "score": "970,091", "grade": "s", "plate": "mg"}, {"name": "Caprice of DJ Otada", "type": "d", "level": "22", "score": "962,199", "grade": "aaa_p", "plate": "tg"}, {"name": "Cleaner", "type": "d", "level": "20", "score": "988,118", "grade": "ss_p", "plate": "mg"}, {"name": "Your Mind", "type": "d", "level": "23", "score": "952,530", "grade": "aaa", "plate": "rg"}, {"name": "What Happened", "type": "d", "level": "23", "score": "946,640", "grade": "aa_p", "plate": "fg"}, {"name": "Karyawisata", "type": "s", "level": "20", "score": "970,169", "grade": "s", "plate": "mg"}, {"name": "Karyawisata", "type": "d", "level": "22", "score": "961,177", "grade": "aaa_p", "plate": "tg"}, {"name": "MURDOCH", "type": "d", "level": "20", "score": "984,771", "grade": "ss", "plate": "mg"}, {"name": "GOODTEK", "type": "d", "level": "20", "score": "989,194", "grade": "ss_p", "plate": "eg"}, {"name": "Bullfighter's Song", "type": "d", "level": "21", "score": "977,278", "grade": "s_p", "plate": "mg"}, {"name": "Blazing", "type": "d", "level": "21", "score": "957,738", "grade": "aaa", "plate": "mg"}, {"name": "Will-O-The-Wisp", "type": "d", "level": "20", "score": "960,313", "grade": "aaa_p", "plate": "mg"}, {"name": "Versailles", "type": "d", "level": "20", "score": "984,225", "grade": "ss", "plate": "mg"}, {"name": "Showdown", "type": "s", "level": "20", "score": "983,150", "grade": "ss", "plate": "mg"}, {"name": "After LIKE", "type": "s", "level": "18", "score": "996,355", "grade": "sss_p", "plate": "sg"}, {"name": "KUGUTSU", "type": "s", "level": "20", "score": "977,231", "grade": "s_p", "plate": "mg"}, {"name": "Jupin", "type": "s", "level": "19", "score": "983,972", "grade": "ss", "plate": "mg"}, {"name": "Versailles", "type": "s", "level": "19", "score": "996,572", "grade": "sss_p", "plate": "ug"}, {"name": "BOCA", "type": "d", "level": "21", "score": "968,669", "grade": "aaa_p", "plate": "tg"}, {"name": "Gothique Resonance", "type": "d", "level": "21", "score": "957,506", "grade": "aaa", "plate": "fg"}, {"name": "VECTOR", "type": "s", "level": "18", "score": "994,382", "grade": "sss", "plate": "ug"}, {"name": "Airplane", "type": "s", "level": "17", "score": "999,638", "grade": "sss_p", "plate": "ug"}, {"name": "Pirate", "type": "s", "level": "17", "score": "998,721", "grade": "sss_p", "plate": "ug"}, {"name": "Amor Fati", "type": "s", "level": "18", "score": "994,691", "grade": "sss", "plate": "sg"}, {"name": "ELEVEN", "type": "s", "level": "17", "score": "998,702", "grade": "sss_p", "plate": "ug"}, {"name": "Halcyon", "type": "d", "level": "24", "score": "938,116", "grade": "aa_p", "plate": "rg"}, {"name": "Rock the house", "type": "d", "level": "22", "score": "956,545", "grade": "aaa", "plate": "tg"}, {"name": "Vook", "type": "d", "level": "20", "score": "980,110", "grade": "ss", "plate": "mg"}, {"name": "GOODTEK", "type": "s", "level": "21", "score": "985,869", "grade": "ss_p", "plate": "mg"}, {"name": "Acquire", "type": "s", "level": "20", "score": "979,449", "grade": "s_p", "plate": "tg"}, {"name": "Wedding Crashers", "type": "d", "level": "19", "score": "997,612", "grade": "sss_p", "plate": "ug"}, {"name": "God Mode 2.0 feat. Skizzo", "type": "d", "level": "20", "score": "983,638", "grade": "ss", "plate": "mg"}, {"name": "Ice of Death", "type": "s", "level": "20", "score": "993,813", "grade": "sss", "plate": "mg"}, {"name": "Headless Chicken", "type": "s", "level": "19", "score": "985,962", "grade": "ss_p", "plate": "mg"}, {"name": "Neo Catharsis", "type": "s", "level": "20", "score": "993,551", "grade": "sss", "plate": "mg"}, {"name": "Kokugen Kairou Labyrinth", "type": "s", "level": "20", "score": "994,220", "grade": "sss", "plate": "ug"}, {"name": "Sarabande", "type": "s", "level": "20", "score": "983,887", "grade": "ss", "plate": "mg"}, {"name": "8 6", "type": "s", "level": "20", "score": "999,478", "grade": "sss_p", "plate": "eg"}, {"name": "MURDOCH", "type": "s", "level": "18", "score": "998,138", "grade": "sss_p", "plate": "sg"}, {"name": "Nyarlathotep", "type": "s", "level": "21", "score": "917,420", "grade": "aa", "plate": "tg"}, {"name": "Twist of Fate (feat. Ruriling)", "type": "s", "level": "19", "score": "998,680", "grade": "sss_p", "plate": "ug"}, {"name": "Aragami", "type": "d", "level": "24", "score": "911,426", "grade": "aa", "plate": "tg"}, {"name": "Euphorianic", "type": "d", "level": "21", "score": "958,916", "grade": "aaa", "plate": "tg"}, {"name": "Lacrimosa", "type": "d", "level": "22", "score": "955,978", "grade": "aaa", "plate": "tg"}, {"name": "WHISPER", "type": "d", "level": "21", "score": "980,988", "grade": "ss", "plate": "tg"}, {"name": "Altale", "type": "s", "level": "21", "score": "972,669", "grade": "s", "plate": "fg"}, {"name": "After LIKE", "type": "d", "level": "20", "score": "972,131", "grade": "s", "plate": "tg"}, {"name": "CHAOS AGAIN", "type": "d", "level": "22", "score": "957,007", "grade": "aaa", "plate": "fg"}, {"name": "VECTOR", "type": "d", "level": "24", "score": "926,966", "grade": "aa_p", "plate": "fg"}, {"name": "Barber's Madness", "type": "d", "level": "19", "score": "997,796", "grade": "sss_p", "plate": "ug"}, {"name": "Barber's Madness", "type": "d", "level": "23", "score": "952,545", "grade": "aaa", "plate": "fg"}, {"name": "BOOOM!!", "type": "d", "level": "22", "score": "972,092", "grade": "s", "plate": "tg"}, {"name": "MURDOCH", "type": "d", "level": "22", "score": "971,434", "grade": "s", "plate": "mg"}, {"name": "Ghroth", "type": "d", "level": "20", "score": "986,444", "grade": "ss_p", "plate": "mg"}, {"name": "Lacrimosa", "type": "s", "level": "20", "score": "978,749", "grade": "s_p", "plate": "mg"}, {"name": "Barber's Madness", "type": "s", "level": "18", "score": "989,747", "grade": "ss_p", "plate": "mg"}, {"name": "Halloween Party ~Multiverse~", "type": "s", "level": "18", "score": "994,881", "grade": "sss", "plate": "ug"}, {"name": "Euphorianic", "type": "s", "level": "16", "score": "1,000,000", "grade": "sss_p", "plate": "pg"}, {"name": "Halcyon", "type": "s", "level": "20", "score": "984,461", "grade": "ss", "plate": "sg"}, {"name": "R.I.P", "type": "d", "level": "24", "score": "927,387", "grade": "aa_p", "plate": "rg"}, {"name": "Showdown", "type": "d", "level": "22", "score": "984,044", "grade": "ss", "plate": "mg"}, {"name": "MURDOCH", "type": "s", "level": "20", "score": "996,091", "grade": "sss_p", "plate": "ug"}, {"name": "CHAOS AGAIN", "type": "s", "level": "20", "score": "987,904", "grade": "ss_p", "plate": "mg"}, {"name": "Bad Apple!! feat. Nomico", "type": "s", "level": "15", "score": "999,067", "grade": "sss_p", "plate": "ug"}, {"name": "Wedding Crashers", "type": "s", "level": "18", "score": "990,974", "grade": "sss", "plate": "mg"}, {"name": "GOODTEK", "type": "d", "level": "24", "score": "924,939", "grade": "aa", "plate": "fg"}, {"name": "MilK", "type": "d", "level": "22", "score": "945,117", "grade": "aa_p", "plate": "rg"}, {"name": "Beethoven Virus", "type": "d", "level": "24", "score": "932,715", "grade": "aa_p", "plate": "fg"}, {"name": "CO5M1C R4ILR0AD", "type": "d", "level": "22", "score": "933,152", "grade": "aa_p", "plate": "tg"}, {"name": "Skeptic", "type": "s", "level": "22", "score": "972,132", "grade": "s", "plate": "tg"}, {"name": "Fires of Destiny", "type": "s", "level": "20", "score": "982,752", "grade": "ss", "plate": "mg"}, {"name": "CHICKEN WING", "type": "s", "level": "20", "score": "976,091", "grade": "s_p", "plate": "mg"}, {"name": "BOOOM!!", "type": "s", "level": "20", "score": "989,009", "grade": "ss_p", "plate": "mg"}, {"name": "Imagination", "type": "s", "level": "19", "score": "974,369", "grade": "s", "plate": "mg"}, {"name": "Nihilism - Another Ver.-", "type": "s", "level": "21", "score": "968,519", "grade": "aaa_p", "plate": "tg"}, {"name": "Jupin", "type": "s", "level": "17", "score": "996,414", "grade": "sss_p", "plate": "ug"}, {"name": "PRIME Opening - SHORT CUT -", "type": "c", "level": "n5", "score": "967,018", "grade": "aaa_p", "plate": "rg"}, {"name": "Acquire", "type": "c", "level": "n3", "score": "985,076", "grade": "ss_p", "plate": "mg"}, {"name": "Hyacinth", "type": "s", "level": "22", "score": "964,392", "grade": "aaa_p", "plate": "tg"}, {"name": "Halloween Party ~Multiverse~", "type": "d", "level": "21", "score": "927,061", "grade": "aa_p", "plate": "mg"}, {"name": "KUGUTSU", "type": "d", "level": "21", "score": "960,032", "grade": "aaa_p", "plate": "sg"}, {"name": "Cross Over feat. LyuU", "type": "s", "level": "22", "score": "972,337", "grade": "s", "plate": "mg"}, {"name": "MURDOCH", "type": "d", "level": "24", "score": "928,960", "grade": "aa_p", "plate": "mg"}, {"name": "Halloween Party ~Multiverse~", "type": "s", "level": "20", "score": "958,244", "grade": "aaa", "plate": "mg"}, {"name": "After LIKE", "type": "c", "level": "n2", "score": "976,248", "grade": "s_p", "plate": "mg"}, {"name": "Ghroth", "type": "s", "level": "21", "score": "951,377", "grade": "aaa", "plate": "tg"}, {"name": "CO5M1C R4ILR0AD", "type": "s", "level": "21", "score": "961,311", "grade": "aaa_p", "plate": "fg"}, {"name": "Arirang", "type": "s", "level": "22", "score": "949,273", "grade": "aa_p", "plate": "rg"}, {"name": "Teddy Bear", "type": "s", "level": "17", "score": "986,687", "grade": "ss_p", "plate": "ug"}, {"name": "Pneumonoultramicroscopicsilicovolcanoconiosis ft. Kagamine Len/GUMI", "type": "s", "level": "16", "score": "985,795", "grade": "ss_p", "plate": "tg"}, {"name": "Altale", "type": "s", "level": "18", "score": "991,228", "grade": "sss", "plate": "mg"}, {"name": "Jupin", "type": "s", "level": "23", "score": "904,387", "grade": "aa", "plate": "rg"}, {"name": "Euphorianic", "type": "s", "level": "19", "score": "995,834", "grade": "sss_p", "plate": "mg"}, {"name": "Halcyon", "type": "s", "level": "22", "score": "936,391", "grade": "aa_p", "plate": "tg"}, {"name": "District 1", "type": "c", "level": "n3", "score": "971,348", "grade": "s", "plate": "rg"}, {"name": "GOODBOUNCE", "type": "c", "level": "n2", "score": "972,981", "grade": "s", "plate": "tg"}, {"name": "Teddy Bear", "type": "c", "level": "n2", "score": "974,933", "grade": "s", "plate": "fg"}, {"name": "Ultimatum", "type": "s", "level": "21", "score": "963,436", "grade": "aaa_p", "plate": "sg"}, {"name": "She Likes Pizza", "type": "s", "level": "21", "score": "936,346", "grade": "aa_p", "plate": "fg"}, {"name": "Chase Me", "type": "s", "level": "20", "score": "911,302", "grade": "aa", "plate": "tg"}, {"name": "Will-O-The-Wisp", "type": "s", "level": "19", "score": "945,898", "grade": "aa_p", "plate": "tg"}, {"name": "Beautiful Liar", "type": "s", "level": "17", "score": "992,190", "grade": "sss", "plate": "mg"}, {"name": "Jupin", "type": "s", "level": "21", "score": "954,005", "grade": "aaa", "plate": "mg"}]`;
+        function parseInputJson(input) {
+            return JSON.parse(input);
+        }
+        function categorizeByLevel(jsonArray) {
+            let levels = {};
+            for (const idx in jsonArray) {
+                let entry = jsonArray[idx];
+                if (!levels[entry["level"]]) {
+                    levels[entry["level"]] = [];
+                }
+                levels[entry["level"]].push(entry);
+            }
+            return levels;
+        }
+        function getStatistics(levelsData) {
+            const gradeMultipliers = {
+                "f":     0.40,
+                "d":     0.50,
+                "c":     0.60,
+                "b":     0.70,
+                "a":     0.80,
+                "a_p":   0.90,
+                "aa":    1.00,
+                "aa_p":  1.05,
+                "aaa":   1.10,
+                "aaa_p": 1.15,
+                "s":     1.20,
+                "s_p":   1.26,
+                "ss":    1.32,
+                "ss_p":  1.38,
+                "sss":   1.44,
+                "sss_p": 1.50
+            }
+            const levelMultipliers = {
+                "10": 100,
+                "11": 110,
+                "12": 130,
+                "13": 160,
+                "14": 200,
+                "15": 250,
+                "16": 310,
+                "17": 380,
+                "18": 460,
+                "19": 550,
+                "20": 650,
+                "21": 760,
+                "22": 880,
+                "23": 1010,
+                "24": 1150,
+                "25": 1300,
+                "26": 1460,
+                "27": 1630,
+                "28": 1810
+            }
+            for (const level in levelsData) {
+                let singlesCount = 0, doublesCount = 0;
+                let averageScore = 0, doublesScore = 0, singlesScore = 0;
+                let totalRating = 0, singlesRating = 0, doublesRating = 0;
+                const entriesForLevel = levelsData[level];
+                for (const idx in entriesForLevel) {
+                    let entry = entriesForLevel[idx];
+                    let scoreEntry = parseInt(entry["score"].replace(/,/g, ''));
+                    averageScore += scoreEntry;
+                    if (entry["type"] !== 'c' && parseInt(level) >= 10) {
+                        totalRating += Math.round(gradeMultipliers[entry["grade"]]*levelMultipliers[level]);
+                    }
+
+                    switch (entry["type"]) {
+                        case 's':
+                            singlesCount += 1;
+                            singlesScore += scoreEntry;
+                            if (parseInt(level) >= 10) {
+                                singlesRating += Math.round(gradeMultipliers[entry["grade"]]*levelMultipliers[level]);
+                            }
+                            break;
+                        case 'd':
+                            doublesCount += 1;
+                            doublesScore += scoreEntry;
+                            if (parseInt(level) >= 10) {
+                                doublesRating += Math.round(gradeMultipliers[entry["grade"]]*levelMultipliers[level]);
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                averageScore /= entriesForLevel.length;
+                singlesScore /= singlesCount;
+                doublesScore /= doublesCount;
+
+                levelsData[level]["average"] = Math.round(averageScore);
+                levelsData[level]["count"] = entriesForLevel.length;
+                levelsData[level]["rating"] = totalRating;
+                if (isNaN(parseInt(level))) {
+                    // co-op charts are difficulty "n<x>" where x is num of players
+                    continue;
+                }
+                let totalClearPct   = _levelCounts[level][ "total" ] != 0 ? (entriesForLevel.length / _levelCounts[level][ "total" ]).toFixed(4) : 0.00;
+                let singlesClearPct = _levelCounts[level]["singles"] != 0 ?           (singlesCount / _levelCounts[level]["singles"]).toFixed(4) : 0.00;
+                let doublesClearPct = _levelCounts[level]["doubles"] != 0 ?           (doublesCount / _levelCounts[level]["doubles"]).toFixed(4) : 0.00;
+                levelsData[level]["clear"] = totalClearPct;
+                levelsData[level]["singles"] = {"average": Math.round(singlesScore), "count": singlesCount, "clear": singlesClearPct, "rating": singlesRating};
+                levelsData[level]["doubles"] = {"average": Math.round(doublesScore), "count": doublesCount, "clear": doublesClearPct, "rating": doublesRating};
+            }
+            return levelsData;
+        }
+        let jsonArray = parseInputJson(input);
+        _info = parseInputJson(info)
+        let sortedByLevel = categorizeByLevel(jsonArray);
+        let statisticsByLevel = getStatistics(sortedByLevel);
+        _data = statisticsByLevel;
+        return statisticsByLevel;
+    }
+    function initHeader() {
+        document.getElementById("gametitle").innerHTML = `${_info["title"]}`;
+        document.getElementById("gameid").innerHTML = `${_info["player"]} ${_info["number"]}`;
+        document.getElementById("upDATE").innerHTML = `Last Synced: ${_info["last_updated"]}`;
+    }
+    function initCircleGraphs() {
+        const ratingCutoffs = {
+            "adv1":  13000,
+            "adv2":  26000,
+            "adv3":  39000,
+            "adv4":  15000,
+            "adv5":  30000,
+            "adv6":  45000,
+            "adv7":  17500,
+            "adv8":  35000,
+            "adv9":  52000,
+            "adv10": 70000,
+            "exp1":  40000,
+            "exp2":  80000,
+            "exp3":  30000,
+            "exp4":  60000,
+            "exp5":  20000,
+            "exp6":  40000,
+            "exp7":  13000,
+            "exp8":  26000,
+            "exp9":  3500,
+            "exp10": 7000
+        }
+        function getRatingProgress(level, target) {
+            if (!(level in _data)) {
+                return [0, 0, target];
+            }
+            let singlesRating = _data[level]["singles"]["rating"];
+            let doublesRating = _data[level]["doubles"]["rating"];
+            let totalRating = _data[level]["rating"];
+            let remaining = target - totalRating > 0 ? target - totalRating : 0;
+            return [singlesRating, doublesRating, remaining];
+        }
+        function getRatingPoints(level) {
+            if (!(level in _data)) {
+                return 0;
+            } else {
+                return _data[level]["rating"].toLocaleString();
+            }
+        }
+        function getRatingValue(level, category) {
+            if (!(level in _data)) {
+                return 0;
+            } else if (category) {
+                return _data[level][category]["rating"].toLocaleString();
+            } else {
+                return _data[level]["rating"].toLocaleString();
+            }
+        }
+        function getRatingCutoff(titleKey) {
+            return ratingCutoffs[titleKey].toLocaleString();
+        }
+        updateCircleGraph("adv1chart",  getRatingProgress("20", ratingCutoffs["adv1"]),  ["Advanced Lv. 1",  `(${getRatingPoints("20")} / ${getRatingCutoff("adv1")})` ]);
+        updateCircleGraph("adv2chart",  getRatingProgress("20", ratingCutoffs["adv2"]),  ["Advanced Lv. 2",  `(${getRatingPoints("20")} / ${getRatingCutoff("adv2")})` ]);
+        updateCircleGraph("adv3chart",  getRatingProgress("20", ratingCutoffs["adv3"]),  ["Advanced Lv. 3",  `(${getRatingPoints("20")} / ${getRatingCutoff("adv3")})` ]);
+        updateCircleGraph("adv4chart",  getRatingProgress("21", ratingCutoffs["adv4"]),  ["Advanced Lv. 4",  `(${getRatingPoints("21")} / ${getRatingCutoff("adv4")})` ]);
+        updateCircleGraph("adv5chart",  getRatingProgress("21", ratingCutoffs["adv5"]),  ["Advanced Lv. 5",  `(${getRatingPoints("21")} / ${getRatingCutoff("adv5")})` ]);
+        updateCircleGraph("adv6chart",  getRatingProgress("21", ratingCutoffs["adv6"]),  ["Advanced Lv. 6",  `(${getRatingPoints("21")} / ${getRatingCutoff("adv6")})` ]);
+        updateCircleGraph("adv7chart",  getRatingProgress("22", ratingCutoffs["adv7"]),  ["Advanced Lv. 7",  `(${getRatingPoints("22")} / ${getRatingCutoff("adv7")})` ]);
+        updateCircleGraph("adv8chart",  getRatingProgress("22", ratingCutoffs["adv8"]),  ["Advanced Lv. 8",  `(${getRatingPoints("22")} / ${getRatingCutoff("adv8")})` ]);
+        updateCircleGraph("adv9chart",  getRatingProgress("22", ratingCutoffs["adv9"]),  ["Advanced Lv. 9",  `(${getRatingPoints("22")} / ${getRatingCutoff("adv9")})` ]);
+        updateCircleGraph("adv10chart", getRatingProgress("22", ratingCutoffs["adv10"]), ["Advanced Lv. 10", `(${getRatingPoints("22")} / ${getRatingCutoff("adv10")})`]);
+        updateCircleGraph("ratio23",  getRatingProgress("23", 0),  ["Rating Ratio", `(${getRatingValue("23", "singles")} | ${getRatingValue("23", "doubles")})`]);
+        document.getElementById("rating23").innerHTML = getRatingValue("23");
+        updateCircleGraph("exp3chart",  getRatingProgress("24", ratingCutoffs["exp3"]),  ["Expert Lv. 3", `(${getRatingPoints("24")} / ${getRatingCutoff("exp3")})`]);
+        updateCircleGraph("exp4chart",  getRatingProgress("24", ratingCutoffs["exp4"]),  ["Expert Lv. 4", `(${getRatingPoints("24")} / ${getRatingCutoff("exp4")})`]);
+        updateCircleGraph("exp5chart",  getRatingProgress("25", ratingCutoffs["exp5"]),  ["Expert Lv. 5", `(${getRatingPoints("25")} / ${getRatingCutoff("exp5")})`]);
+        updateCircleGraph("exp6chart",  getRatingProgress("25", ratingCutoffs["exp6"]),  ["Expert Lv. 6", `(${getRatingPoints("25")} / ${getRatingCutoff("exp6")})`]);
+        updateCircleGraph("exp7chart",  getRatingProgress("26", ratingCutoffs["exp7"]),  ["Expert Lv. 7", `(${getRatingPoints("26")} / ${getRatingCutoff("exp7")})`]);
+        updateCircleGraph("exp8chart",  getRatingProgress("26", ratingCutoffs["exp8"]),  ["Expert Lv. 8", `(${getRatingPoints("26")} / ${getRatingCutoff("exp8")})`]);
+        updateCircleGraph("exp9chart",  getRatingProgress("27", ratingCutoffs["exp9"]),  ["Expert Lv. 9", `(${getRatingPoints("27")} / ${getRatingCutoff("exp9")})`]);
+        updateCircleGraph("exp10chart", getRatingProgress("27", ratingCutoffs["exp10"]), ["Expert Lv. 10", `(${getRatingPoints("27")} / ${getRatingCutoff("exp10")})`]);
+    }
+    initData();
+    initHeader();
+    updateGraph1();
+    initCircleGraphs();
+    updateProgressGraph("progress23", 18200);
+}
+
+document.onload = init();
+</script>
+
+</html>
