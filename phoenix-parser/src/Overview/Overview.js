@@ -170,36 +170,36 @@ function Overview({info, data}) {
     const chartData = graphSetupObject["chartData"];
 
     return (
-            <div className="row align-items-center justify-content-center">
-                <div className="col-4">
-                </div>
-                <div className="Overview-chart col-8 mb-4">
-                    <LineChart 
-                        innerRef={chartRef}
-                        chartData={chartData}
-                        title={title}
-                        subtitle={subtitle}
-                    />
-                    <div className="d-flex pt-4 align-items-center justify-content-center">
-                        <div className="px-2 text-center">
-                            <label className="me-2" htmlFor="min">Min Level:</label>
-                            <input ref={minValue} className="Min-input" id="min" type="number" defaultValue="1" min="1" max="28" previous="1" onKeyDown={handleKeyDown} onClick={updateLineGraph} onBlur={updateLineGraph}></input>
-                        </div>
-                        <div className="px-2 text-center">
-                            <label className="me-2" htmlFor="max">Max Level:</label>
-                            <input ref={maxValue} className="Max-input" id="max" type="number" defaultValue="28" min="1" max="28" previous="28" onKeyDown={handleKeyDown} onClick={updateLineGraph} onBlur={updateLineGraph}></input>
-                        </div>
-                        <div className="px-4 text-center">
-                            <label className="me-2" htmlFor="chartType">Select Chart Type:</label>
-                            <select ref={chartTypeValue} name="chartType" id="chartType" defaultValue="bothtypes" onInput={updateLineGraph}>
-                                <option value="bothtypes">Singles and Doubles</option>
-                                <option value="singles">Singles</option>
-                                <option value="doubles">Doubles</option>
-                            </select>
-                        </div>
+        <div className="row align-items-center justify-content-center">
+            <div className="col-4">
+            </div>
+            <div className="Overview-chart col-8 mb-4">
+                <LineChart 
+                    innerRef={chartRef}
+                    chartData={chartData}
+                    title={title}
+                    subtitle={subtitle}
+                />
+                <div className="d-flex pt-4 align-items-center justify-content-center">
+                    <div className="px-2 text-center">
+                        <label className="me-2" htmlFor="min">Min Level:</label>
+                        <input ref={minValue} className="Min-input" id="min" type="number" defaultValue="1" min="1" max="28" previous="1" onKeyDown={handleKeyDown} onClick={updateLineGraph} onBlur={updateLineGraph}></input>
+                    </div>
+                    <div className="px-2 text-center">
+                        <label className="me-2" htmlFor="max">Max Level:</label>
+                        <input ref={maxValue} className="Max-input" id="max" type="number" defaultValue="28" min="1" max="28" previous="28" onKeyDown={handleKeyDown} onClick={updateLineGraph} onBlur={updateLineGraph}></input>
+                    </div>
+                    <div className="px-4 text-center">
+                        <label className="me-2" htmlFor="chartType">Select Chart Type:</label>
+                        <select ref={chartTypeValue} name="chartType" id="chartType" defaultValue="bothtypes" onInput={updateLineGraph}>
+                            <option value="bothtypes">Singles and Doubles</option>
+                            <option value="singles">Singles</option>
+                            <option value="doubles">Doubles</option>
+                        </select>
                     </div>
                 </div>
             </div>
+        </div>
     );
 }
 
