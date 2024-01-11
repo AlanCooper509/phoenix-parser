@@ -2,25 +2,13 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
-import initData from './Data/Data';
-import Overview from './Overview/Overview';
-import Profile from './Profile/Profile';
 import reportWebVitals from './reportWebVitals';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
-const {info, data} = initData();
 
 root.render(
   <React.StrictMode>
-    <Profile 
-      info={info}
-    />
-    <hr/>
-    <Overview
-      info={info}
-      data={data}
-    />
-    <App />
+    <App/>
   </React.StrictMode>
 );
 

@@ -15,7 +15,7 @@ function Profile({info}){
                 {info.title}
             </div>
             <div className="Game-id">
-                {info.player}
+                {info.player} {info.number}
             </div>
             <i className="Update">
                 Last Synced: {info.last_updated}
