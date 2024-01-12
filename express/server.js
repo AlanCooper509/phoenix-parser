@@ -1,7 +1,13 @@
-const express = require('express');
-const cors = require('cors');
-const bodyParser = require('body-parser');
+// external packages
+import express from 'express';
+import cors from 'cors';
+import bodyParser from 'body-parser';
+import fs from 'fs';
 
+// local helpers
+import getUser from './endpoints/user.js';
+
+// code logic
 const app = express();
 app.use(cors());
 const port = 3001;
@@ -9,9 +15,13 @@ const port = 3001;
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-app.get('/api/data', (req, res) => {
+app.get('/api/user/:id/:number', (req, res) => {
+  const output = getUser(req);
+  const data = { message: output };
   // Handle your API logic here
-  const data = { message: 'Hello from the server!' };
+  // const file = fs.readFileSync("charts/v1_05_0/fullmode.json", "utf8");
+  // const  a = JSON.parse(file);
+  // const data = { message: 'Hello from the server!' };
   res.json(data);
 });
 
