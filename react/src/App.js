@@ -1,22 +1,35 @@
+import React, {useState, useEffect} from 'react';
+import axios from 'axios';
+import Tab from 'react-bootstrap/Tab';
+import Tabs from 'react-bootstrap/Tabs';
+
 import './App.css';
-import initData from './Data/Data';
 
 import Comparisons from './Comparisons/Comparisons';
 import Overview from './Overview/Overview';
 import Profile from './Profile/Profile';
 import Progression from './Progression/Progression';
 
-import Tab from 'react-bootstrap/Tab';
-import Tabs from 'react-bootstrap/Tabs';
-
-const {info, data} = initData();
-
 function App() {
-  // let a = fetch("http://localhost:3001/api/data")
-  // .then(response => response.json())
-  // .then(data => {
-  //   console.log(data);
-  // });
+  const [info, setInfo] = useState({player: "Loading...", number: "Loading...", title: "Loading...", last_updated: "Loading..."});
+  const [data, setData] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get('http://localhost:3001/api/user/TUSA/7085');
+        const responseData = response.data;
+
+        // Update state or perform actions with the data
+        setInfo(responseData["info"]);
+        setData(responseData["scores"]);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   // let b = fetch("http://localhost:3001/api/post", {
   //     method: "POST",
@@ -31,9 +44,7 @@ function App() {
 
   return (
     <div className="App">
-      <Profile 
-        info={info}
-      />
+      <Profile info={info}/>
       <hr/>
       <div className="container">
       <Tabs
@@ -42,22 +53,13 @@ function App() {
         className="mb-3"
       >
         <Tab eventKey="overview" title="Overview">
-          <Overview
-            info={info}
-            data={data}
-          />
+          <Overview info={info} data={data}/>
         </Tab>
         <Tab eventKey="comparisons" title="Comparisons">
-          <Comparisons
-            info={info}
-            data={data}
-          />
+          <Comparisons info={info} data={data}/>
         </Tab>
         <Tab eventKey="progression" title="Progression">
-          <Progression
-            info={info}
-            data={data}
-          />
+          <Progression info={info} data={data}/>
         </Tab>
       </Tabs>
       </div>
