@@ -1,6 +1,7 @@
 import React, { useRef } from "react";
 
-import './Overview.css';
+import "./Overview.css";
+
 import GraphHelpers from "../GraphHelpers/GraphHelpers.js";
 import LineChart from "./LineChart.js";
 

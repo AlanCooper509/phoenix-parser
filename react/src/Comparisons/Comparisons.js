@@ -1,5 +1,7 @@
 import React, { useRef } from "react";
 
+import "./Comparisons.css";
+
 import GraphHelpers from "../GraphHelpers/GraphHelpers.js";
 import LineChart from "./LineChart.js";
 
@@ -68,8 +70,17 @@ function Comparisons({info, data}) {
     const chartData = graphSetupObject["chartData"];
 
     return (
-        <div className="row align-items-center justify-content-center">
+        <div className="row align-items-top justify-content-center">
             <div className="col-4">
+                <div className="d-flex align-items-center justify-content-center">
+                    <div className="d-flex flex-column align-items-start mt-2">
+                        <label htmlFor="addPlayer">Add Player</label>
+                        <div className="d-flex align-items-center justify-content-center mt-2 mb-5">
+                            <input className="mx-2" placeholder="NAME #1234"></input>
+                            <span className="border-dark btn btn-sm btn-secondary">Add</span>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div className="Comparisons-chart col-8 mb-4">
                 <LineChart 
