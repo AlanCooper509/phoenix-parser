@@ -26,5 +26,6 @@
     "25": {"total": 42,  "singles": 8,   "doubles": 34},
     "26": {"total": 22,  "singles": 1,   "doubles": 21},
     "27": {"total": 6,   "singles": 0,   "doubles": 6},
-    "28": {"total": 2,   "singles": 0,   "doubles": 2}
+    "28": {"total": 2,   "singles": 0,   "doubles": 2},
+    "coop": {"n2": 96, "n3": 17, "n4": 4, "n5": 1}
 }
