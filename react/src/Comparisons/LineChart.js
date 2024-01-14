@@ -85,7 +85,6 @@ function setupChartOptions(title, subtitle, toggle) {
                     size: 16
                   }
                 },
-                position: 'right',
                 min: 0.00,
                 max: 1.00,
                 ticks: {

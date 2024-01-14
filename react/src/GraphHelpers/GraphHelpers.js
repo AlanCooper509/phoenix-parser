@@ -8,7 +8,7 @@ class GraphHelpers {
             let maxPrev = maxValue.current ? maxValue.current.getAttribute("previous") : 28;
         
             if (changedInput) {
-                switch (changedInput.target.id) {
+                switch (changedInput.target.getAttribute("name")) {
                     case "min":
                         if (isNaN(min)) {
                             min = minPrev;
