@@ -23,24 +23,27 @@ function Comparisons({info, data}) {
     const p4NameInput = useRef(null);
     
     function updateGraphWrapper(changedInput) {
+        function formatName(value) {
+            return value.toUpperCase().replaceAll(/\s/g, '').replaceAll(/\#/g, " #");
+        }
         const helper = new ComparisonsGraphHelper();
         const labels = helper.makeLevelLabelsFromInputs(chartTypeValue, minValue, maxValue, changedInput);
         const datasets = [
-            {data: data, label: info["player"]}
+            {data: data, label: `${info.player} ${info.number}`}
         ];
         if (dataP2.length !== 0) {
             datasets.push(
-                {data: dataP2, label: p2NameInput.current.value.toUpperCase()}
+                {data: dataP2, label: formatName(p2NameInput.current.value)}
             );
         }
         if (dataP3.length !== 0) {
             datasets.push(
-                {data: dataP3, label: p3NameInput.current.value.toUpperCase()}
+                {data: dataP3, label: formatName(p3NameInput.current.value)}
             );
         }
         if (dataP4.length !== 0) {
             datasets.push(
-                {data: dataP4, label: p4NameInput.current.value.toUpperCase()}
+                {data: dataP4, label: formatName(p4NameInput.current.value)}
             );
         }
         return helper.updateGraph(chartRef, labels, datasets, chartTypeValue, changedInput);
