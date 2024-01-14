@@ -9,6 +9,7 @@ function setupChartOptions(title, subtitle) {
             title: {
                 display: true,
                 text: title,
+                align: "start",
                 color: "#dee2e6",
                 font: {
                     size: 20
@@ -17,7 +18,7 @@ function setupChartOptions(title, subtitle) {
             subtitle: {
                 display: true,
                 text: subtitle,
-                align: "end",
+                align: "start",
                 color: "#aaaaaa",
                 font: {
                     style: 'italic'

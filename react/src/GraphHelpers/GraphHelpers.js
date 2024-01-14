@@ -1,107 +1,89 @@
 class GraphHelpers {
-    validateFormInputs(chartTypeValue, minValue, maxValue, changedInput) {
-        const chartType = chartTypeValue.current == null ? "bothtypes" : chartTypeValue.current.value;
-        let min = minValue.current ? parseInt(minValue.current.value) : 1;
-        let minPrev = minValue.current ? minValue.current.getAttribute("previous") : 1;
-        let max = maxValue.current ? parseInt(maxValue.current.value) : 28;
-        let maxPrev = maxValue.current ? maxValue.current.getAttribute("previous") : 28;
-    
-        if (changedInput) {
-            switch (changedInput.target.id) {
-                case "min":
-                    if (isNaN(min)) {
-                        min = minPrev;
-                    } else {
-                        min = min < 1 ? 1 : (min > 28 ? 28 : min > max ? max : min);
-                        minValue.current.value = min;
-                        minValue.current.setAttribute("previous", min);
-                    }
-                    break;
-                case "max":
-                    if (isNaN(max)) {
-                        max = maxPrev;
+    makeLevelLabelsFromInputs(chartTypeValue, minValue, maxValue, changedInput) {
+        function validateFormInputs(chartTypeValue, minValue, maxValue, changedInput) {
+            const chartType = chartTypeValue.current == null ? "bothtypes" : chartTypeValue.current.value;
+            let min = minValue.current ? parseInt(minValue.current.value) : 1;
+            let minPrev = minValue.current ? minValue.current.getAttribute("previous") : 1;
+            let max = maxValue.current ? parseInt(maxValue.current.value) : 28;
+            let maxPrev = maxValue.current ? maxValue.current.getAttribute("previous") : 28;
+        
+            if (changedInput) {
+                switch (changedInput.target.id) {
+                    case "min":
+                        if (isNaN(min)) {
+                            min = minPrev;
+                        } else {
+                            min = min < 1 ? 1 : (min > 28 ? 28 : min > max ? max : min);
+                            minValue.current.value = min;
+                            minValue.current.setAttribute("previous", min);
+                        }
                         break;
-                    }
-                    max = max < 1 ? 1 : max > 28 ? 28 : max < min ? min : max;
-                    maxValue.current.value = max;
-                    maxValue.current.setAttribute("previous", max);
+                    case "max":
+                        if (isNaN(max)) {
+                            max = maxPrev;
+                            break;
+                        }
+                        max = max < 1 ? 1 : max > 28 ? 28 : max < min ? min : max;
+                        maxValue.current.value = max;
+                        maxValue.current.setAttribute("previous", max);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        
+            const userSettings = {"min": min, "max": max, "chartType": chartType};
+            return userSettings;
+        }
+        function  makeLevelLabels(inputs) {
+            let labels = [];
+            for (let i = inputs["min"]; i <= inputs["max"]; i++) {
+                let label = i < 10 ? `0${i}` : i.toString();
+                labels.push(label);
+            }
+            return labels;
+        }
+
+        const inputs = validateFormInputs(chartTypeValue, minValue, maxValue, changedInput);
+        return makeLevelLabels(inputs);
+    }
+    getDatasetFromLabels(property, data, labels, chartTypeValue) {
+        const chartType = chartTypeValue.current == null ? "bothtypes" : chartTypeValue.current.value;
+        const defaultValues = {"average": NaN, "clear": 0.00}
+
+        let dataset = [];
+        for (const idx in labels) {
+            const level = labels[idx];
+            switch (chartType) {
+                case ("bothtypes"):
+                    dataset.push(data[level] ? data[level][property] : defaultValues[property]);
+                    break;
+                case ("singles"):
+                    dataset.push(data[level] ? data[level]["singles"][property] : defaultValues[property]);
+                    break;
+                case ("doubles"):
+                    dataset.push(data[level] ? data[level]["doubles"][property] : defaultValues[property]);
                     break;
                 default:
                     break;
             }
         }
-    
-        const userSettings = {"min": min, "max": max, "chartType": chartType};
-        return userSettings;
+        return dataset;
     }
-    makeLevelLabels(inputs) {
-        let labels = [];
-        for (let i = inputs["min"]; i <= inputs["max"]; i++) {
-            let label = i < 10 ? `0${i}` : i.toString();
-            labels.push(label);
-        }
-        return labels;
-    }
-    getAveragesForKeys(data, labels, chartTypeValue) {
-        const chartType = chartTypeValue.current == null ? "bothtypes" : chartTypeValue.current.value;
-        let averages = [];
-        for (const idx in labels) {
-            switch (chartType) {
-                case ("bothtypes"):
-                    averages.push(data[labels[idx]] ? data[labels[idx]]["average"] : NaN);
-                    break;
-                case ("singles"):
-                    averages.push(data[labels[idx]] ? data[labels[idx]]["singles"]["average"] : NaN);
-                    break;
-                case ("doubles"):
-                    averages.push(data[labels[idx]] ? data[labels[idx]]["doubles"]["average"] : NaN);
-                    break;
-            }
-        }
-        return averages;
-    }
-    getClearPercentForKeys(data, labels, chartTypeValue) {
-        const chartType = chartTypeValue.current == null ? "bothtypes" : chartTypeValue.current.value;
-        let percentages = [];
-        for (const idx in labels) {
-            switch (chartType) {
-                case ("bothtypes"):
-                    percentages.push(data[labels[idx]] ? data[labels[idx]]["clear"] : 0.00);
-                    break;
-                case ("singles"):
-                    percentages.push(data[labels[idx]] ? data[labels[idx]]["singles"]["clear"] : 0.00);
-                    break;
-                case ("doubles"):
-                    percentages.push(data[labels[idx]] ? data[labels[idx]]["doubles"]["clear"] : 0.00);
-                    break;
-            }
-        }
-        return percentages;
-    }
-    getSubtitle(lastSynced) {
+    getSubtitle(text) {
         const rightPadding = " ".repeat(24);
-        const subtitle = `Last Synced: ${lastSynced}${rightPadding}`;
+        const subtitle = `${text}${rightPadding}`;
         return subtitle;
     }
-    getTitle(player, chartTypeValue) {
-        const chartType = chartTypeValue.current == null ? "bothtypes" : chartTypeValue.current.value;
-        let typeText = '';
-        switch (chartType) {
-            case "bothtypes":
-                typeText = "Singles and Doubles";
-                break;
-            case "singles":
-                typeText = "Singles";
-                break;
-            case "doubles":
-                typeText = "Doubles";
-                break;
-            case "coop":
-                typeText = "Co-Op";
-                break;
+    updateGraphData(chartRef, labels, datasets, title, subtitle) {
+        chartRef.current.data.labels = labels;
+        for (const idx in datasets) {
+            chartRef.current.data.datasets[idx].data = datasets[idx].data;
+            chartRef.current.data.datasets[idx].label = datasets[idx].label;
         }
-        const title = `${player} (${typeText})`;
-        return title;
+        chartRef.current.options.plugins.title.text = title;
+        chartRef.current.options.plugins.subtitle.text = subtitle;
+        chartRef.current.update();
     }
 }
 
