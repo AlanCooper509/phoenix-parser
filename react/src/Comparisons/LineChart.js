@@ -52,7 +52,8 @@ function setupChartOptions(title, subtitle, toggle) {
                 },
                 grid: {
                     color: "#202020"
-                }
+                },
+                offset: true
             },
             y: {
                 display: toggle == "average",

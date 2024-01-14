@@ -58,6 +58,8 @@ class OverviewGraphHelper extends GraphHelpers {
     
         if (changedInput) {
             this.updateGraphData(chartRef, labels, datasets, title, subtitle);
+            const graphSetup = this.getGraphSetupObject(labels, datasets, title, subtitle);
+            return graphSetup;
         } else {
             const graphSetup = this.getGraphSetupObject(labels, datasets, title, subtitle);
             return graphSetup;
