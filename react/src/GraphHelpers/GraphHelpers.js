@@ -80,6 +80,8 @@ class GraphHelpers {
         for (const idx in datasets) {
             chartRef.current.data.datasets[idx].data = datasets[idx].data;
             chartRef.current.data.datasets[idx].label = datasets[idx].label;
+            chartRef.current.data.datasets[idx].type = datasets[idx].type;
+            chartRef.current.data.datasets[idx].yAxisID = datasets[idx].yAxisID;
         }
         chartRef.current.options.plugins.title.text = title;
         chartRef.current.options.plugins.subtitle.text = subtitle;

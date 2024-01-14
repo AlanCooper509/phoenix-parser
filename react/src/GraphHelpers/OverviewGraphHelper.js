@@ -8,16 +8,16 @@ class OverviewGraphHelper extends GraphHelpers {
             "chartData": {
                 labels: labels,
                 datasets: [{
-                    type: "line",
+                    type: datasets[0].type,
                     label:  datasets[0].label,
                     data: datasets[0].data,
-                    borderWidth: 1,
-                    yAxisID: "y"
+                    yAxisID: datasets[0].yAxisID,
+                    borderWidth: 1
                 }, {
-                    type: "bar",
+                    type: datasets[1].type,
                     label: datasets[1].label,
                     data: datasets[1].data,
-                    yAxisID: "y1"
+                    yAxisID: datasets[1].yAxisID
                 }]
             }
         }
@@ -51,8 +51,8 @@ class OverviewGraphHelper extends GraphHelpers {
         let datasets = [];
         const averages = this.getDatasetFromLabels("average", data, labels, chartTypeValue);
         const percentages = this.getDatasetFromLabels("clear", data, labels, chartTypeValue);
-        datasets.push({data: averages, label: "AVG SCORE"});
-        datasets.push({data: percentages, label: "% CLEARED"});
+        datasets.push({data: averages, label: "AVG SCORE", type: "line", yAxisID: "y"});
+        datasets.push({data: percentages, label: "% CLEARED", type: "bar", yAxisID: "y1"});
         const subtitle = this.getSubtitle(info["last_updated"]);
         const title = this.getTitle(info["player"], chartTypeValue);
     

@@ -11,11 +11,11 @@ class ComparisonsGraphHelper extends GraphHelpers {
         let datasets = [];
         for (const idx in multipleUsersData) {
             let dataset = {
-                type: "line",
+                type: multipleUsersData[idx].type,
                 label: multipleUsersData[idx].label,
                 data: multipleUsersData[idx].data,
                 borderWidth: 1,
-                yAxisID: "y",
+                yAxisID: multipleUsersData[idx].yAxisID,
                 borderColor: colors[idx % colors.length],
                 backgroundColor: colors[idx % colors.length]
             }
@@ -67,19 +67,43 @@ class ComparisonsGraphHelper extends GraphHelpers {
         const subtitle = `${leftPadding}(${typeText})`;
         return subtitle;
     }
+    toggleY(chartRef, dataCategory) {
+        switch (dataCategory) {
+            case "average":
+                chartRef.current.options.scales.y.display = true;
+                chartRef.current.options.scales.y1.display = false;
+                chartRef.current.update();
+                break;
+            case "clear":
+                chartRef.current.options.scales.y.display = false;
+                chartRef.current.options.scales.y1.display = true;
+                chartRef.current.update();
+            default:
+                break;
+        }
+    }
     updateGraph(chartRef, labels, datasets, chartTypeValue, graphType, changedInput) {
         let dataCategory = graphType.current == null ? "average" : graphType.current.value;
         let playersData = [];
         for (const idx in datasets) {
             const playerData = this.getDatasetFromLabels(dataCategory, datasets[idx].data, labels, chartTypeValue);
             const label = datasets[idx].label;
-            playersData.push({data: playerData, label: label});
+            switch (dataCategory) {
+                case "average":
+                    playersData.push({data: playerData, label: label, type: "line", yAxisID: "y"});
+                    break;
+                case "clear":
+                    playersData.push({data: playerData, label: label, type: "bar", yAxisID: "y1"});
+                    break;
+                default:
+                    break;
+            }
         }
         const subtitle = this.getSubtitle(chartTypeValue);
         const title = this.getTitle(dataCategory);
-
         if (changedInput) {
             this.updateGraphData(chartRef, labels, playersData, title, subtitle);
+            this.toggleY(chartRef, dataCategory);
         } else {
             const graphSetup = this.getGraphSetupObject(labels, playersData, title, subtitle);
             return graphSetup;

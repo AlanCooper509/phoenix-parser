@@ -2,7 +2,7 @@ import React from "react";
 import { Line } from "react-chartjs-2";
 import Chart from 'chart.js/auto';
 
-function setupChartOptions(title, subtitle) {
+function setupChartOptions(title, subtitle, toggle) {
     return {
         color: "#dee2e6",
         plugins: {
@@ -55,6 +55,7 @@ function setupChartOptions(title, subtitle) {
                 }
             },
             y: {
+                display: toggle == "average",
                 title: {
                     display: true,
                     text: "Average Score",
@@ -70,9 +71,33 @@ function setupChartOptions(title, subtitle) {
                     stepSize: 10000
                 },
                 grid: {
-                    color: "#202020"
+                    color: "#404040"
                 }
-            }
+            },
+            y1: {
+                display: toggle == "clear",
+                title: {
+                  display: true,
+                  text: "Cleared",
+                  color: "#dee2e6",
+                  font: {
+                    size: 16
+                  }
+                },
+                position: 'right',
+                min: 0.00,
+                max: 1.00,
+                ticks: {
+                  color: "#d4d4d4",
+                  format: {
+                    style: "percent"
+                  }
+                },
+                grid: {
+                  drawOnChartArea: true,
+                  color: "#646464"
+                }
+              }
         }
     }
 }
@@ -93,8 +118,9 @@ function setupChartPlugins() {
     }];
 }
 
-function LineChart({ innerRef, chartData, title, subtitle }) {
-    const chartOptions = setupChartOptions(title, subtitle);
+function LineChart({ innerRef, graphType, chartData, title, subtitle }) {
+    const toggle = graphType.current ? graphType.current.value : "average";
+    const chartOptions = setupChartOptions(title, subtitle, toggle);
     const plugins = setupChartPlugins();
     return ( 
       <Line ref={innerRef}

@@ -68,6 +68,7 @@ function Comparisons({info, data}) {
             <div className="Comparisons-chart col-8 mb-4">
                 <LineChart 
                     innerRef={chartRef}
+                    graphType={graphType}
                     chartData={graphSetupObject["chartData"]}
                     title={graphSetupObject["title"]}
                     subtitle={graphSetupObject["subtitle"]}
