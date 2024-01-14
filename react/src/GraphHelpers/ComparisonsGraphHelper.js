@@ -30,9 +30,20 @@ class ComparisonsGraphHelper extends GraphHelpers {
             }
         }
     }
-    getTitle() {
+    getTitle(dataCategory) {
+        let category = '';
+        switch (dataCategory) {
+            case "average":
+                category = "Average Scores";
+                break;
+            case "clear":
+                category = "Percent Cleared";
+                break;
+            default:
+                break;
+        }
         const leftPadding = " ".repeat(18);
-        const title = `${leftPadding}Average Scores Comparison`;
+        const title = `${leftPadding}${category} Comparison`;
         return title;
     }
     getSubtitle(chartTypeValue) {
@@ -56,15 +67,16 @@ class ComparisonsGraphHelper extends GraphHelpers {
         const subtitle = `${leftPadding}(${typeText})`;
         return subtitle;
     }
-    updateGraph(chartRef, labels, datasets, chartTypeValue, changedInput) {
+    updateGraph(chartRef, labels, datasets, chartTypeValue, graphType, changedInput) {
+        let dataCategory = graphType.current == null ? "average" : graphType.current.value;
         let playersData = [];
         for (const idx in datasets) {
-            const playerData = this.getDatasetFromLabels("average", datasets[idx].data, labels, chartTypeValue);
+            const playerData = this.getDatasetFromLabels(dataCategory, datasets[idx].data, labels, chartTypeValue);
             const label = datasets[idx].label;
             playersData.push({data: playerData, label: label});
         }
         const subtitle = this.getSubtitle(chartTypeValue);
-        const title = this.getTitle();
+        const title = this.getTitle(dataCategory);
 
         if (changedInput) {
             this.updateGraphData(chartRef, labels, playersData, title, subtitle);

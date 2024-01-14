@@ -7,10 +7,15 @@ import GraphButtons from "../GraphHelpers/GraphButtons.js";
 import Sidebar from "./Sidebar.js";
 import LineChart from "./LineChart.js";
 
+function formatName(value) {
+    return value.toUpperCase().replaceAll(/\s/g, '').replaceAll(/\#/g, " #");
+}
+
 function Comparisons({info, data}) {
     const minValue = useRef(null);
     const maxValue = useRef(null);
     const chartTypeValue = useRef(null);
+    const graphType = useRef(null);
     const chartRef = useRef(null);
 
     const [dataP2, setDataP2] = useState([]);
@@ -23,9 +28,6 @@ function Comparisons({info, data}) {
     const p4NameInput = useRef(null);
     
     function updateGraphWrapper(changedInput) {
-        function formatName(value) {
-            return value.toUpperCase().replaceAll(/\s/g, '').replaceAll(/\#/g, " #");
-        }
         const helper = new ComparisonsGraphHelper();
         const labels = helper.makeLevelLabelsFromInputs(chartTypeValue, minValue, maxValue, changedInput);
         const datasets = [
@@ -46,16 +48,17 @@ function Comparisons({info, data}) {
                 {data: dataP4, label: formatName(p4NameInput.current.value)}
             );
         }
-        return helper.updateGraph(chartRef, labels, datasets, chartTypeValue, changedInput);
+        return helper.updateGraph(chartRef, labels, datasets, chartTypeValue, graphType, changedInput);
     }
-
-    let graphSetupObject = updateGraphWrapper();
+    const graphSetupObject = updateGraphWrapper();
 
     // rendering
     return (
         <div className="row align-items-top justify-content-center">
             <div className="col-4">
                 <Sidebar
+                    graphType={graphType}
+                    handleGraphToggle={updateGraphWrapper}
                     infoP1={info}
                     p2={{ref: p2NameInput, setData: setDataP2}}
                     p3={{ref: p3NameInput, setData: setDataP3}}

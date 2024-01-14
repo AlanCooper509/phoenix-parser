@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import getUser from "../API/user.js";
 import PlayerNameInput from "./PlayerNameInput.js";
 
-function Sidebar({infoP1, p2, p3, p4}) {
+function Sidebar({graphType, handleGraphToggle, infoP1, p2, p3, p4}) {
     const [infoP2, setInfoP2] = useState({});
     const [infoP3, setInfoP3] = useState({});
     const [infoP4, setInfoP4] = useState({});
@@ -58,6 +58,13 @@ function Sidebar({infoP1, p2, p3, p4}) {
                 tag="p4"
                 addPlayerHandler={addPlayer}
             />
+            <div className="d-flex align-items-start mt-2">
+                <label className="me-2" htmlFor="graphType">Select Stat:</label>
+                <select ref={graphType} name="graphType" defaultValue="average" onInput={handleGraphToggle}>
+                    <option value="average">Average Score</option>
+                    <option value="clear">Percent Cleared</option>
+                </select>
+            </div>
         </div>
     );
 }
