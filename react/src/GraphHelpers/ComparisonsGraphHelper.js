@@ -3,8 +3,8 @@ import GraphHelpers from "./GraphHelpers.js";
 class ComparisonsGraphHelper extends GraphHelpers {
     getGraphSetupObject(labels, multipleUsersData, title, subtitle) {
         const colors = [
-            'rgba(187, 36, 0, 0.75)', 
             'rgba(54, 162, 235, 0.75)', 
+            'rgba(187, 36, 0, 0.75)', 
             'rgba(255, 206, 86, 0.75)', 
             'rgba(204, 101, 254, 0.75)', 
             'rgba(0, 255, 0, 0.75)'];

@@ -22,7 +22,13 @@ function setupChartOptions(title, subtitle) {
                 color: "#aaaaaa",
                 font: {
                     style: 'italic'
+                },
+                padding: {
+                    bottom: 15
                 }
+            },
+            legend: {
+                position: "right"
             },
             chartAreaBorder: {
                 borderColor: '#cacaca',
