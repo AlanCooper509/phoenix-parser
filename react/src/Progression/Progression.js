@@ -1,21 +1,31 @@
+import React, { useEffect, useState } from "react";
 import Accordion from 'react-bootstrap/Accordion';
 
+import getChartStats from '../API/chartstats.js';
 import LevelStats from './LevelStats.js';
 import cutoffs from "./TitleCutoffs.json";
 
 function Progression({info, data}) {
+    const [chartData, setChartData] = useState({});
+    useEffect(() => getChartStats(setChartData), []);
+
     const intermediateLevels = [];
     for (const key in cutoffs) {
         intermediateLevels.push(
             <LevelStats
                 cutoffs={ cutoffs[key] }
                 rating={ data[key] ? data[key].rating : 0 }
+                singles={data[key] ? data[key].singles.count : 0}
+                doubles={data[key] ? data[key].doubles.count : 0}
+                charts={chartData[key]}
                 level={ key }
+                key={ key }
             />
         );
         if (key === cutoffs.length - 1) { continue; }
-        intermediateLevels.push(<hr/>)
+        intermediateLevels.push(<hr key={-key}/>)
     }
+
     return (
         <div className="container">
             <h3>Title Progression</h3>

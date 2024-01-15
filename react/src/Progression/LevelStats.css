@@ -27,3 +27,8 @@
     -webkit-text-stroke-width: 0.5px;
     color: #77aaaa;
 }
+
+.stepball {
+    width: 40px;
+    height: auto;
+}

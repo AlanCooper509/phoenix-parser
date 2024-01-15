@@ -21,7 +21,7 @@ function loadOptions(cutoffs) {
         },
         scales: {
             x: {
-                position: "top",
+                position: "bottom",
                 border: {
                     display: false
                 },
@@ -35,6 +35,10 @@ function loadOptions(cutoffs) {
                 },
                 ticks: {
                     color: "white",
+                    padding: 10,
+                    font: {
+                        size: 16
+                    },
                     stepSize: stepSize,
                     callback: (val) => {
                         for (const idx in cutoffs) {
