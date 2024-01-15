@@ -1,0 +1,72 @@
+{
+    "10": [{
+        "header": "INTERMEDIATE Lv.1",
+        "name": "Int.1",
+        "value": 2000,
+        "description": "[Lv.10 Rating] 2000 points or higher",
+        "tier": "bronze"
+    }],
+    "11": [{
+        "header": "INTERMEDIATE Lv.2",
+        "name": "Int.2",
+        "value": 2200,
+        "description": "[Lv.11 Rating] 2200 points or higher",
+        "tier": "bronze"
+    }],
+    "12": [{
+        "header": "INTERMEDIATE Lv.3",
+        "name": "Int.3",
+        "value": 2600,
+        "description": "[Lv.12 Rating] 2600 points or higher",
+        "tier": "bronze"
+    }],
+    "13": [{
+        "header": "INTERMEDIATE Lv.4",
+        "name": "Int.4",
+        "value": 3200,
+        "description": "[Lv.13 Rating] 3200 points or higher",
+        "tier": "bronze"
+    }],
+    "14": [{
+        "header": "INTERMEDIATE Lv.5",
+        "name": "Int.5",
+        "value": 4000,
+        "description": "[Lv.14 Rating] 4000 points or higher",
+        "tier": "bronze"
+    }],
+    "15": [{
+        "header": "INTERMEDIATE Lv.6",
+        "name": "Int.6",
+        "value": 5000,
+        "description": "[Lv.15 Rating] 5000 points or higher",
+        "tier": "bronze"
+    }],
+    "16": [{
+        "header": "INTERMEDIATE Lv.7",
+        "name": "Int.7",
+        "value": 6200,
+        "description": "[Lv.16 Rating] 6200 points or higher",
+        "tier": "bronze"
+    }],
+    "17": [{
+        "header": "INTERMEDIATE Lv.8",
+        "name": "Int.8",
+        "value": 7600,
+        "description": "[Lv.17 Rating] 7600 points or higher",
+        "tier": "bronze"
+    }],
+    "18": [{
+        "header": "INTERMEDIATE Lv.9",
+        "name": "Int.9",
+        "value": 9200,
+        "description": "[Lv.18 Rating] 9200 points or higher",
+        "tier": "bronze"
+    }],
+    "19": [{
+        "header": "INTERMEDIATE Lv.10",
+        "name": "Int.10",
+        "value": 11000,
+        "description": "[Lv.19 Rating] 11000 points or higher",
+        "tier": "bronze"
+    }]
+}

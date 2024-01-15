@@ -78,6 +78,7 @@ class ComparisonsGraphHelper extends GraphHelpers {
                 chartRef.current.options.scales.y.display = false;
                 chartRef.current.options.scales.y1.display = true;
                 chartRef.current.update();
+                break;
             default:
                 break;
         }

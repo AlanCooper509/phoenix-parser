@@ -8,7 +8,7 @@ import Sidebar from "./Sidebar.js";
 import LineChart from "./LineChart.js";
 
 function formatName(value) {
-    return value.toUpperCase().replaceAll(/\s/g, '').replaceAll(/\#/g, " #");
+    return value.toUpperCase().replaceAll(/\s/g, '').replaceAll(/#/g, " #");
 }
 
 function Comparisons({info, data}) {

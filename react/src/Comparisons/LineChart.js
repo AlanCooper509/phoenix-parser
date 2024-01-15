@@ -56,7 +56,7 @@ function setupChartOptions(title, subtitle, toggle) {
                 offset: true
             },
             y: {
-                display: toggle == "average",
+                display: toggle === "average",
                 title: {
                     display: true,
                     text: "Average Score",
@@ -76,7 +76,7 @@ function setupChartOptions(title, subtitle, toggle) {
                 }
             },
             y1: {
-                display: toggle == "clear",
+                display: toggle === "clear",
                 title: {
                   display: true,
                   text: "Cleared",
