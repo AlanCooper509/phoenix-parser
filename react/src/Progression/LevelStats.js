@@ -1,5 +1,8 @@
+import React, { useState } from "react";
 import { TbInfoCircle } from "react-icons/tb";
 import BarChart from "./BarChart.js";
+import { BsChevronCompactDown } from "react-icons/bs";
+import Collapse from 'react-bootstrap/Collapse';
 
 import "./LevelStats.css";
 
@@ -15,12 +18,25 @@ function LevelStats({cutoffs, rating, singles, doubles, charts, level}) {
             </div>
         );
     }
+    const cutoff = 2;
+    const [open, setOpen] = useState(titles.length <= cutoff);
     return (
         <div className="container">
             <div className="row align-items-center">
                 <div className="col-4">
-                    <h4>LEVEL {level}</h4>
-                    {titles}
+                {titles.length > 2 ?
+                    <h4 style={{cursor: "pointer"}} onClick={() => {setOpen(!open)}}>
+                        <BsChevronCompactDown style={{transform: `rotate(${open ? 180 : 0}deg)`}}/> LEVEL {level}
+                    </h4> : 
+                    <h4>
+                        LEVEL {level}
+                    </h4>
+                }
+                    <Collapse in={open}>
+                        <div>
+                        {titles}
+                        </div>
+                    </Collapse>
                 </div>
                 <div className="col-8 text-start">
                     <span className="float-end me-2 d-flex align-items-center">
