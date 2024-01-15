@@ -11,7 +11,7 @@ function LevelStats({cutoffs, rating, singles, doubles, charts, level}) {
         titles.push(
             <div key={idx} className="mt-3 ms-2">
                 <h4 className={titleClasses}>{title.header}</h4>
-                <div className="mb-2"><small><TbInfoCircle/> {title.description}</small></div>
+                <div className="mb-4 small-text"><TbInfoCircle/> {title.description}</div>
             </div>
         );
     }
