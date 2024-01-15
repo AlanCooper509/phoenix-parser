@@ -9,21 +9,27 @@ function Progression({info, data}) {
     const [chartData, setChartData] = useState({});
     useEffect(() => getChartStats(setChartData), []);
 
-    const intermediateLevels = [];
-    for (const key in cutoffs) {
-        intermediateLevels.push(
-            <LevelStats
-                cutoffs={ cutoffs[key] }
-                rating={ data[key] ? data[key].rating : 0 }
-                singles={data[key] ? data[key].singles.count : 0}
-                doubles={data[key] ? data[key].doubles.count : 0}
-                charts={chartData[key]}
-                level={ key }
-                key={ key }
-            />
-        );
-        if (key === cutoffs.length - 1) { continue; }
-        intermediateLevels.push(<hr key={-key}/>)
+    let levels = {
+        intermediate: [],
+        advanced: [],
+        expert: []
+    }
+    for (const category in cutoffs) {
+        for (const key in cutoffs[category]) {
+            levels[category].push(
+                <LevelStats
+                    cutoffs={ cutoffs[category][key] }
+                    rating={ data[key] ? data[key].rating : 0 }
+                    singles={data[key] ? data[key].singles.count : 0}
+                    doubles={data[key] ? data[key].doubles.count : 0}
+                    charts={chartData[key]}
+                    level={ key }
+                    key={ key }
+                />
+            );
+            if (key === cutoffs[category].length - 1) { continue; }
+            levels[category].push(<hr key={-key}/>)
+        }
     }
 
     return (
@@ -33,31 +39,19 @@ function Progression({info, data}) {
                 <Accordion.Item eventKey="1">
                     <Accordion.Header>Intermediate Trackers</Accordion.Header>
                     <Accordion.Body>
-                        {intermediateLevels}
+                        {levels.intermediate}
                     </Accordion.Body>
                 </Accordion.Item>
                 <Accordion.Item eventKey="2">
                     <Accordion.Header>Advanced Trackers</Accordion.Header>
                     <Accordion.Body>
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-                        eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
-                        minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-                        aliquip ex ea commodo consequat. Duis aute irure dolor in
-                        reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-                        pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-                        culpa qui officia deserunt mollit anim id est laborum.
+                        {levels.advanced}
                     </Accordion.Body>
                 </Accordion.Item>
                 <Accordion.Item eventKey="3">
                     <Accordion.Header>Expert Trackers</Accordion.Header>
                     <Accordion.Body>
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-                        eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
-                        minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-                        aliquip ex ea commodo consequat. Duis aute irure dolor in
-                        reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-                        pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-                        culpa qui officia deserunt mollit anim id est laborum.
+                        {levels.expert}
                     </Accordion.Body>
                 </Accordion.Item>
             </Accordion>

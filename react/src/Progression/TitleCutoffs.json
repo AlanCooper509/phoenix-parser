@@ -1,72 +1,213 @@
 {
-    "10": [{
-        "header": "INTERMEDIATE Lv.1",
-        "name": "Int.1",
-        "value": 2000,
-        "description": "[Lv.10 Rating] 2000 points or higher",
-        "tier": "bronze"
-    }],
-    "11": [{
-        "header": "INTERMEDIATE Lv.2",
-        "name": "Int.2",
-        "value": 2200,
-        "description": "[Lv.11 Rating] 2200 points or higher",
-        "tier": "bronze"
-    }],
-    "12": [{
-        "header": "INTERMEDIATE Lv.3",
-        "name": "Int.3",
-        "value": 2600,
-        "description": "[Lv.12 Rating] 2600 points or higher",
-        "tier": "bronze"
-    }],
-    "13": [{
-        "header": "INTERMEDIATE Lv.4",
-        "name": "Int.4",
-        "value": 3200,
-        "description": "[Lv.13 Rating] 3200 points or higher",
-        "tier": "bronze"
-    }],
-    "14": [{
-        "header": "INTERMEDIATE Lv.5",
-        "name": "Int.5",
-        "value": 4000,
-        "description": "[Lv.14 Rating] 4000 points or higher",
-        "tier": "bronze"
-    }],
-    "15": [{
-        "header": "INTERMEDIATE Lv.6",
-        "name": "Int.6",
-        "value": 5000,
-        "description": "[Lv.15 Rating] 5000 points or higher",
-        "tier": "bronze"
-    }],
-    "16": [{
-        "header": "INTERMEDIATE Lv.7",
-        "name": "Int.7",
-        "value": 6200,
-        "description": "[Lv.16 Rating] 6200 points or higher",
-        "tier": "bronze"
-    }],
-    "17": [{
-        "header": "INTERMEDIATE Lv.8",
-        "name": "Int.8",
-        "value": 7600,
-        "description": "[Lv.17 Rating] 7600 points or higher",
-        "tier": "bronze"
-    }],
-    "18": [{
-        "header": "INTERMEDIATE Lv.9",
-        "name": "Int.9",
-        "value": 9200,
-        "description": "[Lv.18 Rating] 9200 points or higher",
-        "tier": "bronze"
-    }],
-    "19": [{
-        "header": "INTERMEDIATE Lv.10",
-        "name": "Int.10",
-        "value": 11000,
-        "description": "[Lv.19 Rating] 11000 points or higher",
-        "tier": "bronze"
-    }]
+    "expert": {
+        "23": [{
+            "header": "EXPERT LV.1",
+            "name": "Exp.1",
+            "value": 40000,
+            "description": "[Lv.23 Rating] 40000 points or higher // Earn [ADVANCED Lv.10]",
+            "tier": "gold"
+        }, {
+            "header": "EXPERT LV.2",
+            "name": "Exp.2",
+            "value": 80000,
+            "description": "[Lv.23 Rating] 80000 points or higher // Earn [EXPERT Lv.1]",
+            "tier": "gold"
+        }],
+        "24": [{
+            "header": "EXPERT LV.3",
+            "name": "Exp.3",
+            "value": 30000,
+            "description": "[Lv.24 Rating] 30000 points or higher // Earn [EXPERT Lv.2]",
+            "tier": "gold"
+        }, {
+            "header": "EXPERT LV.4",
+            "name": "Exp.4",
+            "value": 60000,
+            "description": "[Lv.24 Rating] 60000 points or higher // Earn [EXPERT Lv.3]",
+            "tier": "gold"
+        }],
+        "25": [{
+            "header": "EXPERT LV.5",
+            "name": "Exp.5",
+            "value": 20000,
+            "description": "[Lv.25 Rating] 20000 points or higher // Earn [EXPERT Lv.4]",
+            "tier": "gold"
+        }, {
+            "header": "EXPERT LV.6",
+            "name": "Exp.6",
+            "value": 40000,
+            "description": "[Lv.25 Rating] 40000 points or higher // Earn [EXPERT Lv.5]",
+            "tier": "gold"
+        }],
+        "26": [{
+            "header": "EXPERT LV.7",
+            "name": "Exp.7",
+            "value": 13000,
+            "description": "[Lv.26 Rating] 13000 points or higher // Earn [EXPERT Lv.6]",
+            "tier": "gold"
+        }, {
+            "header": "EXPERT LV.8",
+            "name": "Exp.8",
+            "value": 26000,
+            "description": "[Lv.26 Rating] 26000 points or higher // Earn [EXPERT Lv.7]",
+            "tier": "gold"
+        }],
+        "27": [{
+            "header": "EXPERT LV.9",
+            "name": "Exp.9",
+            "value": 3500,
+            "description": "[Lv.27 Rating] 3500 points or higher // Earn [EXPERT Lv.8]",
+            "tier": "platinum"
+        }, {
+            "header": "EXPERT LV.10",
+            "name": "Exp.10",
+            "value": 7000,
+            "description": "[Lv.27 Rating] 7000 points or higher // Earn [EXPERT Lv.9]",
+            "tier": "platinum"
+        }],
+        "28": [{
+            "header": "THE MASTER",
+            "name": "MASTER",
+            "value": 1900,
+            "description": "[Lv.28 Rating] 1900 points or higher // Earn [EXPERT Lv.10]",
+            "tier": "platinum"
+        }]
+    },
+    "advanced": {
+        "20": [{
+            "header": "ADVANCED Lv.1",
+            "name": "Adv.1",
+            "value": 13000,
+            "description": "[Lv.20 Rating] 13000 points or higher // Earn [INTERMEDIATE Lv.10]",
+            "tier": "silver"
+        }, {
+            "header": "ADVANCED Lv.2",
+            "name": "Adv.2",
+            "value": 26000,
+            "description": "[Lv.20 Rating] 26000 points or higher // Earn [ADVANCED Lv.1]",
+            "tier": "silver"
+        }, {
+            "header": "ADVANCED Lv.3",
+            "name": "Adv.3",
+            "value": 39000,
+            "description": "[Lv.20 Rating] 39000 points or higher // Earn [ADVANCED Lv.2]",
+            "tier": "silver"
+        }],
+        "21": [{
+            "header": "ADVANCED Lv.4",
+            "name": "Adv.4",
+            "value": 15000,
+            "description": "[Lv.21 Rating] 15000 points or higher // Earn [ADVANCED Lv.3]",
+            "tier": "silver"
+        }, {
+            "header": "ADVANCED Lv.5",
+            "name": "Adv.5",
+            "value": 30000,
+            "description": "[Lv.21 Rating] 30000 points or higher // Earn [ADVANCED Lv.4]",
+            "tier": "silver"
+        }, {
+            "header": "ADVANCED Lv.6",
+            "name": "Adv.6",
+            "value": 45000,
+            "description": "[Lv.21 Rating] 45000 points or higher // Earn [ADVANCED Lv.5]",
+            "tier": "silver"
+        }],
+        "22": [{
+            "header": "ADVANCED Lv.7",
+            "name": "Adv.7",
+            "value": 17500,
+            "description": "[Lv.22 Rating] 17500 points or higher // Earn [ADVANCED Lv.6]",
+            "tier": "silver"
+        }, {
+            "header": "ADVANCED Lv.8",
+            "name": "Adv.8",
+            "value": 35000,
+            "description": "[Lv.22 Rating] 35000 points or higher // Earn [ADVANCED Lv.7]",
+            "tier": "silver"
+        }, {
+            "header": "ADVANCED Lv.9",
+            "name": "Adv.9",
+            "value": 52500,
+            "description": "[Lv.22 Rating] 52500 points or higher // Earn [ADVANCED Lv.8]",
+            "tier": "silver"
+        }, {
+            "header": "ADVANCED Lv.10",
+            "name": "Adv.10",
+            "value": 70000,
+            "description": "[Lv.22 Rating] 70000 points or higher // Earn [ADVANCED Lv.9]",
+            "tier": "silver"
+        }]
+    },
+    "intermediate": {
+        "10": [{
+            "header": "INTERMEDIATE Lv.1",
+            "name": "Int.1",
+            "value": 2000,
+            "description": "[Lv.10 Rating] 2000 points or higher",
+            "tier": "bronze"
+        }],
+        "11": [{
+            "header": "INTERMEDIATE Lv.2",
+            "name": "Int.2",
+            "value": 2200,
+            "description": "[Lv.11 Rating] 2200 points or higher",
+            "tier": "bronze"
+        }],
+        "12": [{
+            "header": "INTERMEDIATE Lv.3",
+            "name": "Int.3",
+            "value": 2600,
+            "description": "[Lv.12 Rating] 2600 points or higher",
+            "tier": "bronze"
+        }],
+        "13": [{
+            "header": "INTERMEDIATE Lv.4",
+            "name": "Int.4",
+            "value": 3200,
+            "description": "[Lv.13 Rating] 3200 points or higher",
+            "tier": "bronze"
+        }],
+        "14": [{
+            "header": "INTERMEDIATE Lv.5",
+            "name": "Int.5",
+            "value": 4000,
+            "description": "[Lv.14 Rating] 4000 points or higher",
+            "tier": "bronze"
+        }],
+        "15": [{
+            "header": "INTERMEDIATE Lv.6",
+            "name": "Int.6",
+            "value": 5000,
+            "description": "[Lv.15 Rating] 5000 points or higher",
+            "tier": "bronze"
+        }],
+        "16": [{
+            "header": "INTERMEDIATE Lv.7",
+            "name": "Int.7",
+            "value": 6200,
+            "description": "[Lv.16 Rating] 6200 points or higher",
+            "tier": "bronze"
+        }],
+        "17": [{
+            "header": "INTERMEDIATE Lv.8",
+            "name": "Int.8",
+            "value": 7600,
+            "description": "[Lv.17 Rating] 7600 points or higher",
+            "tier": "bronze"
+        }],
+        "18": [{
+            "header": "INTERMEDIATE Lv.9",
+            "name": "Int.9",
+            "value": 9200,
+            "description": "[Lv.18 Rating] 9200 points or higher",
+            "tier": "bronze"
+        }],
+        "19": [{
+            "header": "INTERMEDIATE Lv.10",
+            "name": "Int.10",
+            "value": 11000,
+            "description": "[Lv.19 Rating] 11000 points or higher",
+            "tier": "bronze"
+        }]
+    }
 }
