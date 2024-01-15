@@ -18,13 +18,13 @@ function LevelStats({cutoffs, rating, singles, doubles, charts, level}) {
             </div>
         );
     }
-    const cutoff = 2;
+    const cutoff = 0;
     const [open, setOpen] = useState(titles.length <= cutoff);
     return (
         <div className="container">
             <div className="row align-items-center">
                 <div className="col-4">
-                {titles.length > 2 ?
+                {titles.length > cutoff ?
                     <h4 style={{cursor: "pointer"}} onClick={() => {setOpen(!open)}}>
                         <BsChevronCompactDown style={{transform: `rotate(${open ? 180 : 0}deg)`}}/> LEVEL {level}
                     </h4> : 
