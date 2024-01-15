@@ -5,6 +5,7 @@ import bodyParser from 'body-parser';
 
 // local helpers
 import getUser from './endpoints/user.js';
+import getChartStats from './endpoints/chartstats.js';
 
 // script logic
 const app = express();
@@ -16,6 +17,15 @@ app.use(bodyParser.json());
 
 app.get('/api/user/:name/:number', (req, res) => {
   const output = getUser(req);
+  if (output.error) {
+    res.status(output.error.code).send(output.error.message);
+  } else {
+    res.json(output);
+  }
+});
+
+app.get('/api/charts/stats', (req, res) => {
+  const output = getChartStats(req);
   if (output.error) {
     res.status(output.error.code).send(output.error.message);
   } else {
