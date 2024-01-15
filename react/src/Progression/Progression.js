@@ -27,7 +27,7 @@ function Progression({info, data}) {
                     key={ key }
                 />
             );
-            if (key === cutoffs[category].length - 1) { continue; }
+            if (["19", "22", "28"].includes(key)) { continue; /* skip adding <hr/> to the bottom of each category */}
             levels[category].push(<hr key={-key}/>)
         }
     }
