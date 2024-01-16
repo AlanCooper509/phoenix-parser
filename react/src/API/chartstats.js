@@ -1,9 +1,11 @@
 import axios from 'axios';
 
+import url from './url_params.json';
+
 function getChartStats(setChartStats) {
     const fetchData = async () => {
         try {
-            const response = await axios.get(`http://192.168.1.71:3001/api/charts/stats`);
+            const response = await axios.get(`${url.protocol}://${url.host}:${url.port}/api/charts/stats`);
             const responseData = response.data;
 
             // Update state or perform actions with the data

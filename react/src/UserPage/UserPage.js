@@ -17,7 +17,7 @@ function UserPage() {
     const name = params.name;
     const number = params.number;
 
-    const [info, setInfo] = useState({player: name, number: number, title: "Loading...", last_updated: "Loading..."});
+    const [info, setInfo] = useState({player: name, number: number, title: "Unknown", last_updated: "Unknown"});
     const [data, setData] = useState([]);
   
     useEffect(() => getUser(setInfo, setData, name, number), []);

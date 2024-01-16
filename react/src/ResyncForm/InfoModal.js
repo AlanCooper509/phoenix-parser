@@ -30,7 +30,7 @@ function InfoModal({show, handleClose}) {
                     </ul>
                 </li>
                 <li className="mb-4">
-                    Login to <a href="https://piugame.com" target="_blank">piugame.com<sup><ImNewTab /></sup></a> on a Desktop/Laptop device.
+                    Login to <a href="https://piugame.com" target="_blank" rel="noreferrer">piugame.com<sup><ImNewTab /></sup></a> on a Desktop/Laptop device.
                 </li>
                 <li className="mb-4">
                     While still on the PIU Game website tab,
@@ -47,15 +47,15 @@ function InfoModal({show, handleClose}) {
                     Type <code>document.cookie</code> and press <kbd>Enter</kbd>
                     <ul>
                         <li>For Example:</li>
-                    <img className="border border-light pe-2 pb-2 pt-1 mt-2" style={{filter: "brightness(85%)" }} src={example}></img>
+                    <img alt="Example Screenshot" className="border border-light pe-2 pb-2 pt-1 mt-2" style={{filter: "brightness(85%)" }} src={example}></img>
                     </ul>
                 </li>
                 <li className="mb-4">
                     Copy over the <b>sid</b> value <code>&lt;...&gt;</code> from <code>sid=&lt;...&gt;;</code> into the Session ID input box and press <kbd>Enter</kbd>
                     <ul className="mt-2">
                         <li><i className="text-muted">The SID value is just a temporary auth credential and will not be stored or saved anywhere.</i></li>
-                        <li><i className="text-muted">The SID is used for generating a snapshot of your Player Card, Best Scores, and Titles.</i></li>
-                        <li><i className="text-muted">Only you can sync data for your USER PAGE, but the returned player results are public.</i></li>
+                        <li><i className="text-muted">The SID is used for collecting a snapshot of your Player Card, Best Scores, and Titles.</i></li>
+                        <li><i className="text-muted">Only you can sync data for your USER PAGE, but the returned snapshot data is public.</i></li>
                         <li><i className="text-muted">To avoid spamming, syncing is only available once every 24hrs</i>
                         </li>
                     </ul>
