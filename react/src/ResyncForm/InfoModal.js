@@ -12,20 +12,20 @@ import './InfoModal.css';
 
 function InfoModal({show, handleClose}) {
     const params = useParams();
-    const name = params.name;
+    const name = params.name.toUpperCase();
     const number = params.number;
     const [open, setOpen] = useState(false);
 
     return (
-    <Modal size="lg" show={show} onHide={handleClose}>
+    <Modal backdropClassName="fixed-backdrop" size="lg" show={show} onHide={handleClose}>
         <Modal.Header closeButton>
             <Modal.Title>Syncing your PIU Phoenix Data</Modal.Title>
         </Modal.Header>
         <Modal.Body>
             <ol>
                 <li className="mb-4">
-                    Navigate to YOUR user page on this site.
-                    <ul>
+                    Navigate to your USER PAGE on this site.
+                    <ul className="mt-2">
                         <li><i>Currently viewing: <b>{name} #{number}</b></i></li>
                     </ul>
                 </li>
@@ -33,11 +33,11 @@ function InfoModal({show, handleClose}) {
                     Login to <a href="https://piugame.com" target="_blank">piugame.com<sup><ImNewTab /></sup></a> on a Desktop/Laptop device.
                 </li>
                 <li className="mb-4">
-                    While still on the PIU Game website,
+                    While still on the PIU Game website tab,
                     open <span style={{cursor: "pointer"}} onClick={() => {setOpen(!open)}}><b>Console</b><sup className="link-primary"><RxQuestionMarkCircled/></sup> on <b>
                         DevTools</b> </span>
                 <Collapse in={open}>
-                    <ul>
+                    <ul className="mt-2">
                         <li>(<kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>J</kbd>) on Windows</li>
                         <li>(<kbd>Option</kbd> + <kbd>⌘</kbd> + <kbd>J</kbd>) on MacOS</li>
                     </ul>
@@ -51,9 +51,13 @@ function InfoModal({show, handleClose}) {
                     </ul>
                 </li>
                 <li className="mb-4">
-                    Copy over the sid value <code>&lt;...&gt;</code> from <code>sid=&lt;...&gt;;</code> into the Session ID input box and press <kbd>Enter</kbd>
-                    <ul>
-                        <li><i className="text-muted">The SID value is not stored or saved anywhere</i></li>
+                    Copy over the <b>sid</b> value <code>&lt;...&gt;</code> from <code>sid=&lt;...&gt;;</code> into the Session ID input box and press <kbd>Enter</kbd>
+                    <ul className="mt-2">
+                        <li><i className="text-muted">The SID value is just a temporary auth credential and will not be stored or saved anywhere.</i></li>
+                        <li><i className="text-muted">The SID is used for generating a snapshot of your Player Card, Best Scores, and Titles.</i></li>
+                        <li><i className="text-muted">Only you can sync data for your USER PAGE, but the returned player results are public.</i></li>
+                        <li><i className="text-muted">To avoid spamming, syncing is only available once every 24hrs</i>
+                        </li>
                     </ul>
                 </li>
             </ol>

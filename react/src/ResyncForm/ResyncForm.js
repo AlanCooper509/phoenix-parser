@@ -10,7 +10,7 @@ function ResyncForm() {
 
     return (
         <div className="d-flex flex-column">
-            Resync Game Data
+            Update Game Data
             <div className="d-flex mt-2">
                 <div className="d-flex flex-column align-items-end">
                     <input type="text" className="form-control" id="formGroupExampleInput" placeholder="Session ID"/>
@@ -20,7 +20,7 @@ function ResyncForm() {
                             show={show}
                             handleClose={handleClose}
                         />
-                        <Button className="btn btn-sm border-dark btn-secondary ms-2">Resync</Button>
+                        <Button className="btn btn-sm border-dark btn-secondary ms-2">Sync</Button>
                     </div>
                 </div>
                 <div>
