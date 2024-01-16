@@ -31,7 +31,8 @@ function getUser(req) {
 
     return {
         "scores": sortedScores,
-        "info": info
+        "info": info.info,
+        "titles": info.titles
     };
 }
 
