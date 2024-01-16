@@ -4,12 +4,12 @@
 .Game-title {
     font-weight: 900;
     font-size: 1.238em;
-    font-family: 'Oxanium', cursive;
+    font-family: 'Oxanium', sans-serif;
     color: #99cccc
 }
 .Game-id {
     font-size: 2.175em;
-    font-family: 'Oxanium', cursive;
+    font-family: 'Oxanium', sans-serif;
 }
 .Update {
     color: #aaaaaa;
