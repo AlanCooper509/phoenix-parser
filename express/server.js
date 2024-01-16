@@ -6,6 +6,7 @@ import bodyParser from 'body-parser';
 // local helpers
 import getUser from './endpoints/user.js';
 import getChartStats from './endpoints/chartstats.js';
+import postSyncUser from './endpoints/sync.js';
 
 // script logic
 const app = express();
@@ -33,12 +34,21 @@ app.get('/api/charts/stats', (req, res) => {
   }
 });
 
-// app.post('/api/post', (req, res) => {
-//   // Handle your API logic here
-//   console.log(req.body);
-//   const data = { message: 'Hello from the server!' };
-//   res.json(data);
-// });
+app.post('/api/sync/:name/:number', async (req, res) => {
+  const name = req.params.name.toUpperCase();
+  const number = req.params.number;
+  const sid = req.body.sid;
+
+  postSyncUser(name, number, sid).then((output)=> {
+    console.log("DONE");
+    console.log(output);
+    if (output.error) {
+      res.status(output.error.code).send(output.error.message);
+    } else {
+      res.json(output);
+    }  
+  });
+});
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
