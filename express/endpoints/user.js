@@ -12,7 +12,7 @@ function getUser(req) {
     // attempt to load the scores JSON for the requested user
     let scoresfile, scores;
     try {
-        scoresfile = fs.readFileSync(`${userDir}/scores.json`, "utf8");
+        scoresfile = fs.readFileSync(`${userDir}/best_scores.json`, "utf8");
         scores = JSON.parse(scoresfile);
     } catch (error) {
         return {

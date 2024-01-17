@@ -7,6 +7,8 @@ import bodyParser from 'body-parser';
 import getUser from './endpoints/user.js';
 import getChartStats from './endpoints/chartstats.js';
 import postSyncUser from './endpoints/sync.js';
+import moveUserFiles from './helpers/moveUserFiles.js';
+import createSyncUserResponse from './helpers/createSyncUserResponse.js';
 
 // script logic
 const app = express();
@@ -38,15 +40,16 @@ app.post('/api/sync/:name/:number', async (req, res) => {
   const name = req.params.name.toUpperCase();
   const number = req.params.number;
   const sid = req.body.sid;
+  const nameNumber = `${name}#${number}`;
+  const userDir = `./users/${nameNumber}`;
+  const tmpDir = `./users/${nameNumber}/tmp`;
 
-  postSyncUser(name, number, sid).then((output)=> {
-    console.log("DONE");
-    console.log(output);
-    if (output.error) {
-      res.status(output.error.code).send(output.error.message);
-    } else {
-      res.json(output);
-    }  
+  postSyncUser(sid, nameNumber, tmpDir).then((output) => {
+    moveUserFiles(userDir, tmpDir);
+    const response = createSyncUserResponse(output);
+    res.json(response);
+  }).catch((output) => {
+    res.status(output.error.code).send(output.error.message);
   });
 });
 

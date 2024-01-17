@@ -1,18 +1,24 @@
 import { spawn } from "node:child_process";
 
-async function postSyncUser(name, number, sid) {
+async function postSyncUser(sid, validator, outDir) {
     // ensures the sid is grabbing data for the expected user
-    const validator = `${name}#${number}`;
-
     // run python script with the sid and validator args
-    const pythonProcess = spawn('python', ["./python/piugame_parser.py", sid, validator]);
+    const pythonProcess = spawn('python', [
+        "./python/piugame_parser.py",
+        `sid=${sid}`, `user=${validator}`, `outDir=${outDir}`]);
     return new Promise((resolve, reject) => {
         pythonProcess.stdout.on('data', (data) => {
             // print statements aren't flushed, so it all comes back together
-            resolve(data.toString());
+            resolve(JSON.parse(data.toString()));
         });
         pythonProcess.stderr.on('data', (data) => {
-            reject(data.toString());
+            const errorObject = {
+                error: {
+                    code: 400,
+                    message: data.toString()    
+                }
+            }
+            reject(errorObject);
         });
     
     });
