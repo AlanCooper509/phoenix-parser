@@ -24,14 +24,14 @@ function LevelStats({cutoffs, rating, singles, doubles, charts, level}) {
         <div className="container">
             <div className="row align-items-center">
                 <div className="col-4">
-                {titles.length > cutoff ?
-                    <h4 style={{cursor: "pointer"}} onClick={() => {setOpen(!open)}}>
-                        <BsChevronCompactDown style={{transform: `rotate(${open ? 180 : 0}deg)`}}/> LEVEL {level}
-                    </h4> : 
-                    <h4>
-                        LEVEL {level}
-                    </h4>
-                }
+                    {titles.length > cutoff ?
+                        <h4 style={{cursor: "pointer"}} onClick={() => {setOpen(!open)}}>
+                            <BsChevronCompactDown style={{transform: `rotate(${open ? 180 : 0}deg)`}}/> LEVEL {level}
+                        </h4> : 
+                        <h4>
+                            LEVEL {level}
+                        </h4>
+                    }
                     <Collapse in={open}>
                         <div>
                         {titles}
