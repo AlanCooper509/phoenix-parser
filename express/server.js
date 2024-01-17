@@ -44,7 +44,7 @@ app.post('/api/sync/:name/:number', async (req, res) => {
   const userDir = `./users/${nameNumber}`;
   const tmpDir = `./users/${nameNumber}/tmp`;
 
-  postSyncUser(sid, nameNumber, tmpDir).then((output) => {
+  postSyncUser(sid, nameNumber, userDir, tmpDir).then((output) => {
     moveUserFiles(userDir, tmpDir);
     const response = createSyncUserResponse(output);
     res.json(response);
