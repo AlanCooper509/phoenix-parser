@@ -1,8 +1,9 @@
 import axios from 'axios';
 
+import PlayerCard from '../Profile/PlayerCard.js';
 import url from './url_params.json';
 
-function postSyncData(name, number, submitBtn, sid) {
+function postSyncData(params, submitBtn, openNotify) {
     const fetchData = async (name, number, sid) => {
         try {
             // Update state or perform actions with the data
@@ -17,7 +18,37 @@ function postSyncData(name, number, submitBtn, sid) {
             const response = await axios.post(`${url.protocol}://${url.host}:${url.port}/api/sync/${name}/${number}`, {
                 sid: sid
             });
-            const responseData = response.data;
+
+            const info = response.data.info; // player / number / title / last_updated
+            const scores = response.data.scores; // number
+            const titles = response.data.titles; // number
+            openNotify(
+                <div>
+                    <h3 class="text-center">Data Sync: <span className="text-success">Complete</span></h3>
+                    <hr/>
+                    <PlayerCard
+                        info={info}
+                    />
+                    <hr/>
+                    <h4 className="mt-4">Synced data for&nbsp;
+                        <span style={{color: "palevioletred"}}>
+                            {info.player} {info.number}
+                        </span>
+                        :
+                    </h4>
+                    <h4>
+                        <ul>
+                            <li>
+                                <code>{scores}</code> Best Scores
+                            </li>
+                            <li>
+                                <code>{titles}</code> Titles
+                            </li>
+                        </ul>
+                    </h4>
+                    <i class="text-muted">(Changes will display after you refresh the page)</i>
+                </div>
+            );
 
             // Update state or perform actions with the data
             if (submitBtn.current) {
@@ -26,7 +57,6 @@ function postSyncData(name, number, submitBtn, sid) {
                 submitBtn.current.classList.remove("btn-secondary");
                 submitBtn.current.firstChild.innerHTML = "Success!";
             }
-            console.log(responseData);
         } catch (error) {
             if (submitBtn.current) {
                 submitBtn.current.firstChild.classList.remove("spinner-border", "spinner-border-sm");
@@ -34,11 +64,17 @@ function postSyncData(name, number, submitBtn, sid) {
                 submitBtn.current.classList.add("btn-danger");
                 submitBtn.current.classList.remove("btn-secondary");
             }
-            console.error('Error fetching data:', error);
+            openNotify(
+                <div>
+                    <h3 class="text-center">Data Sync: <span className="text-danger">Failed</span></h3>
+                    <hr/>
+                    <p>{error.response.data}</p>
+                </div>
+            );
         }
     };
 
-    fetchData(name, number, sid);
+    fetchData(params.name, params.number, params.sid);
 }
 
 export default postSyncData;
