@@ -44,6 +44,15 @@ async function postSyncUser(sid, validator, userDir, outDir) {
 
         // any printing to sys.stderr sends back a 400 error (for now)
         pythonProcess.stderr.on('data', (data) => {
+            const msg = data.toString()
+            if (msg.startsWith("Traceback")) {
+                reject({
+                    error: {
+                        code: 500,
+                        message: "Internal Error... Please try again later."
+                    }
+                });
+            }
             const errorObject = {
                 error: {
                     code: 400,
