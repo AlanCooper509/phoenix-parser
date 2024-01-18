@@ -2,3 +2,7 @@
     text-align: left;
     min-width: 800px;
 }
+
+.overlap-bottom {
+    margin-bottom: -30px;
+}

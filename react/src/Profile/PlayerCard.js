@@ -16,7 +16,7 @@ function PlayerCard({info}) {
                 {info.title.text}
             </div>
             <div className="Game-id">
-                {info.player} {info.number}
+                {info.player.toUpperCase()} {info.number}
             </div>
             <i className="Update">
                 Last Synced: {info.last_updated}

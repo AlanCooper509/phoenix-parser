@@ -2,6 +2,7 @@ import React, { useState } from "react";
 
 import getUser from "../API/user.js";
 import PlayerNameInput from "./PlayerNameInput.js";
+import splitNameNumber from "../Helpers/splitNameNumber.js";
 
 function Sidebar({graphType, handleGraphToggle, infoP1, p2, p3, p4}) {
     const [infoP2, setInfoP2] = useState({});
@@ -29,13 +30,9 @@ function Sidebar({graphType, handleGraphToggle, infoP1, p2, p3, p4}) {
             default: 
                 break;
         }
-        let splitter = " #";
-        if (!player.ref.current.value.includes(splitter)) { splitter = "#"; }
-        if (!player.ref.current.value.includes(splitter)) { return; }
-
-        const name = player.ref.current.value.split(splitter)[0];
-        const number = player.ref.current.value.split(splitter)[1];
-        getUser(player.setInfo, player.setData, () => {return;}, name, number);
+        let tokens = splitNameNumber(player.ref.current.value);
+        if (!tokens) { return; }
+        getUser(player.setInfo, player.setData, () => {return;}, tokens.name, tokens.number);
     }
 
     return (

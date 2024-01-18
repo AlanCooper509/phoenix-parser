@@ -1,5 +1,5 @@
-import ResyncForm from '../ResyncForm/ResyncForm';
 import PlayerCard from './PlayerCard';
+import SearchUser from '../SearchUser/SearchUser';
 
 function Profile({info}){
     return (
@@ -10,9 +10,9 @@ function Profile({info}){
                 />
             </div>
             <div className="mt-3 me-4">
-                <ResyncForm
-                    info={info}
-                />
+            <SearchUser>
+
+            </SearchUser>
             </div>
         </div>
     )

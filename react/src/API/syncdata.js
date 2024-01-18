@@ -31,7 +31,7 @@ function postSyncData(params, submitBtn, openNotify) {
                     />
                     <hr/>
                     <h4 className="mt-4">Synced data for&nbsp;
-                        <span style={{color: "palevioletred"}}>
+                        <span className="Game-name">
                             {info.player} {info.number}
                         </span>
                         :
@@ -58,17 +58,26 @@ function postSyncData(params, submitBtn, openNotify) {
                 submitBtn.current.firstChild.innerHTML = "Success!";
             }
         } catch (error) {
+            let response = '';
+            // set error message displayed to user in modal
+            if(error.code == "ERR_NETWORK") {
+                response = "Network Error... Please try again later.";
+            } else {
+                response = error.response.data;
+            }
+            // update Submit Button text and CSS
             if (submitBtn.current) {
                 submitBtn.current.firstChild.classList.remove("spinner-border", "spinner-border-sm");
                 submitBtn.current.firstChild.innerHTML = "Failed";
                 submitBtn.current.classList.add("btn-danger");
                 submitBtn.current.classList.remove("btn-secondary");
             }
+            // open modal with status message
             openNotify(
                 <div>
                     <h3 class="text-center">Data Sync: <span className="text-danger">Failed</span></h3>
                     <hr/>
-                    <p>{error.response.data}</p>
+                    <p>{response}</p>
                 </div>
             );
         }

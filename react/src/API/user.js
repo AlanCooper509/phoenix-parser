@@ -13,7 +13,7 @@ function getUser(setInfo, setData, setTitles, name, number) {
             setData(responseData["scores"]);
             setTitles(responseData["titles"]);
         } catch (error) {
-            console.error('Error fetching data:', error);
+            setInfo({player: name, number: '#' + number, title: {text: "BEGINNER", color: "col5"}, last_updated: "Never"});
         }
     };
 

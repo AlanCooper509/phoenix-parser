@@ -40,6 +40,9 @@
     font-size: 2.175em;
     font-family: 'Oxanium', sans-serif;
 }
+.Game-name {
+    color: "#db7093";
+}
 .Update {
     color: #aaaaaa;
 }
