@@ -1,4 +1,7 @@
+import './PlayerCard.css'
+
 function PlayerCard({info}) {
+    const titleClasses = "Game-title " + (info && info.title ? info.title.color : "");
     return (
     <div className="d-flex justify-content-center align-items-center">
         <div>
@@ -9,8 +12,8 @@ function PlayerCard({info}) {
             />
         </div>
         <div className="Game-info">
-            <div className="Game-title">
-                {info.title}
+            <div className={titleClasses}>
+                {info.title.text}
             </div>
             <div className="Game-id">
                 {info.player} {info.number}

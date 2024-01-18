@@ -16,11 +16,13 @@ function UserPage() {
     const params = useParams();
     const name = params.name;
     const number = params.number;
+    const hashNum = '#' + number;
 
-    const [info, setInfo] = useState({player: name, number: number, title: "Unknown", last_updated: "Unknown"});
+    const [info, setInfo] = useState({player: name, number: hashNum, title: {text: "", color: ""}, last_updated: "Unknown"});
     const [data, setData] = useState([]);
-  
-    useEffect(() => getUser(setInfo, setData, name, number), []);
+    const [titles, setTitles] = useState([]);
+    
+    useEffect(() => getUser(setInfo, setData, setTitles, name, number), []);
 
     return (
         <div className="UserPage">
@@ -33,7 +35,7 @@ function UserPage() {
             className="mb-3"
             >
             <Tab eventKey="overview" title="Overview">
-                <Overview info={info} data={data}/>
+                <Overview info={info} data={data} titles={titles}/>
             </Tab>
             <Tab eventKey="comparisons" title="Comparisons">
                 <Comparisons info={info} data={data}/>

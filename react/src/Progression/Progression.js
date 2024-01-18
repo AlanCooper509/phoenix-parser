@@ -34,7 +34,7 @@ function Progression({info, data}) {
 
     return (
         <div className="container">
-            <h3>Title Progression</h3>
+            <h3 className="mb-3">Title Progression</h3>
             <Accordion alwaysOpen>
                 <Accordion.Item eventKey="1">
                     <Accordion.Header>Intermediate Trackers</Accordion.Header>

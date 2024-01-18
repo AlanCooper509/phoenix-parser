@@ -1,0 +1,50 @@
+.Game-info {
+    padding-left: 1.5em;
+}
+.Game-title {
+    font-weight: 900;
+    font-size: 1.238em;
+    font-family: 'Oxanium', sans-serif;
+}
+.col1 {
+    -webkit-text-stroke-color: #ffffff;
+    -webkit-text-stroke-width: 0.2px;
+    color: #99cccc;
+}
+.col2 {
+    -webkit-text-stroke-color: #ffffff;
+    -webkit-text-stroke-width: 0.5px;
+    color: #d4af37;
+}
+.col3 {
+    -webkit-text-stroke-color: #dddddd;
+    -webkit-text-stroke-width: 0.7px;
+    color: #7e888e;
+}
+.col4 {
+    -webkit-text-stroke-color: #ffffff;
+    -webkit-text-stroke-width: 0.5px;
+    color: #663333;
+}
+.col5 {
+    -webkit-text-stroke-color: #ffffff;
+    -webkit-text-stroke-width: 0.5px;
+    color: #1a7f66;
+}
+.col6 {
+    -webkit-text-stroke-color: #ffffff;
+    -webkit-text-stroke-width: 0.5px;
+    color: #000000;
+}
+.Game-id {
+    font-size: 2.175em;
+    font-family: 'Oxanium', sans-serif;
+}
+.Update {
+    color: #aaaaaa;
+}
+.Profile-pic {
+    width: 140px;
+    height: 105px;
+    border-radius: 0.5em;
+}

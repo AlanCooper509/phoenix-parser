@@ -1,5 +1,3 @@
-import './Profile.css'
-
 import ResyncForm from '../ResyncForm/ResyncForm';
 import PlayerCard from './PlayerCard';
 
@@ -12,7 +10,9 @@ function Profile({info}){
                 />
             </div>
             <div className="mt-3 me-4">
-                <ResyncForm/>
+                <ResyncForm
+                    info={info}
+                />
             </div>
         </div>
     )

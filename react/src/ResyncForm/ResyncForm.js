@@ -8,7 +8,20 @@ import InfoModal from "./InfoModal";
 import ResponseModal from "./ResponseModal";
 import postSyncData from "../API/syncdata";
 
-function ResyncForm() {
+function checkUpdatedToday(last_updated) {
+    if (last_updated === "Unknown") {
+        return true; // handle initial page render before info retrieved
+    }
+    const dateArray = last_updated.split("/");
+    const year = parseInt("20" + dateArray[2]);
+    const month = parseInt(dateArray[0]) - 1;
+    const date = parseInt(dateArray[1]);
+    let d = new Date();
+
+    return d.getDate() === date && d.getMonth() === month && d.getFullYear() === year;
+}
+
+function ResyncForm({info}) {
     // for info modal
     const [show, setShow] = useState(false);
     const handleClose = () => setShow(false);
@@ -39,6 +52,9 @@ function ResyncForm() {
         postSyncData(params, submitBtn, openNotify);
     }
 
+    if (checkUpdatedToday(info.last_updated)) {
+        return (<></>);
+    }
     return (
         <div className="d-flex flex-column align-items-end">
             <span className="me-2" style={{cursor: "pointer"}} onClick={() => {setShowForm(!showForm)}}>

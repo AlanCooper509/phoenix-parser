@@ -35,7 +35,7 @@ function Sidebar({graphType, handleGraphToggle, infoP1, p2, p3, p4}) {
 
         const name = player.ref.current.value.split(splitter)[0];
         const number = player.ref.current.value.split(splitter)[1];
-        getUser(player.setInfo, player.setData, name, number);
+        getUser(player.setInfo, player.setData, () => {return;}, name, number);
     }
 
     return (
