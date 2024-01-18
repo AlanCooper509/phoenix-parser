@@ -2,7 +2,10 @@
     "info": {
         "player": "TUSA",
         "number": "#7085",
-        "title": "[GIMMICK] EXPERT",
+        "title": {
+            "text": "[GIMMICK] EXPERT",
+            "color": "col1"
+        },
         "last_updated": "12/21/23"
     }
 }
