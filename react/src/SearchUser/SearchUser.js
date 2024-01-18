@@ -20,8 +20,8 @@ function validationChecks(formInput) {
     return tokens;
 }
 
-function SearchUser() {
-    const [showForm, setShowForm] = useState(false);
+function SearchUser({open}) {
+    const [showForm, setShowForm] = useState(open);
     const formInput = useRef(null);
 
     const handleOnEnter = (event) => {

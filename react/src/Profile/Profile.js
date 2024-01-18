@@ -10,9 +10,9 @@ function Profile({info}){
                 />
             </div>
             <div className="mt-3 me-4">
-            <SearchUser>
-
-            </SearchUser>
+                <SearchUser
+                    open={false}
+                />
             </div>
         </div>
     )
