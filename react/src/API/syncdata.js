@@ -60,7 +60,7 @@ function postSyncData(params, submitBtn, openNotify) {
         } catch (error) {
             let response = '';
             // set error message displayed to user in modal
-            if(error.code == "ERR_NETWORK") {
+            if(error.code === "ERR_NETWORK") {
                 response = "Network Error... Please try again later.";
             } else {
                 response = error.response.data;
