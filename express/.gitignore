@@ -12,6 +12,8 @@
 .env.production.local
 oci-config
 oci_api_key.pem
+/python
+/users
 
 npm-debug.log*
 yarn-debug.log*
