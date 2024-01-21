@@ -1,7 +1,12 @@
-import charts from '../charts/v1_05_0/levelCounts.json' assert { type: "json" };
+import 'dotenv/config';
 
-function getUser(req) {
+import readJsonFromObjectStorage from '../helpers/os_readJsonObject.js';
+
+async function getChartStats() {
+    // get level counts JSON from OCI: Object Storage
+    const objectName = process.env.LEVEL_COUNTS_OBJECT_NAME;
+    const charts = await readJsonFromObjectStorage(objectName);
     return charts;
 }
 
-export default getUser;
+export default getChartStats;

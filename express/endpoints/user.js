@@ -1,43 +1,88 @@
-import levelCounts from '../charts/v1_05_0/levelCounts.json' assert { type: "json" };
-import levelMultipliers from '../constants/levelMultipliers.json' assert { type: "json" };
-import gradeMultipliers from '../constants/gradeMultipliers.json' assert { type: "json" };
+import 'dotenv/config';
 
-import fs from 'fs';
+import getUserID from '../helpers/getUserID.js';
+import readJsonFromObjectStorage from '../helpers/os_readJsonObject.js';
+import getChartStats from './chartstats.js';
 
-function getUser(req) {
+const gradeMultipliers = {
+    "f":     0.40,
+    "d":     0.50,
+    "c":     0.60,
+    "b":     0.70,
+    "a":     0.80,
+    "a_p":   0.90,
+    "aa":    1.00,
+    "aa_p":  1.05,
+    "aaa":   1.10,
+    "aaa_p": 1.15,
+    "s":     1.20,
+    "s_p":   1.26,
+    "ss":    1.32,
+    "ss_p":  1.38,
+    "sss":   1.44,
+    "sss_p": 1.50
+}
+
+const levelMultipliers = {
+    "10": 100,
+    "11": 110,
+    "12": 130,
+    "13": 160,
+    "14": 200,
+    "15": 250,
+    "16": 310,
+    "17": 380,
+    "18": 460,
+    "19": 550,
+    "20": 650,
+    "21": 760,
+    "22": 880,
+    "23": 1010,
+    "24": 1150,
+    "25": 1300,
+    "26": 1460,
+    "27": 1630,
+    "28": 1810
+}
+
+async function getUser(req) {
     const name = req.params.name.toUpperCase();
     const number = req.params.number;
-    const userDir = `./users/${getUserID(name, number)}/`;
 
-    // attempt to load the scores JSON for the requested user
-    let scoresfile, scores;
-    try {
-        scoresfile = fs.readFileSync(`${userDir}/best_scores.json`, "utf8");
-        scores = JSON.parse(scoresfile);
-    } catch (error) {
-        return {
-            "error": {
-                "code": 404,
-                "message": "User Not Found!"
-            }
+    // attempt to find USER#NUMBER's latest INFO_FILENAME
+    const infoFileName = `${process.env.USERS_DIR}/${getUserID(name, number)}/${process.env.INFO_FILENAME}`;
+    let info = await readJsonFromObjectStorage(infoFileName);
+    if (info.error) {
+        if (info.error.code === 404) {
+            info.error.message = "User's INFO could not be found!";
         }
+        return info;
     }
 
-    const infoFile = fs.readFileSync(`${userDir}/info.json`, "utf8");
-    const info = JSON.parse(infoFile);
+    // attempt to find USER#NUMBER's latest BEST_SCORES_FILENAME
+    const scoresFileName = `${process.env.USERS_DIR}/${getUserID(name, number)}/${process.env.BEST_SCORES_FILENAME}`;
+    let scores = await readJsonFromObjectStorage(scoresFileName);
+    if (scores.error) {
+        if (scores.error.code === 404) {
+            scores.error.message = "User's BEST_SCORES could not be found!";
+        }
+        return scores;
+    }
+
+    // attempt retrieval of LEVEL_COUNTS_OBJECT_NAME from Object Storage
+    let chartStats = await getChartStats();
+    if (chartStats.error) {
+        return chartStats;
+    }
 
     const sortedByLevel = splitByLevel(scores);
-    const sortedScores = getStatistics(sortedByLevel);
+    const sortedScores = getStatistics(sortedByLevel, chartStats);
 
     return {
         "scores": sortedScores,
         "info": info.info,
         "titles": info.titles
     };
-}
-
-function getUserID(name, number) {
-    return `${name}#${number}`;
 }
 
 function splitByLevel(jsonArray) {
@@ -52,7 +97,7 @@ function splitByLevel(jsonArray) {
     return levels;
 }
 
-function getStatistics(levelsData) {
+function getStatistics(levelsData, levelCounts) {
     for (const level in levelsData) {
         let singlesCount = 0, doublesCount = 0;
         let averageScore = 0, doublesScore = 0, singlesScore = 0;
