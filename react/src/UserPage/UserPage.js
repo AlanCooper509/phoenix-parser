@@ -39,7 +39,7 @@ function UserPage() {
     const [data, setData] = useState([]);
     const [titles, setTitles] = useState([]);
     
-    useEffect(() => getUser(setInfo, setData, setTitles, name, number), []);
+    useEffect(() => getUser(setInfo, setData, setTitles, name, number), [name, number]);
     resize();
 
     return (

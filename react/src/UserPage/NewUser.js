@@ -5,7 +5,7 @@ import { ImNewTab } from "react-icons/im";
 import './NewUser.css';
 import InfoModal from "../ResyncForm/InfoModal";
 
-function NewUser({}) {
+function NewUser() {
     const params = useParams();
     const name = params.name.toUpperCase();
     const number = params.number;
@@ -49,7 +49,7 @@ function NewUser({}) {
                     <li className="mt-2">
                         For more information:&nbsp;
                         <ul>
-                            <li className="mt-2"><a href="" style={{cursor: "pointer"}} onClick={handleShow}>Syncing your PIU Phoenix Data</a></li>
+                            <li className="mt-2"><a href="/" style={{cursor: "pointer"}} onClick={handleShow}>Syncing your PIU Phoenix Data</a></li>
                         </ul>
                         <InfoModal 
                             show={show}
