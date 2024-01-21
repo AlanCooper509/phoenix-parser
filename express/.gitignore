@@ -14,6 +14,7 @@ oci-config
 oci_api_key.pem
 /python
 /users
+/tmp
 
 npm-debug.log*
 yarn-debug.log*
