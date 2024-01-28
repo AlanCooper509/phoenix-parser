@@ -33,6 +33,9 @@ const FILELIST = [process.env.INFO_FILENAME, process.env.BEST_SCORES_FILENAME];
 async function syncUser(sid, name, number) {
     const user = getUserID(name, number);
     const outDir = `./tmp/${user}`;
+    const scoresFile = `./tmp/${user}/old_best_scores.json`;
+    let pythonArgs = [process.env.PYTHON_SCRIPT,
+        `sid=${sid}`, `user=${user}`, `outDir=${outDir}`]
 
     // check if user has been updated today already
     let dateObject = '';
@@ -45,12 +48,22 @@ async function syncUser(sid, name, number) {
         return ERROR_429;
     }
 
+    // ensure outDir is clean before starting test
+    fs.rmSync(outDir, { recursive: true, force: true });
+
+    // check if Object Storage has a history for the user's Best Scores that can be passed to Python script
+    // (goal of reducing requests needed to make to piugame server)
+    const scoresFileName = `${process.env.USERS_DIR}/${getUserID(name, number)}/${process.env.BEST_SCORES_FILENAME}`;
+    let scores = await readJsonFromObjectStorage(scoresFileName);
+    if (!scores.error) {
+        fs.writeFileSync(scoresFile, JSON.stringify(scores));
+        pythonArgs.push(`cmpFile=${scoresFile}`);
+    }
+
     return new Promise((resolve, reject) => {
         let data = {};
 
-        const pythonProcess = spawn('python', [
-            process.env.PYTHON_SCRIPT,
-            `sid=${sid}`, `user=${user}`, `outDir=${outDir}`]);
+        const pythonProcess = spawn('python', pythonArgs);
         pythonPromise(pythonProcess).then((output) => {
             data = output;
             archiveOldFiles(user, dateObject);    
@@ -151,7 +164,6 @@ async function writeNewFiles(user, outDir) {
         const objectName = `${process.env.USERS_DIR}/${user}/${file}`;
         uploadObjectToObjectStorage(objectName, uploadFile);
     }
-    // fs.rmSync(outDir, { recursive: true, force: true });
     return;
 }
 
