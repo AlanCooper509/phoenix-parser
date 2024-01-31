@@ -2,8 +2,8 @@ import React, { useRef, useState } from "react";
 
 import "./Comparisons.css";
 
-import ComparisonsGraphHelper from "../GraphHelpers/ComparisonsGraphHelper.js";
-import GraphButtons from "../GraphHelpers/GraphButtons.js";
+import ComparisonsGraphHelper from "../../GraphHelpers/ComparisonsGraphHelper.js";
+import GraphButtons from "../../GraphHelpers/GraphButtons.js";
 import Sidebar from "./Sidebar.js";
 import LineChart from "./LineChart.js";
 

@@ -8,11 +8,12 @@ import './UserPage.css';
 
 import checkUpdatedToday from "../Helpers/checkUpdatedToday";
 import getUser from '../API/user.js';
-import Comparisons from '../Comparisons/Comparisons';
+import Breakdown from '../Tabs/Breakdown/Breakdown.js';
+import Comparisons from '../Tabs/Comparisons/Comparisons';
 import NewUser from './NewUser';
-import Overview from '../Overview/Overview';
+import Overview from '../Tabs/Overview/Overview.js';
 import Profile from '../Profile/Profile';
-import Progression from '../Progression/Progression';
+import Progression from '../Tabs/Progression/Progression.js';
 import ResyncForm from '../ResyncForm/ResyncForm';
 
 function resize() {
@@ -70,6 +71,9 @@ function UserPage() {
                     </Tab>
                     <Tab eventKey="progression" title="Progression">
                         <Progression info={info} data={data}/>
+                    </Tab>
+                    <Tab eventKey="breakdown" title="Breakdown">
+                        <Breakdown info={info} data={data}/>
                     </Tab>
                 </Tabs>
             </div>

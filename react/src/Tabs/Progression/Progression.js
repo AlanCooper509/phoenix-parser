@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Accordion from 'react-bootstrap/Accordion';
 
-import getChartStats from '../API/chartstats.js';
+import getChartStats from '../../API/chartstats.js';
 import LevelStats from './LevelStats.js';
 import cutoffs from "./TitleCutoffs.json";
 

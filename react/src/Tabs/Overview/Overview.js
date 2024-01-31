@@ -2,8 +2,8 @@ import React, { useRef } from "react";
 
 import "./Overview.css";
 
-import OverviewGraphHelper from "../GraphHelpers/OverviewGraphHelper.js";
-import GraphButtons from "../GraphHelpers/GraphButtons.js";
+import OverviewGraphHelper from "../../GraphHelpers/OverviewGraphHelper.js";
+import GraphButtons from "../../GraphHelpers/GraphButtons.js";
 import LineChart from "./LineChart.js";
 
 function Overview({info, data, titles}) {
