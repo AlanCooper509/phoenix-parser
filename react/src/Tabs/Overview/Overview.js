@@ -6,7 +6,7 @@ import OverviewGraphHelper from "../../GraphHelpers/OverviewGraphHelper.js";
 import GraphButtons from "../../GraphHelpers/GraphButtons.js";
 import LineChart from "./LineChart.js";
 
-function Overview({info, data, titles}) {
+function Overview({info, data}) {
     const minValue = useRef(null);
     const maxValue = useRef(null);
     const chartTypeValue = useRef(null);
