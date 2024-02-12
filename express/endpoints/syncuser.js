@@ -31,9 +31,10 @@ const ERROR_500 = {
 const FILELIST = [process.env.INFO_FILENAME, process.env.BEST_SCORES_FILENAME];
 
 async function syncUser(sid, name, number) {
+    const dirname = fs.realpathSync('.');
     const user = getUserID(name, number);
-    const outDir = `./tmp/${user}`;
-    const scoresFile = `./tmp/${user}/old_best_scores.json`;
+    const outDir = `${dirname}/tmp/${user}`;
+    const scoresFile = `${dirname}/tmp/${user}/old_best_scores.json`;
     let pythonArgs = [process.env.PYTHON_SCRIPT,
         `sid=${sid}`, `user=${user}`, `outDir=${outDir}`]
 
@@ -50,6 +51,7 @@ async function syncUser(sid, name, number) {
 
     // ensure outDir is clean before starting test
     fs.rmSync(outDir, { recursive: true, force: true });
+    fs.mkdirSync(outDir);
 
     // check if Object Storage has a history for the user's Best Scores that can be passed to Python script
     // (goal of reducing requests needed to make to piugame server)
