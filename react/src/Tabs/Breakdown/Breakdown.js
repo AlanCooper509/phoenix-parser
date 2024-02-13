@@ -56,7 +56,7 @@ function Breakdown({info, data}) {
                 </div>
             </div>
         </div>
-        <div className="container d-flex justify-content-center">
+        <div className="container">
             <BreakdownStats
                 userInfo={info}
                 userData={data}

@@ -66,14 +66,14 @@ function UserPage() {
                     <Tab eventKey="overview" title="Overview">
                         <Overview info={info} data={data} titles={titles}/>
                     </Tab>
-                    <Tab eventKey="comparisons" title="Comparisons">
-                        <Comparisons info={info} data={data}/>
+                    <Tab eventKey="breakdown" title="Breakdown">
+                        <Breakdown info={info} data={data}/>
                     </Tab>
                     <Tab eventKey="progression" title="Progression">
                         <Progression info={info} data={data}/>
                     </Tab>
-                    <Tab eventKey="breakdown" title="Breakdown">
-                        <Breakdown info={info} data={data}/>
+                    <Tab eventKey="comparisons" title="Comparisons">
+                        <Comparisons info={info} data={data}/>
                     </Tab>
                 </Tabs>
             </div>
