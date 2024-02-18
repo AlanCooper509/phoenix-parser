@@ -46,19 +46,28 @@ function BreakdownStats({ rowData }) {
 
     const levelRenderer = ({ value, data }) => (
         <span className="position-relative level-margins">
+            {value && value != "xx" && 
+            <>
             <span className="game-font level-font level-font-margin position-absolute">
                 {data.level[0] === "1" ? <span className="onespaceleft"></span> : <></>}
-                {data.level[0]}
+                {data.level[0] === "n" ? "x" : data.level[0]}
                 {data.level[0] === "1" ? <span className="onespaceright"></span> : <></>}
                 {data.level[1] === "1" ? <span className="onespaceleft"></span> : <></>}
                 {data.level[1]}
                 {data.level[1] === "1" ? <span className="onespaceright"></span> : <></>}
             </span>
-            {value && 
-                <img alt={`${data.type}`}
-                    src={`https://www.piugame.com/l_img/stepball/full/${data.type}_bg.png`}
-                    style={{width: "45px", height: "auto", maxHeight: "80%"}}
-                />
+            <img alt={`${data.type}`}
+                src={`https://www.piugame.com/l_img/stepball/full/${data.type}_bg.png`}
+                style={{width: "45px", height: "auto", maxHeight: "80%"}}
+            />
+            </>
+            }
+            {value && value == "xx" &&
+            <>
+            <span className="game-font level-font level-font-margin position-absolute">
+                !<span className="onespaceleft"></span><span className="onespaceright"></span>!
+            </span>
+            </>
             }
         </span>
     );
@@ -163,11 +172,13 @@ function BreakdownStats({ rowData }) {
             params.api.sizeColumnsToFit();
             });
         });
+        /*
         window.addEventListener('click', () => {
             setTimeout(() => {
             params.api.sizeColumnsToFit();
             });
         });
+        */
     }, []);
   
     return (

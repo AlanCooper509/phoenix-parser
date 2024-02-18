@@ -1,3 +1,5 @@
+import ChartTypeSelect from "../Helpers/ChartTypeSelect.js";
+
 function GraphButtons({minValue, maxValue, chartTypeValue, updateLineGraph}) {
     const handleKeyDown = (event) => {
         if (event.key === 'Enter') {
@@ -16,12 +18,10 @@ function GraphButtons({minValue, maxValue, chartTypeValue, updateLineGraph}) {
                 <input ref={maxValue} className="Max-input" name="max" type="number" defaultValue="28" min="1" max="28" previous="28" onKeyDown={handleKeyDown} onClick={updateLineGraph} onBlur={updateLineGraph}></input>
             </div>
             <div className="px-4 text-center">
-                <label className="me-2" htmlFor="chartType">Select Chart Type:</label>
-                <select ref={chartTypeValue} name="chartType" defaultValue="bothtypes" onInput={updateLineGraph}>
-                    <option value="bothtypes">Singles and Doubles</option>
-                    <option value="singles">Singles</option>
-                    <option value="doubles">Doubles</option>
-                </select>
+                <ChartTypeSelect
+                    innerRef={chartTypeValue}
+                    onInput={updateLineGraph}
+                />
             </div>
         </div>
     );
