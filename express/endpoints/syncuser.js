@@ -36,7 +36,8 @@ async function syncUser(sid, name, number) {
     const outDir = `${dirname}/tmp/${user}`;
     const scoresFile = `${dirname}/tmp/${user}/old_best_scores.json`;
     let pythonArgs = [process.env.PYTHON_SCRIPT,
-        `sid=${sid}`, `user=${user}`, `outDir=${outDir}`]
+        `sid=${sid}`, `user=${user}`, `outDir=${outDir}`
+    ];
 
     // check if user has been updated today already
     let dateObject = '';
@@ -68,7 +69,7 @@ async function syncUser(sid, name, number) {
         const pythonProcess = spawn('python', pythonArgs);
         pythonPromise(pythonProcess).then((output) => {
             data = output;
-            archiveOldFiles(user, dateObject);    
+            archiveOldFiles(user, dateObject);
         }).then(() => {
             writeNewFiles(user, outDir);
         }).then(() => {
