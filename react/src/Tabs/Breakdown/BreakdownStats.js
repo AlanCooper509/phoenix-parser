@@ -16,6 +16,7 @@ function addChartsForLevel(userData, level, chartType) {
             if (chartType === "doubles" && entry.type === "d") {
                 return true;
             }
+            return false;
         });
     }
     return filteredData;

@@ -36,7 +36,7 @@ function NewUser() {
             <h6>
                 <ul>
                     <li className="mt-2">
-                        To get started, use a Desktop/Laptop device to <b>Update Game Data</b> in the top right.
+                        To get started, <b>Update Game Data</b> in the top right.
                     </li>
                     <li className="mt-2">
                         This will take a public snapshot of your PIU Phoenix data (Titles, Best Scores, Ranking points) and make pretty graphs and stat trackers with them.
