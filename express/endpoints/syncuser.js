@@ -11,7 +11,7 @@ import uploadObjectToObjectStorage from '../helpers/os_uploadObject.js';
 function ERROR_400(msg) {
     return {
         error: {
-            code: 429,
+            code: 400,
             message: msg
         }
     }
