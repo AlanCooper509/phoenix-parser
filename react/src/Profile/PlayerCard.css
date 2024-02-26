@@ -1,9 +1,19 @@
 .Game-info {
     padding-left: 1.5em;
 }
+.Game-info-mini {
+    padding-left: 1em;
+}
 .Game-title {
     font-weight: 900;
     font-size: 1.238em;
+    font-family: 'Oxanium', sans-serif;
+}
+.Game-title-mini {
+    position: relative;
+    top: 5px;
+    font-weight: 700;
+    font-size: 1.038em;
     font-family: 'Oxanium', sans-serif;
 }
 .col1 {
@@ -40,14 +50,40 @@
     font-size: 2.175em;
     font-family: 'Oxanium', sans-serif;
 }
+.Game-id-mini {
+    font-size: 1.575em;
+    font-family: 'Oxanium', sans-serif;
+}
 .Game-name {
     color: "#db7093";
 }
+.number-mini {
+    font-size: 0.85em;
+    color: #d8d8d8;
+    position: relative;
+    top: -8px
+}
 .Update {
+    color: #aaaaaa;
+}
+.Update-mini {
+    font-size: 0.86em;
     color: #aaaaaa;
 }
 .Profile-pic {
     width: 140px;
     height: 105px;
     border-radius: 0.5em;
+}
+.Profile-pic-mini {
+    width: 85px;
+    height: auto;
+    border-radius: 0.5em;
+}
+.container-mini {
+    cursor: pointer;
+    border: 2px solid #bbbbbb;
+    border-radius: 10px;
+    background-color: #343a40;
+    max-width: 400px;
 }
