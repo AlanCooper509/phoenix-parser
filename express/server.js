@@ -5,6 +5,7 @@ import bodyParser from 'body-parser';
 
 // local helpers
 import getUser from './endpoints/user.js';
+import getUsers from './endpoints/users.js';
 import getChartStats from './endpoints/chartstats.js';
 import syncUser from './endpoints/syncuser.js';
 
@@ -19,6 +20,17 @@ app.use(bodyParser.json());
 // [GET] USER
 app.get('/api/user/:name/:number', async (req, res) => {
   getUser(req).then((output) => {
+    if (output.error) {
+      res.status(output.error.code).send(output.error.message);
+    } else {
+      res.json(output);
+    }
+  });
+});
+
+// [GET] USERS
+app.get('/api/users/', async (req, res) => {
+  getUsers(req).then((output) => {
     if (output.error) {
       res.status(output.error.code).send(output.error.message);
     } else {
