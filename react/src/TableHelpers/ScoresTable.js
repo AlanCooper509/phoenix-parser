@@ -46,7 +46,7 @@ function BreakdownStats({ rowData }) {
 
     const levelRenderer = ({ value, data }) => (
         <span className="position-relative level-margins">
-            {value && value != "xx" && 
+            {value && value !== "xx" && 
             <>
             <span className="game-font level-font level-font-margin position-absolute">
                 {data.level[0] === "1" ? <span className="onespaceleft"></span> : <></>}
@@ -62,7 +62,7 @@ function BreakdownStats({ rowData }) {
             />
             </>
             }
-            {value && value == "xx" &&
+            {value && value === "xx" &&
             <>
             <span className="game-font level-font level-font-margin position-absolute">
                 !<span className="onespaceleft"></span><span className="onespaceright"></span>!
@@ -194,6 +194,7 @@ function BreakdownStats({ rowData }) {
                 autoSizeStrategy={{type: "fitGridWidth"}}
                 onGridReady={onGridReady}
                 stateUpdated={onGridReady}
+                suppressDragLeaveHidesColumns={true}
               />
             </div>
           </div>
