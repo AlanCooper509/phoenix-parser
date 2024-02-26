@@ -50,6 +50,7 @@ function getTableData(data, tableTypeValue) {
         if (tableTypeValue === "ucs" && entry.type === "u") {
             return true;
         }
+        return false;
     });
     rowData = filteredData;
     return rowData;
