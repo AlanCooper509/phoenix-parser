@@ -6,7 +6,7 @@ import getClientOpts from './adb_getClientOpts.js';
 import createCollection from './adb_createCollection.js';
 import getConnectionOpts from './adb_getConnectionOpts.js';
 
-async function getDocuments(collectionName, filterSpec) {
+async function saveDocument(collectionName, jsonDocument, key) {
     oracledb.autoCommit = true;
     oracledb.initOracleClient(getClientOpts());
 
@@ -16,18 +16,13 @@ async function getDocuments(collectionName, filterSpec) {
     const soda = connection.getSodaDatabase();
     const myCollection = await createCollection(soda, collectionName);
 
-    // Get filtered documents
-    const mySodaDocuments = await myCollection.find().filter(filterSpec).getDocuments();
-
-    let myDocuments = [];
-    mySodaDocuments.forEach(function(element) {
-        let content = element.getContent();
-        myDocuments.push(content);
-    });
+    // Create and Save a document (updates existing)
+    const newDocument = soda.createDocument(jsonDocument, {key: key});
+    const myDocument = await myCollection.saveAndGet(newDocument);
 
     connection.close();
 
-    return myDocuments;
+    return myDocument;
 }
 
-export default getDocuments;
+export default saveDocument;

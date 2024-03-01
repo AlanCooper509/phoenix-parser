@@ -2,14 +2,14 @@ import getDocuments from '../helpers/adb_getDocuments.js';
 
 async function getUsers(req) {
     let users = [];
-    let myDocuments;
 
-    const collectionName = 'userinfo_collection';
+    const collectionName = 'user_collection';
     const filterSpec = {};
 
     try {
-        myDocuments = await getDocuments(collectionName, filterSpec);
+        users = await getDocuments(collectionName, filterSpec);
     } catch (error) {
+        console.log(error);
         return {
             error: {
                 code: 500,
@@ -17,11 +17,6 @@ async function getUsers(req) {
             }
         }
     }
-
-    myDocuments.forEach(function(element) {
-        let content = element.getContent();
-        users.push(content);
-    });
 
     return {users};
 }
