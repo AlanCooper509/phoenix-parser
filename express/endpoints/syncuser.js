@@ -7,6 +7,7 @@ import getUserID from '../helpers/getUserID.js';
 import readJsonFromObjectStorage from '../helpers/os_readJsonObject.js';
 import renameObjectInObjectStorage from '../helpers/os_renameObject.js';
 import uploadObjectToObjectStorage from '../helpers/os_uploadObject.js';
+import saveDocument from '../helpers/adb_saveDocument.js';
 
 function ERROR_400(msg) {
     return {
@@ -72,6 +73,7 @@ async function syncUser(sid, name, number) {
             archiveOldFiles(user, dateObject);
         }).then(() => {
             writeNewFiles(user, outDir);
+            saveDocument("info_collection", data, user);
         }).then(() => {
             resolve({
                 info: data.info,
@@ -79,6 +81,7 @@ async function syncUser(sid, name, number) {
                 scores: data.scores.count
             });
         }).catch((error) => {
+            console.log(error);
             reject(error);
         });
     });
