@@ -68,7 +68,9 @@ async function syncUser(sid, name, number) {
         let data = {};
 
         const pythonProcess = spawn('python', pythonArgs);
+        console.log(`Starting sync for ${user}`);
         pythonPromise(pythonProcess).then((output) => {
+            console.log(`Successful sync for ${user}`);
             data = output;
             archiveOldFiles(user, dateObject);
         }).then(() => {
@@ -163,7 +165,7 @@ async function writeNewFiles(user, outDir) {
         }
 
         if (timeout == maxRetries) { 
-            console.log(`FLIE ${uploadFilePath} NOT FOUND`);
+            console.log(`FILE ${uploadFilePath} NOT FOUND`);
             continue;
         }
         const uploadFile = fs.createReadStream(uploadFilePath, {encoding: 'utf8'});
