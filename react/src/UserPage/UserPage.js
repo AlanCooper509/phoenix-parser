@@ -70,7 +70,7 @@ function UserPage() {
                         <Breakdown info={info} data={data}/>
                     </Tab>
                     <Tab eventKey="progression" title="Progression">
-                        <Progression info={info} data={data}/>
+                        <Progression data={data} titles={titles}/>
                     </Tab>
                     <Tab eventKey="comparisons" title="Comparisons">
                         <Comparisons info={info} data={data}/>

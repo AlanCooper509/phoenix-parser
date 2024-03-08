@@ -11,12 +11,25 @@ function updateLevelHelper(event) {
     return parseInt(level);
 }
 
+function getHighestClearLevel(data) {
+    if (!data) {
+        return 1;
+    }
+    const levelsDescending = ["28", "27", "26", "25", "24", "23", "22", "21", "20", "19", "18", "17", "16", "15", "14", "13", "12", "11", "10", "09", "08", "07", "06", "05", "04", "03", "02", "01"];
+    for (const level of levelsDescending) {
+        if (level in data) {
+            return parseInt(level);
+        }
+    }
+    return 1;
+}
+
 function Breakdown({info, data}) {
     const [chartData, setChartData] = useState({});
     const [showLevel, setShowLevel] = useState(true);
     const [chartType, setChartType] = useState("bothtypes");
     const [category, setCategory] = useState("level");
-    const [levelValue, setLevelValue] = useState(1);
+    const [levelValue, setLevelValue] = useState(getHighestClearLevel(data));
     useEffect(() => getChartStats(setChartData), []);
     const categorySelect = useRef(null);
     const chartTypeSelect = useRef(null);
@@ -61,7 +74,7 @@ function Breakdown({info, data}) {
             <div className="px-2">
                 <div className={showLevel ? "visible" : "invisible"}>
                     <label className="me-2" htmlFor="min">Level:</label>
-                    <input ref={levelInput} className="Min-input" name="min" type="number" defaultValue="1" min="1" max="28" previous="1" onKeyDown={handleKeyDown} onClick={updateLevel} onBlur={updateLevel}></input>
+                    <input ref={levelInput} className="Min-input" name="min" type="number" defaultValue={levelValue} min="1" max="28" previous="1" onKeyDown={handleKeyDown} onClick={updateLevel} onBlur={updateLevel}></input>
                 </div>
             </div>
         </div>

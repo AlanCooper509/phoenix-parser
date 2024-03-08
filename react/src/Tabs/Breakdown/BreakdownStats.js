@@ -83,6 +83,7 @@ function BreakdownStats({ userInfo, userData, chartData, category, chartType, le
                     </h4>
                     <ScoresTable
                         rowData={rowData}
+                        sortLevel={false}
                     />
                 </div>
             </div>

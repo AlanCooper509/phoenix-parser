@@ -5,7 +5,7 @@ import "ag-grid-community/styles/ag-theme-quartz.css";
 
 import "./ScoresTable.css";
 
-function BreakdownStats({ rowData }) {
+function ScoresTable({ rowData, sortLevel }) {
     // Displays {Co-Op, Single, Double} stepball image based on "type" value
     const chartTypeRenderer = ({ value }) => (
         <span className="d-flex h-100 w-100 align-items-center justify-content-center">
@@ -84,6 +84,15 @@ function BreakdownStats({ rowData }) {
         </b>
     );
 
+    const levelComparator = function(valueA, valueB, nodeA, nodeB, isDescending) {
+        let levelA = Number(nodeA.data.level.replace(/,/g, ''));
+        let levelB = Number(nodeB.data.level.replace(/,/g, ''));
+        if (levelA !== levelB) {
+            return (levelA > levelB) ? 1 : -1;
+        }
+        return 0;
+    }    
+
     const scoreComparator = function(valueA, valueB, nodeA, nodeB, isDescending) {
         let scoreA = Number(valueA.replace(/,/g, ''));
         let scoreB = Number(valueB.replace(/,/g, ''));
@@ -148,6 +157,10 @@ function BreakdownStats({ rowData }) {
         defaultOption: 'equals'
     }
 
+    const levelFilterValueGetter = function(params) {
+        return Number(params.data.level.replace(/,/g, ''));
+    }
+
     const scoreFilterValueGetter = function(params) {
         return Number(params.data.score.replace(/,/g, ''));
     }
@@ -159,7 +172,7 @@ function BreakdownStats({ rowData }) {
     // Column Definitions: Defines & controls grid columns.
     const columnDefs = [
         { field: "type", minWidth: 80, maxWidth: 80, hide: true, cellRenderer: chartTypeRenderer },
-        { field: "level", minWidth: 100, maxWidth: 100, cellRenderer: levelRenderer },
+        { field: "level", minWidth: 100, maxWidth: 100, floatingFilter: sortLevel ? true : false, filter: "agNumberColumnFilter", filterValueGetter: levelFilterValueGetter, comparator: levelComparator, cellRenderer: levelRenderer},
         { field: "score", minWidth: 120, maxWidth: 120, floatingFilter: true, filter: "agNumberColumnFilter", filterParams: scoreFilterParams, filterValueGetter: scoreFilterValueGetter, comparator: scoreComparator, cellRenderer: scoreRenderer },
         { field: "name", floatingFilter: true, filter: "agTextColumnFilter", cellRenderer: nameRenderer, flex: 1 },
         { field: "grade", minWidth: 120, maxWidth: 120, floatingFilter: true, filter: "agTextColumnFilter", filterParams: gradeFilterParams, filterValueGetter: gradeFilterValueGetter, comparator: gradeComparator, cellRenderer: gradeTypeRenderer },
@@ -203,4 +216,4 @@ function BreakdownStats({ rowData }) {
     );
 }
 
-export default BreakdownStats;
+export default ScoresTable;

@@ -2,12 +2,13 @@ import './PlayerCard.css'
 
 function PlayerCardMini({info}) {
     const titleClasses = "Game-title-mini " + (info && info.title ? info.title.color : "");
+    const profilePic = info && info.avatar ? info.avatar : "https://www.piugame.com/data/avatar_img/4f617606e7751b2dc2559d80f09c40bf.png";
     return (
     <div className="d-flex justify-content-center align-items-center">
         <div>
             <img 
                 className="Profile-pic-mini"
-                src="https://www.piugame.com/data/avatar_img/4f617606e7751b2dc2559d80f09c40bf.png"
+                src={profilePic}
                 alt="Phoenix Profile"
             />
         </div>

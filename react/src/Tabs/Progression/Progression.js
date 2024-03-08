@@ -5,7 +5,7 @@ import getChartStats from '../../API/chartstats.js';
 import LevelStats from './LevelStats.js';
 import cutoffs from "./TitleCutoffs.json";
 
-function Progression({info, data}) {
+function Progression({data, titles}) {
     const [chartData, setChartData] = useState({});
     useEffect(() => getChartStats(setChartData), []);
 
@@ -32,11 +32,21 @@ function Progression({info, data}) {
         }
     }
 
+    // default: show intermediate titles
+    let showSectionsWithKeys = ['1'];
+    if (Array.isArray(titles) && titles.includes("ADVANCED Lv.10")) {
+        // only show expert titles
+        showSectionsWithKeys = ['3'];
+    } else if (Array.isArray(titles) && titles.includes("INTERMEDIATE Lv.10")) {
+        // only show advanced titles
+        showSectionsWithKeys = ['2'];
+    }
+
     return (
         <div className="container">
             <h3 className="mb-3">Title Progression</h3>
-            <Accordion alwaysOpen>
-                <Accordion.Item eventKey="1">
+            <Accordion defaultActiveKey={showSectionsWithKeys} alwaysOpen>
+                <Accordion.Item eventKey="1" >
                     <Accordion.Header>Intermediate Trackers</Accordion.Header>
                     <Accordion.Body>
                         {levels.intermediate}

@@ -12,15 +12,11 @@ function LaunchPage() {
     for (const entry of users) {
         userlist.push(
             <ProfileMini
-                info={entry}
-                key={entry.player}
+                info={entry.info}
+                key={entry.info.player + entry.info.number}
             />
         );
     }
-    // setting as empty until migration is complete
-    userlist = <>
-        In progress, coming soon...
-    </>;
 
     return (
         <div className="container mt-4">

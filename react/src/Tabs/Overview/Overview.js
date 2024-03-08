@@ -111,9 +111,8 @@ function Overview({info, data}) {
                     />
                 </div>
                 <ScoresTable
-                    maxLevel={maxValue.current}
-                    minLevel={minValue.current}
                     rowData={rowData}
+                    sortLevel={true}
                 />
             </div>
         </div>
