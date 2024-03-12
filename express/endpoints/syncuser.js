@@ -40,10 +40,19 @@ async function syncUser(sid, name, number) {
         `sid=${sid}`, `user=${user}`, `outDir=${outDir}`
     ];
 
+    // grab Object Storage copy of user's info file from most recent previous sync
+    const infoFileName = `${process.env.USERS_DIR}/${user}/${process.env.INFO_FILENAME}`;
+    const infoObject = await readJsonFromObjectStorage(infoFileName);
+
+    // pass in the language used during previous sync
+    if (!infoObject.error) {
+        pythonArgs.push(`language=${infoObject.info.language}`);
+    }
+
     // check if user has been updated today already
     let dateObject = '';
     try {
-        dateObject = await checkUpdatedToday(user);
+        dateObject = await checkUpdatedToday(infoObject);
     } catch (error) {
         return error;
     }
@@ -89,10 +98,7 @@ async function syncUser(sid, name, number) {
     });
 }
 
-async function checkUpdatedToday(user) {
-    // attempt to find USER#NUMBER's latest INFO_FILENAME
-    const infoFileName = `${process.env.USERS_DIR}/${user}/${process.env.INFO_FILENAME}`;
-    let infoObject = await readJsonFromObjectStorage(infoFileName);
+async function checkUpdatedToday(infoObject) {
     if (infoObject.error) {
         if (infoObject.error.code === 404) {
             // not updated today if file cannot be found
