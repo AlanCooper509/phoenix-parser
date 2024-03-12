@@ -34,12 +34,25 @@ function Progression({data, titles}) {
 
     // default: show intermediate titles
     let showSectionsWithKeys = ['1'];
+    if (Array.isArray(titles) && titles.includes("INTERMEDIATE Lv.10")) {
+        // only show advanced titles
+        showSectionsWithKeys = ['2'];
+    } else {
+        for (const level of ["20", "21", "22"]) {
+            if (level in data) {
+                showSectionsWithKeys.push('2');
+            }
+        }
+    }
     if (Array.isArray(titles) && titles.includes("ADVANCED Lv.10")) {
         // only show expert titles
         showSectionsWithKeys = ['3'];
-    } else if (Array.isArray(titles) && titles.includes("INTERMEDIATE Lv.10")) {
-        // only show advanced titles
-        showSectionsWithKeys = ['2'];
+    } else {
+        for (const level of ["23", "24", "25", "26", "27", "28"]) {
+            if (level in data) {
+                showSectionsWithKeys.push('3');
+            }
+        }
     }
 
     return (
