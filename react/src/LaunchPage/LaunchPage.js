@@ -8,15 +8,38 @@ function LaunchPage() {
     const [users, setUsers] = useState([]);
     useEffect(() => getUsers(setUsers), []);
 
-    let userlist = [];
+    let userlist_today = [];
+    let userlist_weekly = [];
+    let userlist_remaining = [];
     for (const entry of users) {
-        userlist.push(
-            <ProfileMini
-                info={entry.info}
-                key={entry.info.player + entry.info.number}
-            />
-        );
+        if (entry.info.timestamp > Date.now()/1000 - 60*60*24) {
+            userlist_today.push(
+                <ProfileMini
+                    info={entry.info}
+                    key={entry.info.player + entry.info.number}
+                />
+            );
+        } else if (entry.info.timestamp > Date.now()/1000 - 60*60*24*7) {
+            userlist_weekly.push(
+                <ProfileMini
+                    info={entry.info}
+                    key={entry.info.player + entry.info.number}
+                />
+            );
+        } else {
+            userlist_remaining.push(
+                <ProfileMini
+                    info={entry.info}
+                    key={entry.info.player + entry.info.number}
+                />
+            );            
+        }
     }
+
+    const spinner = <div className="mb-4"><div class="spinner-border spinner-border-sm" role="status"><span class="sr-only"></span></div> Loading...</div>;
+    const dailyUsers = users.length > 0 ? userlist_today : spinner;
+    const weeklyUsers = users.length > 0 ? userlist_weekly : spinner;
+    const remainingUsers = users.length > 0 ? userlist_remaining : spinner;
 
     return (
         <div className="container mt-4">
@@ -26,12 +49,30 @@ function LaunchPage() {
             <h3 className="ms-2 mt-4">Welcome!</h3>
             <h5 className="ms-4 mt-3">Search for a USER to get started.</h5>
             <hr className="mt-5"/>
-            <div className="ms-2 mt-4">
-                <h5>User Database:</h5>
-                <div className="container">
-                    {userlist}
+            <h4 className="ms-2 mt-4">User Database</h4>
+            <div className="container">
+                <div className="row">
+                    <div className="col-xl-4 mt-3">
+                        <h5 className="ms-2">Last 24 Hours ({userlist_today.length}):</h5>
+                        <div className="container">
+                            {dailyUsers}
+                        </div>
+                    </div>
+                    <div className="col-xl-4 mt-3">
+                        <h5 className="ms-2">Last 7 Days ({userlist_weekly.length}):</h5>
+                        <div className="container">
+                            {weeklyUsers}
+                        </div>
+                    </div>
+                    <div className="col-xl-4 mt-3">
+                        <h5 className="ms-2">Remaining Profiles ({userlist_remaining.length}):</h5>
+                        <div className="container">
+                            {remainingUsers}
+                        </div>
+                    </div>
                 </div>
             </div>
+            <hr className="mt-5"/>
         </div>
     );
 }
