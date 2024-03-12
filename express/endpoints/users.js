@@ -3,8 +3,14 @@ import getDocuments from '../helpers/adb_getDocuments.js';
 async function getUsers(req) {
     let users = [];
 
-    const collectionName = 'user_collection';
-    const filterSpec = {};
+    const collectionName = 'info_collection';
+    const filterSpec = {
+        "$orderby": [{ 
+            "path": "info.timestamp",
+            "datatype": "number",
+            "order": "desc" }
+        ]
+    };
 
     try {
         users = await getDocuments(collectionName, filterSpec);
