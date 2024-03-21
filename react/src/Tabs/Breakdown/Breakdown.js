@@ -104,6 +104,8 @@ function Breakdown({info, data}) {
                 return `${info.player}: Co-Op Best Scores`;
             case "ucs":
                 return `${info.player}: UCS Best Scores`;
+            default:
+                return `Best Scores`;
         }
     }
 

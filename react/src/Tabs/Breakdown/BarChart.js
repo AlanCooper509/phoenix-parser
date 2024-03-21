@@ -155,7 +155,7 @@ function BarChart({ innerRef, chartData, title, subtitle }) {
 
     // round up to nearest 5
     let maxCount = Math.max(...[Math.max(...data), Math.max(...data_p)]);
-    maxCount = maxCount % 5 == 0 ? maxCount += 1 : maxCount;
+    maxCount = maxCount % 5 === 0 ? maxCount += 1 : maxCount;
     const yAxisHeight = Math.ceil(maxCount/5)*5;
 
     const chartOptions = setupChartOptions(title, subtitle, yAxisHeight);
