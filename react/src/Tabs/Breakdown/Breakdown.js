@@ -4,6 +4,7 @@ import BreakdownCategory from "./BreakdownCategory.js";
 import getChartStats from '../../API/chartstats.js';
 import BreakdownStats from "./BreakdownStats.js";
 import ChartTypeSelect from "../../Helpers/ChartTypeSelect.js";
+import BarChart from "./BarChart.js";
 
 function updateLevelHelper(event) {
     let level = event.target.value;
@@ -56,9 +57,62 @@ function Breakdown({info, data}) {
         setChartType(event.target.value);
     }
 
+    function getBarChartData() {
+        if (!data) return {};
+        switch (category) {
+            case "level": {
+                const level = levelValue < 10 ? `0${levelValue}` : levelValue.toString();
+                if (!(level in data)) return {};
+                switch (chartType) {
+                    case "bothtypes":
+                        return data[level];
+                    case "singles":
+                        const singlesOnly = data[level].scores.filter((value) => value.type === 's');
+                        return {"scores": singlesOnly};
+                    case "doubles":
+                        const doublesOnly = data[level].scores.filter((value) => value.type === 'd');
+                        return {"scores": doublesOnly};
+                    default: return {};
+                }
+            }
+            case "coop": {
+                let barData = {"scores": []};
+                if ("n2" in data) {
+                    barData.scores.push(...data.n2.scores);
+                }
+                if ("n3" in data) {
+                    barData.scores.push(...data.n3.scores);
+                }
+                if ("n4" in data) {
+                    barData.scores.push(...data.n4.scores);
+                }
+                if ("n5" in data) {
+                    barData.scores.push(...data.n5.scores);
+                }
+                return barData;
+            }
+            case "ucs": return data["xx"];
+            default: return {};
+        }
+    }
+
+    function getTitle() {
+        switch (category) {
+            case "level":
+                return `${info.player}: Level ${levelValue < 10? `0${levelValue}` : levelValue.toString()} Best Scores`;
+            case "coop":
+                return `${info.player}: Co-Op Best Scores`;
+            case "ucs":
+                return `${info.player}: UCS Best Scores`;
+        }
+    }
+
+    const barTitle = getTitle();
+    const barSubtitle = `Letter Grade Distribution`;
+    const barChartData = getBarChartData();
     return (
         <>
-        <div className="d-flex align-items-stretch align-middle justify-content-between mt-3 mb-4">
+        <div className="d-flex mt-4 align-items-stretch align-middle justify-content-between mt-3 mb-4">
             <div className="px-2">
                 <BreakdownCategory
                     innerRef={categorySelect}
@@ -78,7 +132,18 @@ function Breakdown({info, data}) {
                 </div>
             </div>
         </div>
-        <div className="container">
+        <hr className="mb-4"/>
+        <div className="container" style={{maxWidth: "800px"}}>
+            <BarChart
+                title={barTitle}
+                subtitle={barSubtitle}
+                chartData={barChartData}
+                chartType={chartType}
+            />
+            &nbsp;
+        </div>
+        <hr className="my-4"/>
+        <div>
             <BreakdownStats
                 userInfo={info}
                 userData={data}
