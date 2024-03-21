@@ -75,7 +75,6 @@ function BreakdownStats({ userInfo, userData, chartData, category, chartType, le
     }
     return (
         <div>
-            <hr className="my-4"/>
             <div className="d-flex flex-column align-items-center justify-content-center">
                 <div style={{width: "80%", minWidth: "800px"}}>
                     <h4>Best Scores 
