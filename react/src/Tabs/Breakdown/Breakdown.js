@@ -91,7 +91,13 @@ function Breakdown({info, data}) {
                 }
                 return barData;
             }
-            case "ucs": return data["xx"];
+            case "ucs": {
+                let barData = {"scores": []};
+                if (data["xx"]) {
+                    barData = data["xx"];
+                }
+                return barData;
+            }
             default: return {};
         }
     }
