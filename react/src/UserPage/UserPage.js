@@ -5,16 +5,16 @@ import Tab from 'react-bootstrap/Tab';
 import Tabs from 'react-bootstrap/Tabs';
 
 import './UserPage.css';
-
-import checkUpdatedToday from "../Helpers/checkUpdatedToday";
-import getUser from '../API/user.js';
-import Breakdown from '../Tabs/Breakdown/Breakdown.js';
-import Comparisons from '../Tabs/Comparisons/Comparisons';
 import NewUser from './NewUser';
-import Overview from '../Tabs/Overview/Overview.js';
+
+import getUser from '../API/user.js';
 import Profile from '../Profile/Profile';
-import Progression from '../Tabs/Progression/Progression.js';
 import ResyncForm from '../ResyncForm/ResyncForm';
+import Overview from '../Tabs/Overview/Overview.js';
+import Breakdown from '../Tabs/Breakdown/Breakdown.js';
+import Progression from '../Tabs/Progression/Progression.js';
+import Comparisons from '../Tabs/Comparisons/Comparisons';
+import checkUpdatedRecently from '../Helpers/checkUpdatedRecently.js';
 
 function resize() {
     // Set the min-width based on your requirement
@@ -43,19 +43,19 @@ function UserPage() {
     useEffect(() => getUser(setInfo, setData, setTitles, name, number), [name, number]);
     resize();
 
+    const hideResync = info.last_updated === "Unknown" || checkUpdatedRecently(info.timestamp, 8*60*60);
+    const resyncForm =  hideResync ? <></> :
+                        <div className="container overlap-bottom">
+                            <ResyncForm
+                                info={info}
+                            />
+                        </div>
+
     return (
         <div className="UserPage">
             <Profile info={info}/>
             <hr/>
-            { checkUpdatedToday(info.last_updated) ?
-            <></>
-            :
-            <div className="container overlap-bottom">
-                <ResyncForm
-                    info={info}
-                />
-            </div>
-            }
+            { resyncForm }
             { info.last_updated === "Never" ? 
             <NewUser/>
             : info.last_updated === "Unknown" ?

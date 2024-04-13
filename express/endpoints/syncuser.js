@@ -20,7 +20,7 @@ function ERROR_400(msg) {
 const ERROR_429 = {
     error: {
         code: 429,
-        message: `The user has already been updated today! Try again tomorrow.`
+        message: `This user was already updated recently! Try again later.`
     }
 }
 const ERROR_500 = {
@@ -52,11 +52,11 @@ async function syncUser(sid, name, number) {
     // check if user has been updated today already
     let dateObject = '';
     try {
-        dateObject = await checkUpdatedToday(infoObject);
+        dateObject = await getLastSyncDate(infoObject, 8*60*60);
     } catch (error) {
         return error;
     }
-    if (dateObject.exists && dateObject.updatedToday) {
+    if (dateObject.exists && dateObject.updatedRecently) {
         return ERROR_429;
     }
 
@@ -98,8 +98,9 @@ async function syncUser(sid, name, number) {
     });
 }
 
-async function checkUpdatedToday(infoObject) {
+async function getLastSyncDate(infoObject, timeoutSeconds) {
     if (infoObject.error) {
+
         if (infoObject.error.code === 404) {
             // not updated today if file cannot be found
             return {
@@ -109,17 +110,18 @@ async function checkUpdatedToday(infoObject) {
             throw infoObject;
         }
     }
+    // used for updatedRecently
+    const timestamp = infoObject.info.timestamp;
 
     // last_updated is formatted as mm/dd/yy, change it to match JS Date() helpers
     const dateArray = infoObject.info.last_updated.split("/");
     const year = parseInt("20" + dateArray[2]);
     const month = parseInt(dateArray[0]) - 1;
     const date = parseInt(dateArray[1]);
-    let d = new Date();
 
     return {
         exists: true,
-        updatedToday: d.getDate() === date && d.getMonth() === month && d.getFullYear() === year,
+        updatedRecently: (Date.now()/1000 - timeoutSeconds) < timestamp,
         date: {
             string: `${dateArray[2]}-${dateArray[0]}-${dateArray[1]}`,
             year: dateArray[2],

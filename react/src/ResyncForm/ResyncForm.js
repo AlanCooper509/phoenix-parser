@@ -7,7 +7,7 @@ import { BsChevronCompactDown } from "react-icons/bs";
 import InfoModal from "./InfoModal";
 import ResponseModal from "./ResponseModal";
 import postSyncData from "../API/syncdata";
-import checkUpdatedToday from "../Helpers/checkUpdatedToday";
+import checkUpdatedRecently from "../Helpers/checkUpdatedRecently";
 
 function ResyncForm({info}) {
     // for info modal
@@ -40,7 +40,7 @@ function ResyncForm({info}) {
         postSyncData(params, submitBtn, openNotify);
     }
 
-    if (checkUpdatedToday(info.last_updated)) {
+    if (checkUpdatedRecently(info.timestamp, 8*60*60)) {
         return (<></>);
     }
     return (
