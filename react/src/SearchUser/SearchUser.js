@@ -20,7 +20,7 @@ function validationChecks(formInput) {
     if (tokens.name.length > 12) { return; }
     if (tokens.number) { 
         if (isNaN(parseInt(tokens.number))) { return; }
-        if (tokens.number.length !== 4) { return; }
+        if (parseInt(tokens.number).toString().length !== 4) { return; }
     }
     return tokens;
 }
@@ -55,6 +55,7 @@ function SearchUser({open}) {
     const handleSubmit = () => {
         const tokens = validationChecks(formInput);
         if (!tokens) {
+            setStatusText("Invalid USER search");
             submitBtn.current.classList.add("btn-danger");
             submitBtn.current.classList.remove("btn-secondary");
             return;
