@@ -90,7 +90,7 @@ function InfoModal({show, handleClose}) {
                         <li><i className="text-muted">The SID value is a temporary auth credential and will not be stored or saved anywhere.</i></li>
                         <li><i className="text-muted">The SID is used for collecting a snapshot of your Player Card, Best Scores, and Titles.</i></li>
                         <li><i className="text-muted">You can only sync data for your own USER PAGE, but the returned snapshot data is public.</i></li>
-                        <li><i className="text-muted">To avoid spamming, syncing is only available once every day.</i>
+                        <li><i className="text-muted">To avoid spamming, syncing is only available once every 8 hours.</i>
                         </li>
                     </ul>
                 </li>
