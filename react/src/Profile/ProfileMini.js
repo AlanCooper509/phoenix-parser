@@ -11,7 +11,7 @@ function ProfileMini({info}) {
     
     return (
         <>
-        <div className="container-mini mt-3" onClick={redirect} style={{"minWidth": "400px", "maxHeight": "115px"}}>
+        <div className="container-mini mt-3" onClick={redirect} style={{"minWidth": "350px", "maxHeight": "115px"}}>
             <div className="d-flex justify-content-between align-items-center ms-1 w-100">
                 <div className="px-2 pt-2 mb-2 ms-1">
                     <PlayerCardMini
