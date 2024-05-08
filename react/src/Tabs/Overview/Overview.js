@@ -83,9 +83,7 @@ function Overview({info, data}) {
 
     return (
         <div className="row align-items-center justify-content-center">
-            <div className="col-4">
-            </div>
-            <div className="Overview-chart col-8 mb-4">
+            <div className="Overview-chart col-12 mb-4" style={{maxWidth: "950px"}}>
                 <LineChart 
                     innerRef={chartRef}
                     chartData={graphSetupObject["chartData"]}
