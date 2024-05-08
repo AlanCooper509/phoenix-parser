@@ -39,6 +39,17 @@ app.get('/api/users/', async (req, res) => {
   });
 });
 
+// [GET] USERS WITH NAME
+app.get('/api/users/:name', async (req, res) => {
+  getUsers(req).then((output) => {
+    if (output.error) {
+      res.status(output.error.code).send(output.error.message);
+    } else {
+      res.json(output);
+    }
+  });
+});
+
 // [GET] CHART STATS
 app.get('/api/charts/stats', async (req, res) => {
   getChartStats().then((output) => {
