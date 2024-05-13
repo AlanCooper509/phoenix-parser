@@ -69,7 +69,7 @@ async function getUser(req) {
         return scores;
     }
 
-    // attempt retrieval of LEVEL_COUNTS_OBJECT_NAME from Object Storage
+    // attempt retrieval of LEVEL_COUNTS from Object Storage
     let chartStats = await getChartStats();
     if (chartStats.error) {
         return chartStats;

@@ -7,6 +7,7 @@ import bodyParser from 'body-parser';
 import getUser from './endpoints/user.js';
 import getUsers from './endpoints/users.js';
 import getChartStats from './endpoints/chartstats.js';
+import getChartsForLevel from './endpoints/chartsforlevel.js';
 import syncUser from './endpoints/syncuser.js';
 
 // script logic
@@ -53,6 +54,17 @@ app.get('/api/users/:name', async (req, res) => {
 // [GET] CHART STATS
 app.get('/api/charts/stats', async (req, res) => {
   getChartStats().then((output) => {
+    if (output.error) {
+      res.status(output.error.code).send(output.error.message);
+    } else {
+      res.json(output);
+    }  
+  });
+});
+
+// [GET] CHARTS FOR LEVEL
+app.get('/api/charts/level/:value', async (req, res) => {
+  getChartsForLevel(req).then((output) => {
     if (output.error) {
       res.status(output.error.code).send(output.error.message);
     } else {
