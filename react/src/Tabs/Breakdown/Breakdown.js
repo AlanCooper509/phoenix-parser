@@ -5,6 +5,7 @@ import getChartStats from '../../API/chartstats.js';
 import BreakdownStats from "./BreakdownStats.js";
 import ChartTypeSelect from "../../Helpers/ChartTypeSelect.js";
 import BarChart from "./BarChart.js";
+import BreakdownRemaining from "./BreakdownRemaining.js";
 
 function updateLevelHelper(event) {
     let level = event.target.value;
@@ -105,7 +106,16 @@ function Breakdown({info, data}) {
     function getTitle() {
         switch (category) {
             case "level":
-                return `${info.player}: Level ${levelValue < 10? `0${levelValue}` : levelValue.toString()} Best Scores`;
+                switch (chartType) {
+                    case "bothtypes":
+                        return `${info.player}: Level ${levelValue < 10? `0${levelValue}` : levelValue.toString()} Best Scores`;
+                    case "singles":
+                        return `${info.player}: S${levelValue < 10? `0${levelValue}` : levelValue.toString()} Best Scores`;
+                    case "doubles":
+                        return `${info.player}: D${levelValue < 10? `0${levelValue}` : levelValue.toString()} Best Scores`;
+                    default:
+                        return `Best Scores`;
+                    }
             case "coop":
                 return `${info.player}: Co-Op Best Scores`;
             case "ucs":
@@ -149,6 +159,15 @@ function Breakdown({info, data}) {
                 chartType={chartType}
             />
             &nbsp;
+        </div>
+        <div className="container mt-4">
+            <BreakdownRemaining
+                userData={data}
+                chartData={chartData}
+                category={category}
+                levelValue={levelValue}
+                chartType={chartType}
+            />
         </div>
         <hr className="my-4"/>
         <div>
