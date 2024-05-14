@@ -78,6 +78,7 @@ function ChartsTable({ rowData, sortLevel }) {
 
     // Column Definitions: Defines & controls grid columns.
     const columnDefs = [
+        { field: "type", minWidth: 30, maxWidth: 30, rowDrag: true},
         { field: "level", minWidth: 100, maxWidth: 100, floatingFilter: sortLevel ? true : false, filter: "agNumberColumnFilter", filterValueGetter: levelFilterValueGetter, comparator: levelComparator, cellRenderer: levelRenderer},
         { field: "bg_img", headerName: 'Image', minWidth: 82, maxWidth: 82, cellRenderer: imgRenderer, sortable: false},
         { field: "name", floatingFilter: true, filter: "agTextColumnFilter", cellRenderer: nameRenderer, flex: 1 }
@@ -105,7 +106,6 @@ function ChartsTable({ rowData, sortLevel }) {
                 onGridReady={onGridReady}
                 stateUpdated={onGridReady}
                 suppressDragLeaveHidesColumns={true}
-                rowDragEntireRow={true}
                 rowDragManaged={true}
               />
             </div>
