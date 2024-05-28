@@ -15,7 +15,7 @@ function postSyncData(params, submitBtn, openNotify) {
                 submitBtn.current.firstChild.classList.add("spinner-border", "spinner-border-sm");
             }
 
-            const response = await axios.post(`${url.protocol}://${url.host}:${url.port}/api/sync/${name}/${number}`, {
+            const response = await axios.post(`${location.protocol}//${url.host}:${url.port}/api/sync/${name}/${number}`, {
                 sid: sid
             });
 

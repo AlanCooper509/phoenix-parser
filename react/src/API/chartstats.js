@@ -5,7 +5,7 @@ import url from './url_params.json';
 function getChartStats(setChartStats) {
     const fetchData = async () => {
         try {
-            const response = await axios.get(`${url.protocol}://${url.host}:${url.port}/api/charts/stats`);
+            const response = await axios.get(`${location.protocol}//${url.host}:${url.port}/api/charts/stats`);
             const responseData = response.data;
 
             // Update state or perform actions with the data

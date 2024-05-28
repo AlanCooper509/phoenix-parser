@@ -5,7 +5,7 @@ import url from './url_params.json';
 function getUser(setInfo, setData, setTitles, name, number) {
     const fetchData = async (name, number) => {
         try {
-            const response = await axios.get(`${url.protocol}://${url.host}:${url.port}/api/user/${name}/${number}`);
+            const response = await axios.get(`${location.protocol}//${url.host}:${url.port}/api/user/${name}/${number}`);
             const responseData = response.data;
 
             // Update state or perform actions with the data
