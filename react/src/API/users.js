@@ -32,7 +32,7 @@ function updateButton(status, buttonRef) {
 function getUsers(setUsers, name='', buttonRef, setStatusText) {
     const fetchData = async () => {
         try {
-            const response = await axios.get(`${location.protocol}//${url.host}:${url.port}/api/users/${name}`);
+            const response = await axios.get(`${window.location.protocol}//${url.host}:${url.port}/api/users/${name}`);
             const responseData = response.data;
 
             // Update state or perform actions with the data

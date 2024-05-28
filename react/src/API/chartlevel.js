@@ -5,7 +5,7 @@ import url from './url_params.json';
 function getChartsForLevel(level, callback) {
     const fetchData = async () => {
         try {
-            const response = await axios.get(`${location.protocol}//${url.host}:${url.port}/api/charts/level/${level}`);
+            const response = await axios.get(`${window.location.protocol}//${url.host}:${url.port}/api/charts/level/${level}`);
             const responseData = response.data;
 
             // Update state or perform actions with the data
