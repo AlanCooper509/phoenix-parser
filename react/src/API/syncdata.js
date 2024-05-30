@@ -1,10 +1,11 @@
 import axios from 'axios';
 
 import PlayerCard from '../Profile/PlayerCard.js';
-import url from './url_params.json';
+import getHostPath from './getHostPath';
 
 function postSyncData(params, submitBtn, openNotify) {
     const fetchData = async (name, number, sid) => {
+        const hostname = getHostPath();
         try {
             // Update state or perform actions with the data
             if (submitBtn.current) {
@@ -15,7 +16,7 @@ function postSyncData(params, submitBtn, openNotify) {
                 submitBtn.current.firstChild.classList.add("spinner-border", "spinner-border-sm");
             }
 
-            const response = await axios.post(`${window.location.protocol}//${url.host}:${url.port}/api/sync/${name}/${number}`, {
+            const response = await axios.post(`${hostname}/api/sync/${name}/${number}`, {
                 sid: sid
             });
 
