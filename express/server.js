@@ -2,9 +2,6 @@
 import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
-import https from 'https';
-import http from 'http';
-import fs from 'fs';
 
 // local helpers
 import getUser from './endpoints/user.js';
@@ -16,13 +13,7 @@ import syncUser from './endpoints/syncuser.js';
 // script logic
 const app = express();
 app.use(cors());
-const httpPort = 3001;
-const httpsPort = 3002;
-const options = {
-  key: fs.readFileSync('./https/private.key'),
-  cert: fs.readFileSync('./https/certificate.crt'),
-  ca: fs.readFileSync('./https/ca_bundle.crt')
-};
+const port = 3001;
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -96,10 +87,6 @@ app.post('/api/sync/:name/:number', async (req, res) => {
   });
 });
 
-http.createServer(app).listen(httpPort, () => {
-  console.log(`Server is running on port ${httpPort}`);
-});
-
-https.createServer(options, app).listen(httpsPort, () => {
-  console.log(`Server is running on port ${httpsPort}`);  
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
 });
