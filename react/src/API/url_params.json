@@ -1,5 +1,4 @@
 {
-    "host": "piu.crabdance.com",
     "httpPort": 3001,
     "httpsPort": 3002
 }
