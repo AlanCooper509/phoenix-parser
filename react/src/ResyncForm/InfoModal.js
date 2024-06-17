@@ -119,7 +119,7 @@ function InfoModal({show, handleClose}) {
 
 
                         <li className="mt-1">
-                            <span style={{cursor: "pointer"}} onClick={() => {setChrome(!chrome)}}>For <b><u>Chrome/Firefox</u></b></span>
+                            <span style={{cursor: "pointer"}} onClick={() => {setChrome(!chrome)}}>For Mobile <b><u>(Chrome/Firefox)</u></b></span>
                         </li>
                         <Collapse in={chrome}>
                             <ul>
