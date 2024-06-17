@@ -1,12 +1,18 @@
 import React, {useState, useEffect} from 'react';
 
 import SearchUser from "../SearchUser/SearchUser";
+import InfoModal from "../ResyncForm/InfoModal";
 import getUsers from "../API/users";
 import ProfileMini from '../Profile/ProfileMini';
 
 function LaunchPage() {
     const [users, setUsers] = useState([]);
     useEffect(() => getUsers(setUsers), []);
+
+    // for Info Modal
+    const [show, setShow] = useState(false);
+    const handleClose = () => setShow(false);
+    const handleShow = (e) => {e.preventDefault(); setShow(true)};
 
     let userlist_today = [];
     let userlist_weekly = [];
@@ -53,7 +59,20 @@ function LaunchPage() {
             />
             <h3 className="ms-2 mt-4">Welcome!</h3>
             <h5 className="ms-4 mt-3">Search for a USER to get started.</h5>
-            <li className="ms-4 mt-3">New here? Set up your own PIU profile using the search bar!</li>
+            <ul>
+                <li className="ms-4 mt-3"><b>New Here?</b> Set up your own PIU profile using the search bar!</li>
+                <li className="ms-4 mt-3"><b>Troubleshooting?</b> Reach out to <b>u/PureWasian</b> on Reddit.</li>
+                <li className="ms-4 mt-3"><b>Recent Updates</b></li>
+                <ul>
+                    <li>(06/17/24) <b>Safari Users</b>: re-visit <span className="link-info" style={{cursor: "pointer"}} onClick={handleShow}>"What is this?"</span> when getting Session ID, Bookmarklets stopped working, so a Shortcut is used now.</li>
+                    <InfoModal 
+                        show={show}
+                        handleClose={handleClose}
+                    />
+                    <li>(05/13/24) <b>Breakdown: Show Uncleared</b> has a button for seeing remaining charts in a difficulty level (Korean support WIP)</li>
+                    <li>(05/08/24) You can search for existing piu.crabdance users without needing the 4-digit suffix ID</li>
+                </ul>
+            </ul>
             <hr className="mt-5"/>
             <h4 className="ms-2 mt-4">User Database {totalUserCount}</h4>
             <div className="container">

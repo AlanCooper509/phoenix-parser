@@ -17,8 +17,8 @@ import './InfoModal.css';
 
 function InfoModal({show, handleClose}) {
     const params = useParams();
-    const name = params.name.toUpperCase();
-    const number = params.number;
+    const name = params.name ? params.name.toUpperCase() : '';
+    const number = params.number ? params.number : "HomePage";
     const [open, setOpen] = useState(false);
     const [desktop, setDesktop] = useState(false);
     const [safari, setSafari] = useState(false);
