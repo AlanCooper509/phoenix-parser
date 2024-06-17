@@ -6,9 +6,13 @@ import Button from 'react-bootstrap/Button';
 import Collapse from 'react-bootstrap/Collapse';
 import { ImNewTab } from "react-icons/im";
 import { RxQuestionMarkCircled } from "react-icons/rx";
+import { IoShareOutline } from "react-icons/io5";
 
 import example from './example_sid.png';
 import bookmark from './example_bookmark.png';
+import scriptImg from './example_scripting.png';
+import settingImg from './example_setting.png';
+import cookieImg from './example_cookie.png';
 import './InfoModal.css';
 
 function InfoModal({show, handleClose}) {
@@ -17,7 +21,11 @@ function InfoModal({show, handleClose}) {
     const number = params.number;
     const [open, setOpen] = useState(false);
     const [desktop, setDesktop] = useState(false);
-    const [mobile, setMobile] = useState(false);
+    const [safari, setSafari] = useState(false);
+    const [seeMore, setSeeMore] = useState(false);
+    const [shortcut, setShortcut] = useState(false);
+    const [scripting, setScripting] = useState(false);
+    const [chrome, setChrome] = useState(false);
     const [bookmarklet, setBookmarklet] = useState(false);
 
     return (
@@ -33,9 +41,11 @@ function InfoModal({show, handleClose}) {
                         <li><i>Currently viewing: <b>{name} #{number}</b></i></li>
                     </ul>
                 </li>
+
                 <li className="mb-4">
                     Log in to <a href="https://piugame.com" target="_blank" rel="noreferrer">piugame.com<sup><ImNewTab /></sup></a>
                 </li>
+
                 <li>
                     Find the SID value
                     <ul>
@@ -64,10 +74,54 @@ function InfoModal({show, handleClose}) {
                             </li>
                             </ul>
                         </Collapse>
+
                         <li className="mt-1">
-                            <span style={{cursor: "pointer"}} onClick={() => {setMobile(!mobile)}}>For <b><u>Mobile</u></b></span>
+                            <span style={{cursor: "pointer"}} onClick={() => {setSafari(!safari)}}>For <b><u>Safari (iOS)</u></b></span>
                         </li>
-                        <Collapse in={mobile}>
+                        <Collapse in={safari}>
+                            <ul>
+                                <li>(ONE-TIME SETUP) Set up the <a href="https://www.icloud.com/shortcuts/4503cc77f384489abecc27a9f2b3d981" target="_blank" rel="noreferrer">Get Cookie<sup><ImNewTab /></sup></a> Shortcut <span style={{cursor: "pointer"}} onClick={() => {setSeeMore(!seeMore)}}><b><u>(See {seeMore ? "Less" : "More"})</u></b></span>
+                                </li>
+                                <Collapse in={seeMore} className="mb-2">
+                                    <ul>
+                                        <li>Follow the above link to get <span style={{cursor: "pointer"}} onClick={() => {setShortcut(!shortcut)}}>a shortcut<sup className="link-primary"><RxQuestionMarkCircled/></sup></span> made to copy the SID</li>
+                                        <Collapse in={shortcut}>
+                                            <ul>
+                                                <li>Apple Shortcuts has a <b>"Run JavaScript on Webpage"</b> action</li>
+                                                <li>This one reads <code>document.cookie</code> value and copies the SID part to Clipboard</li>
+                                                <li>For more information: <a target="_blank" rel="noreferrer" href="https://support.apple.com/guide/shortcuts/use-the-run-javascript-on-webpage-action-apdb71a01d93/ios">Apple: Shortcuts User Guide<sup><ImNewTab /></sup></a></li>
+                                            </ul>
+                                        </Collapse>
+                                        <li>Allow <span style={{cursor: "pointer"}} onClick={() => {setScripting(!scripting)}}>Scripting Actions<sup className="link-primary"><RxQuestionMarkCircled/></sup></span> for Shortcuts in Settings App
+                                            <Collapse in={scripting}>
+                                                <ul>
+                                                    <li>
+                                                        From the Get Cookie shortcut, Open Settings:
+                                                    </li>
+                                                    <img alt="Open Settings link in Get Cookie shortcut" className="pe-2 mt-1" style={{maxWidth: "400px"}} src={scriptImg}></img>
+                                                    <li>
+                                                        Alternatively, Settings App &gt; Shortcuts &gt; Advanced &gt; Allow Running Scripts
+                                                    </li>
+                                                    <img alt="toggling 'Allow Running Scripts' on" className="pe-2 mt-1 mb-3" style={{maxWidth: "400px"}} src={settingImg}></img>
+                                                </ul>
+                                            </Collapse>
+                                        </li>
+                                    </ul>
+                                </Collapse>
+                                <li>While still on the PIU Game website tab, Tap the <b>Share <IoShareOutline style={{marginTop: "-6px"}}/></b> Icon</li>
+                                <li> Use the Get Cookie shortcut</li>
+                                <img alt="Get Cookie shortcut in Safari" className="pe-2 mt-1" style={{maxWidth: "400px"}} src={cookieImg}></img>
+                                <ul>
+                                    <li>it will copy the SID value <code>&lt;...&gt;</code> onto your clipboard for you</li>
+                                </ul>
+                            </ul>
+                        </Collapse>
+
+
+                        <li className="mt-1">
+                            <span style={{cursor: "pointer"}} onClick={() => {setChrome(!chrome)}}>For <b><u>Chrome/Firefox</u></b></span>
+                        </li>
+                        <Collapse in={chrome}>
                             <ul>
                                 <li>(ONE-TIME SETUP) <span style={{cursor: "pointer"}} onClick={() => {setBookmarklet(!bookmarklet)}}>Create a mobile bookmark<sup className="link-primary"><RxQuestionMarkCircled/></sup></span> with URL: <code>javascript:document.cookie</code></li>
                                 <Collapse in={bookmarklet}>
@@ -84,6 +138,7 @@ function InfoModal({show, handleClose}) {
                         </Collapse>
                     </ul>
                 </li>
+
                 <li className="mt-4">
                     Copy over the <b>sid</b> value <code>&lt;...&gt;</code> from <code>sid=&lt;...&gt;;</code> into the Session ID input box and press <kbd>Enter</kbd>
                     <ul className="mt-2">
