@@ -17,14 +17,20 @@ async function getDocuments(collectionName, filterSpec) {
     const myCollection = await createCollection(soda, collectionName);
 
     // Get filtered documents
-    const mySodaDocuments = await myCollection.find().filter(filterSpec).getDocuments();
-
+    // const mySodaDocuments = await myCollection.find().filter(filterSpec).getDocuments();
+    const cursor = await myCollection.find().filter(filterSpec).getCursor();
     let myDocuments = [];
-    mySodaDocuments.forEach(function(element) {
-        let content = element.getContent();
-        myDocuments.push(content);
-    });
-
+    try {
+        let doc;
+        while (doc = await cursor.getNext()) {
+            let content = doc.getContent();
+            myDocuments.push(content);
+        }
+    } catch (e) {
+        console.log(e);
+        console.log(`WARNING: only fetched ${myDocuments.length} users`);
+    }
+    cursor.close();
     connection.close();
 
     return myDocuments;
