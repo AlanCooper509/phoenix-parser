@@ -78,10 +78,19 @@ async function getUser(req) {
     const sortedByLevel = splitByLevel(scores);
     const sortedScores = getStatistics(sortedByLevel, chartStats);
 
+    const titlesFileName = `${process.env.USERS_DIR}/${getUserID(name, number)}/${process.env.TITLES_FILENAME}`;
+    let titles = await readJsonFromObjectStorage(titlesFileName);
+    if (titles.error) {
+        if (titles.error.code === 404) {
+            // titles were migrated from info.titles into its own separate JSON file
+            titles = info.titles;
+        }
+    }
+
     return {
         "scores": sortedScores,
         "info": info.info,
-        "titles": info.titles
+        "titles": titles
     };
 }
 

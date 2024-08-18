@@ -29,7 +29,12 @@ const ERROR_500 = {
         message: "Internal Error... Please try again later."
     }
 }
-const FILELIST = [process.env.INFO_FILENAME, process.env.BEST_SCORES_FILENAME];
+const FILELIST = [
+    process.env.INFO_FILENAME,
+    process.env.BEST_SCORES_FILENAME,
+    process.env.PUMBILITY_FILENAME,
+    process.env.TITLES_FILENAME
+];
 
 async function syncUser(sid, name, number) {
     const dirname = fs.realpathSync('.');
@@ -81,15 +86,16 @@ async function syncUser(sid, name, number) {
         pythonPromise(pythonProcess).then((output) => {
             console.log(`Successful sync for ${user}`);
             data = output;
-            archiveOldFiles(user, dateObject);
+            return archiveOldFiles(user, dateObject);
         }).then(() => {
             writeNewFiles(user, outDir);
             saveDocument("info_collection", data, user);
         }).then(() => {
             resolve({
                 info: data.info,
-                titles: data.titles.length,
-                scores: data.scores.count
+                titles: data.titles.count,
+                scores: data.scores.count,
+                pumbility: data.pumbility.value
             });
         }).catch((error) => {
             console.log(error);
@@ -156,7 +162,10 @@ async function archiveOldFiles(user, dateObject) {
     for await (const file of FILELIST) {
         const filePath = `${process.env.USERS_DIR}/${user}/${file}`;
         const filePathDated = `${process.env.USERS_DIR}/${user}/${dateObject.date.string}/${file}`;
-        renameObjectInObjectStorage(filePath, filePathDated);
+        const testObject = await readJsonFromObjectStorage(filePath);
+        if (!("error" in testObject)) {
+            await renameObjectInObjectStorage(filePath, filePathDated);
+        }
     }
     return;
 }

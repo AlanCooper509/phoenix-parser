@@ -23,9 +23,10 @@ function postSyncData(params, submitBtn, openNotify) {
             const info = response.data.info; // player / number / title / last_updated
             const scores = response.data.scores; // number
             const titles = response.data.titles; // number
+            const pumbility = response.data.pumbility; // number
             openNotify(
                 <div>
-                    <h3 class="text-center">Data Sync: <span className="text-success">Complete</span></h3>
+                    <h3 className="text-center">Data Sync: <span className="text-success">Complete</span></h3>
                     <hr/>
                     <PlayerCard
                         info={info}
@@ -40,14 +41,17 @@ function postSyncData(params, submitBtn, openNotify) {
                     <h4>
                         <ul>
                             <li>
-                                <code>{scores}</code> Best Scores
+                                Best Scores: <code>{scores.toLocaleString()}</code>
                             </li>
                             <li>
-                                <code>{titles}</code> Titles
+                                Pumbility: <code>{pumbility.toLocaleString()}</code>
+                            </li>
+                            <li>
+                                Titles: <code>{titles.toLocaleString()}</code>
                             </li>
                         </ul>
                     </h4>
-                    <i class="text-muted">(Changes will display after you refresh the page)</i>
+                    <i className="text-muted">(Changes will display after you refresh the page)</i>
                 </div>
             );
 
@@ -76,7 +80,7 @@ function postSyncData(params, submitBtn, openNotify) {
             // open modal with status message
             openNotify(
                 <div>
-                    <h3 class="text-center">Data Sync: <span className="text-danger">Failed</span></h3>
+                    <h3 className="text-center">Data Sync: <span className="text-danger">Failed</span></h3>
                     <hr/>
                     <p>{response}</p>
                 </div>
