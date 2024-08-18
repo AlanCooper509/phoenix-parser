@@ -32,8 +32,7 @@ async function renameObjectInObjectStorage(oldObjectName, newObjectName) {
             chunks.push(Buffer.from(chunk));
         }
         const jsonObject = JSON.parse(Buffer.concat(chunks).toString("utf-8"));
-        console.log(jsonObject);
-        // return jsonObject;
+        return jsonObject;
     } catch (error) {
         return {
             error: {
