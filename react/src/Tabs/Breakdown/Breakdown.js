@@ -6,6 +6,7 @@ import BreakdownStats from "./BreakdownStats.js";
 import ChartTypeSelect from "../../Helpers/ChartTypeSelect.js";
 import BarChart from "./BarChart.js";
 import BreakdownRemaining from "./BreakdownRemaining.js";
+import constants  from '../../Helpers/constants.json'
 
 function updateLevelHelper(event) {
     let level = event.target.value;
@@ -17,8 +18,8 @@ function getHighestClearLevel(data) {
     if (!data) {
         return 1;
     }
-    const levelsDescending = ["28", "27", "26", "25", "24", "23", "22", "21", "20", "19", "18", "17", "16", "15", "14", "13", "12", "11", "10", "09", "08", "07", "06", "05", "04", "03", "02", "01"];
-    for (const level of levelsDescending) {
+
+    for (const level of constants.levelsDescending) {
         if (level in data) {
             return parseInt(level);
         }
