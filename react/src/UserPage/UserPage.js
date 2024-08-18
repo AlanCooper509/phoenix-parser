@@ -6,6 +6,7 @@ import Tabs from 'react-bootstrap/Tabs';
 
 import './UserPage.css';
 import NewUser from './NewUser';
+import LoadingUser from './LoadingUser';
 
 import getUser from '../API/user.js';
 import Profile from '../Profile/Profile';
@@ -59,7 +60,7 @@ function UserPage() {
             { info.last_updated === "Never" ? 
             <NewUser/>
             : info.last_updated === "Unknown" ?
-            <></>
+            <LoadingUser name={name} hashNum={hashNum}/>
             :
             <div className="container">
                 <Tabs defaultActiveKey="overview" id="navtabs" className="mb-3">
