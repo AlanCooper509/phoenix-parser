@@ -74,6 +74,7 @@
     width: 140px;
     height: 105px;
     border-radius: 0.5em;
+    border: 1px solid white;
 }
 .Profile-pic-mini {
     width: 85px;
