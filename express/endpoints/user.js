@@ -42,7 +42,8 @@ const levelMultipliers = {
     "25": 1300,
     "26": 1460,
     "27": 1630,
-    "28": 1810
+    "28": 1810,
+    "coop": 2200
 }
 
 async function getUser(req) {
@@ -75,7 +76,7 @@ async function getUser(req) {
         return chartStats;
     }
 
-    const sortedByLevel = splitByLevel(scores);
+    const sortedByLevel = splitByLevelandCalculateRating(scores);
     const sortedScores = getStatistics(sortedByLevel, chartStats);
 
     const titlesFileName = `${process.env.USERS_DIR}/${getUserID(name, number)}/${process.env.TITLES_FILENAME}`;
@@ -86,22 +87,43 @@ async function getUser(req) {
             titles = info.titles;
         }
     }
+    const pumbilityFileName = `${process.env.USERS_DIR}/${getUserID(name, number)}/${process.env.PUMBILITY_FILENAME}`;
+    let pumbility = await readJsonFromObjectStorage(pumbilityFileName);
+    if (pumbility.error) {
+        if (pumbility.error.code === 404) {
+            // pumbility file is optional; was only collected later on during syncs
+            pumbility = [];
+        }
+    }
 
     return {
         "scores": sortedScores,
         "info": info.info,
-        "titles": titles
+        "titles": titles,
+        "pumbility": pumbility
     };
 }
 
-function splitByLevel(jsonArray) {
+function splitByLevelandCalculateRating(jsonArray) {
+    // already iterating through all entries, just add Rating field to each
     let levels = {};
     for (const idx in jsonArray) {
         let entry = jsonArray[idx];
-        if (!levels[entry["level"]]) {
-            levels[entry["level"]] = {scores: []};
+        const level = entry["level"];
+
+        // add rating field to entry
+        let rating = 0;
+        if (entry["type"] !== 'c' && parseInt(level) >= 10) {
+            rating = Math.round(gradeMultipliers[entry["grade"]]*levelMultipliers[level]);
+        } else if (entry["type"] === 'c') {
+            rating = Math.round(gradeMultipliers[entry["grade"]]*levelMultipliers["coop"]);
         }
-        levels[entry["level"]]["scores"].push(entry);
+        entry["rating"] = rating;
+
+        if (!levels[level]) {
+            levels[level] = {scores: []};
+        }
+        levels[level]["scores"].push(entry);
     }
     return levels;
 }
@@ -116,23 +138,21 @@ function getStatistics(levelsData, levelCounts) {
             let entry = entriesForLevel[idx];
             let scoreEntry = parseInt(entry["score"].replace(/,/g, ''));
             averageScore += scoreEntry;
-            if (entry["type"] !== 'c' && parseInt(level) >= 10) {
-                totalRating += Math.round(gradeMultipliers[entry["grade"]]*levelMultipliers[level]);
-            }
+            totalRating += entry.rating;
 
             switch (entry["type"]) {
                 case 's':
                     singlesCount += 1;
                     singlesScore += scoreEntry;
                     if (parseInt(level) >= 10) {
-                        singlesRating += Math.round(gradeMultipliers[entry["grade"]]*levelMultipliers[level]);
+                        singlesRating += entry.rating;
                     }
                     break;
                 case 'd':
                     doublesCount += 1;
                     doublesScore += scoreEntry;
                     if (parseInt(level) >= 10) {
-                        doublesRating += Math.round(gradeMultipliers[entry["grade"]]*levelMultipliers[level]);
+                        doublesRating += entry.rating;
                     }
                     break;
                 default:
