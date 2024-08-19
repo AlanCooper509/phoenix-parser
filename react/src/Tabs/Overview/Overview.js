@@ -7,15 +7,16 @@ import OverviewGraphHelper from "../../GraphHelpers/OverviewGraphHelper.js";
 import GraphButtons from "../../GraphHelpers/GraphButtons.js";
 import LineChart from "./LineChart.js";
 import ChartTypeSelect from "../../Helpers/ChartTypeSelect.js";
+import constants from '../../Helpers/constants.json'
+import OverviewStats from "./OverviewStats/OverviewStats.js";
 
 function getTableData(data, tableTypeValue) {
-    const levelsDescending = ["28", "27", "26", "25", "24", "23", "22", "21", "20", "19", "18", "17", "16", "15", "14", "13", "12", "11", "10", "09", "08", "07", "06", "05", "04", "03", "02", "01"];
     const coopCategories = ["n2", "n3", "n4", "n5"];
     const ucsCategory = ["xx"];
     let rowData = [];
 
     if (tableTypeValue === "bothtypes" || tableTypeValue === "singles" || tableTypeValue === "doubles") {
-        for (const key of levelsDescending) {
+        for (const key of constants.levelsDescending) {
             if (data[key]) {
                 rowData.push(...data[key].scores);
             }
@@ -56,7 +57,7 @@ function getTableData(data, tableTypeValue) {
     return rowData;
 }
 
-function Overview({info, data}) {
+function Overview({info, data, titles, pumbility}) {
     const minValue = useRef(null);
     const maxValue = useRef(null);
     const chartTypeValue = useRef(null);
@@ -76,28 +77,39 @@ function Overview({info, data}) {
     // for Best Scores Table
     let rowData = getTableData(data, tableTypeValue);
 
-
     function updateRowData(event) {
         setTableTypeValue(event.target.value);
     }
-
     return (
+        <>
         <div className="row align-items-center justify-content-center">
-            <div className="Overview-chart col-12 mb-4" style={{maxWidth: "950px"}}>
-                <LineChart 
-                    innerRef={chartRef}
-                    chartData={graphSetupObject["chartData"]}
-                    title={graphSetupObject["title"]}
-                    subtitle={graphSetupObject["subtitle"]}
-                />
-                <GraphButtons 
-                    minValue={minValue}
-                    maxValue={maxValue}
-                    chartTypeValue={chartTypeValue}
-                    updateLineGraph={updateGraphWrapper}
+            <div className="col-12 col-xl-3 order-xl-1 order-2 d-flex justify-content-center">
+                <OverviewStats
+                    info={info}
+                    scores={data}
+                    pumbility={pumbility}
+                    titles={titles}
                 />
             </div>
-            <hr className="my-4"/>
+            <div className="col-12 col-xl-9 mb-4 order-xl-2 order-1">
+                <div className="Overview-chart">
+                    <LineChart 
+                        innerRef={chartRef}
+                        chartData={graphSetupObject["chartData"]}
+                        title={graphSetupObject["title"]}
+                        subtitle={graphSetupObject["subtitle"]}
+                    />
+                    <GraphButtons 
+                        minValue={minValue}
+                        maxValue={maxValue}
+                        chartTypeValue={chartTypeValue}
+                        updateLineGraph={updateGraphWrapper}
+                    />
+                </div>
+            </div>
+        </div>
+        <hr className="my-4"/>
+        <div className="row align-items-center justify-content-center">
             <div style={{width: "80%", minWidth: "800px"}}>
                 <div className="d-flex justify-content-between align-items-center">
                     <h3 className="mb-3">Best Scores ({rowData.length})</h3>
@@ -114,6 +126,7 @@ function Overview({info, data}) {
                 />
             </div>
         </div>
+        </>
     );
 }
 

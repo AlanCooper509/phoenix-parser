@@ -1,0 +1,35 @@
+.Overview-stats {
+    min-width: 300px;
+    max-width: 776px;
+    min-height: 400px;
+    font-family: 'Oxanium', sans-serif;
+    background-color: color-mix(in srgb, #fff, #182230 97%);
+    border: 0.5px solid #445;
+}
+
+.pumbility-stat-item {
+    min-height: 66px;
+    background-color: color-mix(in srgb, #fff, #184280 97%);
+}
+
+.stat-description {
+    color: #d0d0d0;
+}
+
+.highest-cleared-item {
+    min-height: 62px;
+    background-color: color-mix(in srgb, #fff, #184260 97%);
+}
+
+.highest-single {
+    color: #DD0000;
+}
+
+.highest-double {
+    color: #00CC00;
+}
+
+.title-stat-item {
+    min-height: 56px;
+    background-color: color-mix(in srgb, #fff, #182F40 97%);
+}

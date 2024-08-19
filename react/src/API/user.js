@@ -2,7 +2,7 @@ import axios from 'axios';
 
 import getHostPath from './getHostPath';
 
-function getUser(setInfo, setData, setTitles, name, number) {
+function getUser(setInfo, setData, setTitles, setPumbility, name, number) {
     const fetchData = async (name, number) => {
         const hostname = getHostPath();
         try {
@@ -13,6 +13,7 @@ function getUser(setInfo, setData, setTitles, name, number) {
             setInfo(responseData["info"]);
             setData(responseData["scores"]);
             setTitles(responseData["titles"]);
+            setPumbility(responseData["pumbility"]);
         } catch (error) {
             setInfo({player: name, number: '#' + number, title: {text: "BEGINNER", color: "col5"}, last_updated: "Never"});
         }

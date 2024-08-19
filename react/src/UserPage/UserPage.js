@@ -27,7 +27,7 @@ function resize() {
     // Apply the zoom level to the body
     if(screenWidth < minScreenWidth) {
         const zoomLevel = screenWidth / minScreenWidth;
-        document.body.style.zoom = zoomLevel;
+        document.body.style.zoom = zoomLevel - 0.05;
     }
 };
 
@@ -40,8 +40,9 @@ function UserPage() {
     const [info, setInfo] = useState({player: name, number: hashNum, title: {text: "", color: ""}, last_updated: "Unknown"});
     const [data, setData] = useState([]);
     const [titles, setTitles] = useState([]);
+    const [pumbility, setPumbility] = useState([]);
     
-    useEffect(() => getUser(setInfo, setData, setTitles, name, number), [name, number]);
+    useEffect(() => getUser(setInfo, setData, setTitles, setPumbility, name, number), [name, number]);
     resize();
 
     const hideResync = info.last_updated === "Unknown" || checkUpdatedRecently(info.timestamp, 8*60*60);
@@ -62,10 +63,10 @@ function UserPage() {
             : info.last_updated === "Unknown" ?
             <LoadingUser name={name} hashNum={hashNum}/>
             :
-            <div className="container">
+            <div className="container" style={{minWidth: "800px"}}>
                 <Tabs defaultActiveKey="overview" id="navtabs" className="mb-3">
                     <Tab eventKey="overview" title="Overview">
-                        <Overview info={info} data={data} titles={titles}/>
+                        <Overview info={info} data={data} titles={titles} pumbility={pumbility}/>
                     </Tab>
                     <Tab eventKey="breakdown" title="Breakdown">
                         <Breakdown info={info} data={data}/>

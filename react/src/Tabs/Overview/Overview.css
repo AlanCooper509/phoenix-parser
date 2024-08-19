@@ -1,9 +1,10 @@
 .Overview-chart {
-    min-width: 800px
+    min-width: 800px;
+    max-width: 950px;
 }
 .Min-input {
-    padding-left: 6px
+    padding-left: 6px;
 }
 .Max-input {
-    padding-left: 6px
+    padding-left: 6px;
 }

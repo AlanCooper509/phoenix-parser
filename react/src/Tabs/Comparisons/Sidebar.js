@@ -32,7 +32,7 @@ function Sidebar({graphType, handleGraphToggle, infoP1, p2, p3, p4}) {
         }
         let tokens = splitNameNumber(player.ref.current.value);
         if (!tokens) { return; }
-        getUser(player.setInfo, player.setData, () => {return;}, tokens.name, tokens.number);
+        getUser(player.setInfo, player.setData, () => {return;}, () => {return;}, tokens.name, tokens.number);
     }
 
     return (
