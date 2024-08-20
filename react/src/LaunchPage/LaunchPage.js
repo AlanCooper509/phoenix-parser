@@ -64,13 +64,13 @@ function LaunchPage() {
                 <li className="ms-4 mt-3"><b>Troubleshooting?</b> Reach out to <b>u/PureWasian</b> on Reddit.</li>
                 <li className="ms-4 mt-3"><b>Recent Updates</b></li>
                 <ul>
+                    <li>(08/19/24) Pumbility support on the Overivew page. Tap the Pumbility number on a user page to show the specific charts.</li>
                     <li>(06/17/24) <b>Safari Users</b>: re-visit <span className="link-info" style={{cursor: "pointer"}} onClick={handleShow}>"What is this?"</span> when getting Session ID, Bookmarklets stopped working, so a Shortcut is used now.</li>
                     <InfoModal 
                         show={show}
                         handleClose={handleClose}
                     />
                     <li>(05/13/24) <b>Breakdown: Show Uncleared</b> has a button for seeing remaining charts in a difficulty level (Korean support WIP)</li>
-                    <li>(05/08/24) You can search for existing piu.crabdance users without needing the 4-digit suffix ID</li>
                 </ul>
             </ul>
             <hr className="mt-5"/>
