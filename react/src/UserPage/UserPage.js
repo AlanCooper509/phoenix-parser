@@ -18,13 +18,16 @@ import Comparisons from '../Tabs/Comparisons/Comparisons';
 import checkUpdatedRecently from '../Helpers/checkUpdatedRecently.js';
 
 function resize() {
-    // Set the min-width based on your requirement
+    const isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+    const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+    if (isFirefox && isMobile) {
+        // BUG WORKAROUND: Chart JS minimizes on zoom for Firefox Mobile broswers
+        return;
+    }
+
     const minScreenWidth = 800;
-  
-    // Get the device width
     const screenWidth = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
-    
-    // Apply the zoom level to the body
+
     if(screenWidth < minScreenWidth) {
         const zoomLevel = screenWidth / minScreenWidth;
         document.body.style.zoom = zoomLevel - 0.05;
