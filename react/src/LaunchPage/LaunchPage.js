@@ -57,7 +57,7 @@ function LaunchPage() {
             <SearchUser
                 open={true}
             />
-            <h3 className="ms-2 mt-4">Welcome!</h3>
+            <h3 className="ms-2 mt-4">Welcome to TUSA Club!</h3>
             <h5 className="ms-4 mt-3">Search for a USER to get started.</h5>
             <ul>
                 <li className="ms-4 mt-3"><b>New Here?</b> Set up your own PIU profile using the search bar!</li>
