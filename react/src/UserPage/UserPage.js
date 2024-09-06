@@ -59,6 +59,7 @@ function UserPage() {
     return (
         <div className="UserPage">
             <Profile info={info}/>
+            <p>Proud member of TUSA Club</p>
             <hr/>
             { resyncForm }
             { info.last_updated === "Never" ? 
