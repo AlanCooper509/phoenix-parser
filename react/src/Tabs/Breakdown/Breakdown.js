@@ -129,6 +129,7 @@ function Breakdown({info, data}) {
     const barTitle = getTitle();
     const barSubtitle = `Letter Grade Distribution`;
     const barChartData = getBarChartData();
+
     return (
         <>
         <div className="d-flex mt-4 align-items-stretch align-middle justify-content-between mt-3 mb-4">
@@ -168,6 +169,7 @@ function Breakdown({info, data}) {
                 category={category}
                 levelValue={levelValue}
                 chartType={chartType}
+                language={info.language ? info.language : "ENGLISH"}
             />
         </div>
         <hr className="my-4"/>

@@ -43,7 +43,7 @@ function setTitle(userData, chartData, category, levelValue, chartType) {
     return title;
 }
 
-function BreakdownRemaining({userData, chartData, category, levelValue, chartType}) {
+function BreakdownRemaining({userData, chartData, category, levelValue, chartType, language}) {
     const [show, setShow] = useState(false);
     const [chartList, setChartList] = useState([]);
     const handleClose = () => setShow(false);
@@ -67,11 +67,20 @@ function BreakdownRemaining({userData, chartData, category, levelValue, chartTyp
                 const cleared = userData[levelValue] ? userData[levelValue].scores : [];
                 for (const score of cleared) {
                     // find cleared score in reference list
-                    const idx = referenceList.findIndex((entry) =>
-                        score.name === entry.name &&
-                        score.type === entry.type &&
-                        score.level === entry.level
-                    );
+                    let idx = -1;
+                    if (language === "ENGLISH") {
+                        idx = referenceList.findIndex((entry) =>
+                            score.name === entry.name &&
+                            score.type === entry.type &&
+                            score.level === entry.level
+                        );
+                    } else if (language === "KOREAN") {
+                        idx = referenceList.findIndex((entry) =>
+                            score.name === entry.name_kr &&
+                            score.type === entry.type &&
+                            score.level === entry.level
+                        );                        
+                    }
                     // remove match at index from reference list
                     if (idx > -1) { referenceList.splice(idx, 1); }
                 }
@@ -125,6 +134,7 @@ function BreakdownRemaining({userData, chartData, category, levelValue, chartTyp
             handleClose={handleClose}
             title={title}
             remainingCharts={chartList}
+            language={language}
         />
         </>
       );

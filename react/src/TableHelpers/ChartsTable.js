@@ -5,7 +5,7 @@ import "ag-grid-community/styles/ag-theme-quartz.css";
 
 import "./ScoresTable.css";
 
-function ChartsTable({ rowData, sortLevel }) {
+function ChartsTable({ rowData, sortLevel, language }) {
     // Displays {Co-Op, Single, Double} stepball image based on "type" value
     const levelRenderer = ({ value, data }) => (
         <span className="position-relative level-margins">
@@ -77,11 +77,12 @@ function ChartsTable({ rowData, sortLevel }) {
     }
 
     // Column Definitions: Defines & controls grid columns.
+    const nameField = language === "ENGLISH" ? "name" : "name_kr";
     const columnDefs = [
         { field: "type", minWidth: 30, maxWidth: 30, rowDrag: true},
         { field: "level", minWidth: 100, maxWidth: 100, floatingFilter: sortLevel ? true : false, filter: "agNumberColumnFilter", filterValueGetter: levelFilterValueGetter, comparator: levelComparator, cellRenderer: levelRenderer},
         { field: "bg_img", headerName: 'Image', minWidth: 82, maxWidth: 82, cellRenderer: imgRenderer, sortable: false},
-        { field: "name", floatingFilter: true, filter: "agTextColumnFilter", cellRenderer: nameRenderer, flex: 1 }
+        { field: nameField, headerName: 'Name', floatingFilter: true, filter: "agTextColumnFilter", cellRenderer: nameRenderer, flex: 1 }
     ];
   
     const onGridReady = useCallback((params) => {

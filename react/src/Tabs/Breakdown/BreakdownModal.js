@@ -2,7 +2,7 @@ import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import ChartsTable from '../../TableHelpers/ChartsTable';
 
-function BreakdownModal({show, handleClose, title, remainingCharts}) {
+function BreakdownModal({show, handleClose, title, remainingCharts, language}) {
     return (
         <Modal backdropClassName="fixed-backdrop" size="lg" show={show} onHide={handleClose}>
             <Modal.Header closeButton>
@@ -11,6 +11,7 @@ function BreakdownModal({show, handleClose, title, remainingCharts}) {
             <Modal.Body>
                 <ChartsTable
                     rowData={remainingCharts}
+                    language={language}
                 />
             </Modal.Body>
             <Modal.Footer>
