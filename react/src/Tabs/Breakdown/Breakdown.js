@@ -175,7 +175,6 @@ function Breakdown({info, data}) {
         <hr className="my-4"/>
         <div>
             <BreakdownStats
-                userInfo={info}
                 userData={data}
                 chartData={chartData}
                 category={category}

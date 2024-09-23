@@ -58,32 +58,23 @@ function BreakdownRemaining({userData, chartData, category, levelValue, chartTyp
             referenceList = [...referenceList, ...charts[key]];
         }
 
+        let cleared = [];
         switch (category) {
-            case "ucs": break;
+            case "ucs":
+                setChartList(referenceList);
+                return;
+            break;
             case "coop":
+                cleared = [
+                    ...(userData["n2"] ? userData["n2"].scores : []),
+                    ...(userData["n3"] ? userData["n3"].scores : []),
+                    ...(userData["n4"] ? userData["n4"].scores : []),
+                    ...(userData["n5"] ? userData["n5"].scores : []),
+                ];
                 referenceList = referenceList.filter((chart) => chart.type === 'c');
-                break;
+            break;
             case "level":
-                const cleared = userData[levelValue] ? userData[levelValue].scores : [];
-                for (const score of cleared) {
-                    // find cleared score in reference list
-                    let idx = -1;
-                    if (language === "ENGLISH") {
-                        idx = referenceList.findIndex((entry) =>
-                            score.name === entry.name &&
-                            score.type === entry.type &&
-                            score.level === entry.level
-                        );
-                    } else if (language === "KOREAN") {
-                        idx = referenceList.findIndex((entry) =>
-                            score.name === entry.name_kr &&
-                            score.type === entry.type &&
-                            score.level === entry.level
-                        );                        
-                    }
-                    // remove match at index from reference list
-                    if (idx > -1) { referenceList.splice(idx, 1); }
-                }
+                cleared = userData[levelValue] ? userData[levelValue].scores : [];
                 switch (chartType) {
                     case "bothtypes":
                         referenceList = referenceList.filter((chart) => chart.type === 'd' || chart.type === 's');
@@ -96,9 +87,28 @@ function BreakdownRemaining({userData, chartData, category, levelValue, chartTyp
                         break;
                     default: break;
                 }
-                break;
-            default: break;
+            break;
         }
+
+        for (const score of cleared) {
+            let idx = -1;
+            if (language === "ENGLISH") {
+                idx = referenceList.findIndex((entry) =>
+                    score.name === entry.name &&
+                    score.type === entry.type &&
+                    score.level === entry.level
+                );
+            } else if (language === "KOREAN") {
+                idx = referenceList.findIndex((entry) =>
+                    score.name === entry.name_kr &&
+                    score.type === entry.type &&
+                    score.level === entry.level
+                );
+            }
+            // remove match at index from reference list
+            if (idx > -1) { referenceList.splice(idx, 1); }
+        }
+
         setChartList(referenceList);
     }
 

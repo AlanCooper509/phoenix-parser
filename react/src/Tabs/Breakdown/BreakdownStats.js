@@ -23,14 +23,18 @@ function addChartsForLevel(userData, level, chartType) {
 }
 
 function addCoopCharts(userData) {
-    let rowData = [];
-    const categories = ["n2", "n3", "n4", "n5"];
-    for (const key of categories) {
-        if (userData[key]) {
-            rowData.push(...userData[key].scores);
-        }
-    }
+    const rowData = [
+        ...(userData["n2"] ? userData["n2"].scores : []),
+        ...(userData["n3"] ? userData["n3"].scores : []),
+        ...(userData["n4"] ? userData["n4"].scores : []),
+        ...(userData["n5"] ? userData["n5"].scores : []),
+    ];
     return rowData;
+}
+
+function getCoopChartCount(chartData) {
+    let coopCounts = chartData["coop"];
+    return coopCounts["n2"] + coopCounts["n3"] + coopCounts["n4"] + coopCounts["n5"];
 }
 
 function addUcsCharts(userData) {
@@ -58,7 +62,7 @@ function getChartCountForLevel(chartData, level, chartType) {
     return chartCount;
 }
 
-function BreakdownStats({ userInfo, userData, chartData, category, chartType, level }) {
+function BreakdownStats({ userData, chartData, category, chartType, level }) {
     let rowData = [];
     let chartCount;
     level = level < 10 ? '0' + level : String(level);
@@ -69,6 +73,7 @@ function BreakdownStats({ userInfo, userData, chartData, category, chartType, le
     }
     if (category === "coop") {
         rowData = addCoopCharts(userData);
+        chartCount = getCoopChartCount(chartData);
     }
     if (category === "ucs") {
         rowData = addUcsCharts(userData);
