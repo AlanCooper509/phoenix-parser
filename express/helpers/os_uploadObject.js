@@ -30,8 +30,6 @@ async function uploadObjectToObjectStorage(objectName, objectBody) {
             chunks.push(Buffer.from(chunk));
         }
         const jsonObject = JSON.parse(Buffer.concat(chunks).toString("utf-8"));
-        console.log(jsonObject);
-        // return jsonObject;
     } catch (error) {
         return {
             error: {

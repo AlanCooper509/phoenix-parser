@@ -98,8 +98,8 @@ async function syncUser(sid, name, number) {
                 pumbility: data.pumbility.value
             });
         }).catch((error) => {
-            console.log(error);
-            reject(error);
+            // resolve it so the 400 error gets sent back to user
+            resolve(error);
         });
     });
 }

@@ -12,7 +12,6 @@ async function getChartStats(req) {
     } else {
         objectName += `level${value}.json`        
     }
-    console.log(objectName);
 
     const charts = await readJsonFromObjectStorage(objectName);
     return charts;
