@@ -74,6 +74,7 @@ app.get('/api/charts/level/:value', async (req, res) => {
 });
 
 app.post('/api/sync/:name/:number', async (req, res) => {
+  req.setTimeout(0);
   const name = req.params.name.toUpperCase();
   const number = req.params.number;
   const sid = req.body.sid;
