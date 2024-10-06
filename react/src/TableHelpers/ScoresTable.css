@@ -3,7 +3,7 @@
 }
 
 .level-font {
-    font-size: 1.6em;
+    font-size: 22.5px;
     text-shadow: 1.5px 1.5px 1px rgba(0, 0, 0,0.9);
     -webkit-text-stroke-color: #111111;
     -webkit-text-stroke-width: 0.9px;
@@ -20,11 +20,11 @@
 }
 
 .score-font {
-    font-size: 1.15em;
+    font-size: 16px;
 }
 
 .name-font {
-    font-size: 1.10em;
+    font-size: 16px;
 }
 
 .onespaceleft {
