@@ -15,6 +15,12 @@
     font-weight: 700;
     font-size: 1.038em;
     font-family: 'Oxanium', sans-serif;
+    white-space: nowrap;
+}
+@media (max-width: 600px) {
+    .Game-title-mini {
+        font-size: 0.89em; /* Smaller font size for mobile devices */
+    }
 }
 .col1 {
     -webkit-text-stroke-color: #ffffff;

@@ -63,7 +63,6 @@ function BreakdownRemaining({userData, chartData, category, levelValue, chartTyp
             case "ucs":
                 setChartList(referenceList);
                 return;
-            break;
             case "coop":
                 cleared = [
                     ...(userData["n2"] ? userData["n2"].scores : []),
@@ -88,6 +87,9 @@ function BreakdownRemaining({userData, chartData, category, levelValue, chartTyp
                     default: break;
                 }
             break;
+            default:
+                setChartList(referenceList);
+                return;
         }
 
         for (const score of cleared) {
