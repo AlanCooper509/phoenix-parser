@@ -22,6 +22,10 @@ function PlayerCard({info}) {
             </div>
         </div>
     }
+    let timestamp = info.last_updated;
+    if (info.timestamp) {
+        timestamp = new Date(parseInt(info.timestamp) * 1000).toLocaleString();
+    }
     return (
     <div className="d-flex justify-content-center align-items-center">
         <a href="/">
@@ -35,7 +39,7 @@ function PlayerCard({info}) {
                 {info.player.toUpperCase()} {info.number}
             </div>
             <i className="Update">
-                Last Synced: {info.last_updated}
+                Last Synced: {timestamp}
             </i>
         </div>
     </div>

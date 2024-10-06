@@ -8,6 +8,10 @@ function ProfileMini({info}) {
         const user = splitNameNumber(info.player + info.number);
         window.location.href = `/user/${user.name}/${user.number}`;
     }
+    let timestamp = info.last_updated;
+    if (info.timestamp) {
+        timestamp = new Date(parseInt(info.timestamp) * 1000).toLocaleDateString();
+    }
     
     return (
         <>
@@ -20,7 +24,7 @@ function ProfileMini({info}) {
                 </div>
             </div>
             <i className="Update-mini position-relative ms-2" style={{bottom: "25px", float: "right", right: "10px"}}>
-                Last Synced: {info.last_updated}
+                Last Synced: {timestamp}
             </i>
         </div>
         </>

@@ -42,9 +42,13 @@ class OverviewGraphHelper extends GraphHelpers {
         const title = `${player} (${typeText})`;
         return title;
     }
-    getSubtitle(lastSynced) {
+    getSubtitle(info) {
+        let timestamp = info.last_updated;
+        if (info.timestamp) {
+            timestamp = new Date(parseInt(info.timestamp) * 1000).toLocaleString();
+        }        
         const rightPadding = " ".repeat(24);
-        const subtitle = `Last Synced: ${lastSynced}${rightPadding}`;
+        const subtitle = `Last Synced: ${timestamp}${rightPadding}`;
         return subtitle;
     }
     updateGraph(chartRef, labels, data, info, chartTypeValue, changedInput) {
@@ -53,7 +57,7 @@ class OverviewGraphHelper extends GraphHelpers {
         const percentages = this.getDatasetFromLabels("clear", data, labels, chartTypeValue);
         datasets.push({data: averages, label: "AVG SCORE", type: "line", yAxisID: "y"});
         datasets.push({data: percentages, label: "% CLEARED", type: "bar", yAxisID: "y1"});
-        const subtitle = this.getSubtitle(info["last_updated"]);
+        const subtitle = this.getSubtitle(info);
         const title = this.getTitle(info["player"], chartTypeValue);
     
         if (changedInput) {
