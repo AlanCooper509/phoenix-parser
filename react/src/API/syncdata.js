@@ -25,6 +25,7 @@ function postSyncData(params, submitBtn, openNotify) {
             const titles = response.data.titles; // number
             const pumbility = response.data.pumbility; // number
             openNotify(
+                true,
                 <div>
                     <h3 className="text-center">Data Sync: <span className="text-success">Complete</span></h3>
                     <hr/>
@@ -79,6 +80,7 @@ function postSyncData(params, submitBtn, openNotify) {
             }
             // open modal with status message
             openNotify(
+                false,
                 <div>
                     <h3 className="text-center">Data Sync: <span className="text-danger">Failed</span></h3>
                     <hr/>

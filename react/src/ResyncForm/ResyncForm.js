@@ -18,8 +18,14 @@ function ResyncForm({info}) {
     // for response modal
     const [notify, setNotify] = useState(false);
     const [message, setMessage] = useState('');
-    const closeNotify = () => {setNotify(false);};
-    const openNotify = (msg) => {setMessage(msg); setNotify(true)};
+    const [success, setSuccess] = useState(false);
+    const closeNotify = () => {
+        // refresh the page as workaround until updating sync API call (and front-end processing)
+        // to fetch back same payload as GET API (or follow-up with GET API on front-end upon completion)
+        if (success) { window.location.reload(); } 
+        setNotify(false);
+    };
+    const openNotify = (status, msg) => {setMessage(msg); setSuccess(status); setNotify(true)};
 
     // for submitting
     const [showForm, setShowForm] = useState(false);
