@@ -8,10 +8,12 @@ function UsersModal({show, handleClose, data}) {
     let userlist = [];
     for (let entry of data) {
         userlist.push(
-            <ProfileMini
-                info={entry.info}
-                key={entry.info.player + entry.info.number}
-            />
+            <div className="col d-flex justify-content-center">
+                <ProfileMini
+                    info={entry.info}
+                    key={entry.info.player + entry.info.number}
+                />
+            </div>
         );        
     }
 
@@ -22,10 +24,8 @@ function UsersModal({show, handleClose, data}) {
         </Modal.Header>
         <Modal.Body>
         <div className="container">
-            <div className="row">
-                <div className="d-flex justify-content-center">
-                    {userlist}
-                </div>
+            <div className="row justify-content-center">
+                {userlist}
             </div>
         </div>
         </Modal.Body>
