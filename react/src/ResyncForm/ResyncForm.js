@@ -41,7 +41,10 @@ function ResyncForm({info}) {
     function handleSubmit() {
         if(!sid.current) { return };
         if(!sid.current.value) { return };
-        if(sid.current.value.match(/[^a-zA-Z0-9]/g)) { return };
+        let input = sid.current.value;
+        if(input.includes("sid=")) input = input.split("sid=")[1];
+        if(input.includes(";")) input = input.split(";")[0];
+        if(input.match(/[^a-zA-Z0-9]/g)) { return };
         const params = {name: name, number: number, sid: sid.current.value};
         postSyncData(params, submitBtn, openNotify);
     }
