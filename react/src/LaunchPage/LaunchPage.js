@@ -1,7 +1,6 @@
 import React, {useState, useEffect} from 'react';
 
 import SearchUser from "../SearchUser/SearchUser";
-import InfoModal from "../ResyncForm/InfoModal";
 import getUsers from "../API/users";
 import ProfileMini from '../Profile/ProfileMini';
 
@@ -9,10 +8,31 @@ function LaunchPage() {
     const [users, setUsers] = useState([]);
     useEffect(() => getUsers(setUsers), []);
 
-    // for Info Modal
-    const [show, setShow] = useState(false);
-    const handleClose = () => setShow(false);
-    const handleShow = (e) => {e.preventDefault(); setShow(true)};
+    let welcomeText = "Welcome!";
+    let starterText = "Search for a USER to get started.";
+    let latestSyncOutput = (<></>);
+    let newUserOutput = (<>
+            <li className="ms-4 mt-3"><b>New Here?</b></li>
+            <ul>
+                <li>Set up your own PIU profile by using the search bar!</li>
+            </ul>
+        </>
+    );
+    
+    const latestSync = localStorage.getItem("latestSync");
+    if (latestSync) {
+        const latestInfo = JSON.parse(latestSync);
+        welcomeText = `Welcome back, ${latestInfo.player}!`
+        starterText += " Your latest sync was:";
+        latestSyncOutput = (
+            <div className="row ms-4">
+                <span className="row ms-2">
+                    <ProfileMini info={latestInfo} />
+                </span>
+            </div>
+        );
+        newUserOutput = (<></>);
+    }
 
     let userlist_today = [];
     let userlist_weekly = [];
@@ -54,23 +74,21 @@ function LaunchPage() {
 
     return (
         <div className="container mt-4">
-            <SearchUser
-                open={true}
-            />
-            <h3 className="ms-2 mt-4">Welcome!</h3>
-            <h5 className="ms-4 mt-3">Search for a USER to get started.</h5>
-            <ul>
-                <li className="ms-4 mt-3"><b>New Here?</b> Set up your own PIU profile using the search bar!</li>
-                <li className="ms-4 mt-3"><b>Troubleshooting?</b> Reach out to <b>u/PureWasian</b> on Reddit.</li>
+            <SearchUser open={true} />
+            <h3 className="ms-2 mt-4">{welcomeText}</h3>
+            <h5 className="ms-4 mt-3">{starterText}</h5>
+            {latestSyncOutput}
+            <ul className="mt-">
+                {newUserOutput}
+                <li className="ms-4 mt-3"><b>Troubleshooting?</b></li>
+                <ul>
+                    <li>Reach out to <b>u/PureWasian</b> on Reddit.</li>
+                </ul>
                 <li className="ms-4 mt-3"><b>Recent Updates</b></li>
                 <ul>
+                    <li>(10/31/24) When sync is successful, the page will now auto-refresh upon closing the notification. Also, you can see who your latest sync was!</li>
                     <li>(09/23/24) <b>Breakdown: Show Uncleared</b> properly tracks Co-Op clears, and supports Korean syncs now.</li>
                     <li>(08/19/24) Pumbility support on the Overivew page. Tap the Pumbility number on a user page to show the specific charts.</li>
-                    <li>(06/17/24) <b>Safari Users</b>: re-visit <span className="link-info" style={{cursor: "pointer"}} onClick={handleShow}>"What is this?"</span> when getting Session ID, Bookmarklets stopped working, so a Shortcut is used now.</li>
-                    <InfoModal 
-                        show={show}
-                        handleClose={handleClose}
-                    />
                 </ul>
             </ul>
             <hr className="mt-5"/>

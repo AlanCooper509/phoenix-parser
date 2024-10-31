@@ -24,6 +24,7 @@ function postSyncData(params, submitBtn, openNotify) {
             const scores = response.data.scores; // number
             const titles = response.data.titles; // number
             const pumbility = response.data.pumbility; // number
+            localStorage.setItem('latestSync', JSON.stringify(info));
             openNotify(
                 true,
                 <div>
