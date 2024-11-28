@@ -88,7 +88,7 @@
     border-radius: 0.5em;
 }
 .container-mini {
-    cursor: pointer;
+    color: white;
     border: 2px solid #bbbbbb;
     border-radius: 10px;
     background-color: #343a40;
