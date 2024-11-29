@@ -19,7 +19,7 @@ function PumbilityTable({ rowData }) {
                 {data.chart.level[1] === "1" ? <span className="onespaceright"></span> : <></>}
             </span>
             <img alt={`${data.chart.type}`}
-                src={`https://www.piugame.com/l_img/stepball/full/${data.chart.type}_bg.png`}
+                src={`/images/stepball/${data.chart.type}_bg.png`}
                 style={{width: "45px", height: "auto", maxHeight: "80%"}}
             />
             </>
@@ -38,7 +38,7 @@ function PumbilityTable({ rowData }) {
         <span className="d-flex h-100 w-100 align-items-center justify-content-center">
             {value && 
                 <img alt={`${value}`}
-                    src={`https://www.piugame.com/l_img/grade/${value}.png`}
+                    src={`/images/grade/${value}.png`}
                     className="d-block"
                     style={{width: "40px", height: "auto", maxHeight: "50%"}}
                 />

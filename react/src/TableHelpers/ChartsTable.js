@@ -20,7 +20,7 @@ function ChartsTable({ rowData, sortLevel, language }) {
                 {data.level[1] === "1" ? <span className="onespaceright"></span> : <></>}
             </span>
             <img alt={`${data.type}`}
-                src={`https://www.piugame.com/l_img/stepball/full/${data.type}_bg.png`}
+                src={`/images/stepball/${data.type}_bg.png`}
                 style={{width: "45px", height: "auto", maxHeight: "80%"}}
             />
             </>

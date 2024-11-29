@@ -11,7 +11,7 @@ function ScoresTable({ rowData, sortLevel }) {
         <span className="d-flex h-100 w-100 align-items-center justify-content-center">
             {value && 
                 <img alt={`${value}`}
-                    src={`https://www.piugame.com/l_img/stepball/full/${value}_bg.png`}
+                    src={`/images/stepball/${value}_bg.png`}
                     style={{width: "45px", height: "auto", maxHeight: "80%"}}
                 />
             }
@@ -23,7 +23,7 @@ function ScoresTable({ rowData, sortLevel }) {
         <span className="d-flex h-100 w-100 align-items-center justify-content-center">
             {value && 
                 <img alt={`${value}`}
-                    src={`https://www.piugame.com/l_img/grade/${value}.png`}
+                    src={`/images/grade/${value}.png`}
                     className="d-block"
                     style={{width: "40px", height: "auto", maxHeight: "50%"}}
                 />
@@ -36,7 +36,7 @@ function ScoresTable({ rowData, sortLevel }) {
         <span className="d-flex h-100 w-100 align-items-center ms-3">
             {value && 
                 <img alt={`${value}`}
-                    src={`https://www.piugame.com/l_img/plate/s_${value}.png`}
+                    src={`/images/plate/s_${value}.png`}
                     className="d-block"
                     style={{width: "40px", height: "auto", maxHeight: "50%"}}
                 />
@@ -57,7 +57,7 @@ function ScoresTable({ rowData, sortLevel }) {
                 {data.level[1] === "1" ? <span className="onespaceright"></span> : <></>}
             </span>
             <img alt={`${data.type}`}
-                src={`https://www.piugame.com/l_img/stepball/full/${data.type}_bg.png`}
+                src={`/images/stepball/${data.type}_bg.png`}
                 style={{width: "45px", height: "auto", maxHeight: "80%"}}
             />
             </>

@@ -40,9 +40,9 @@ function LevelStats({cutoffs, rating, singles, doubles, charts, level}) {
                 </div>
                 <div className="col-8 text-start">
                     <span className="float-end me-2 d-flex align-items-center">
-                        <img alt="singles" className="stepball" src="https://www.piugame.com/l_img/stepball/full/s_bg.png"/>
+                        <img alt="singles" className="stepball" src="/images/stepball/s_bg.png"/>
                         <span className="ms-1 me-3"><b className="h3">{singles}</b>/{charts ? charts.singles : 0}</span>
-                        <img alt="doubles" className="stepball" src="https://www.piugame.com/l_img/stepball/full/d_bg.png"/>
+                        <img alt="doubles" className="stepball" src="/images/stepball/d_bg.png"/>
                         <span className="ms-1 me-2"><b className="h3">{doubles}</b>/{charts ? charts.doubles : 0}</span>
                     </span>
                     <h4 className="">Rating: {rating.toLocaleString()}</h4>
