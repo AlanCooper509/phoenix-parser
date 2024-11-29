@@ -37,30 +37,42 @@ function Sidebar({graphType, handleGraphToggle, infoP1, p2, p3, p4}) {
 
     return (
         <div className="container">
-            <PlayerNameInput
-                innerRef={p2.ref}
-                label="Player 2"
-                tag="p2"
-                addPlayerHandler={addPlayer}
-            />
-            <PlayerNameInput
-                innerRef={p3.ref}
-                label="Player 3"
-                tag="p3"
-                addPlayerHandler={addPlayer}
-            />
-            <PlayerNameInput
-                innerRef={p4.ref}
-                label="Player 4"
-                tag="p4"
-                addPlayerHandler={addPlayer}
-            />
-            <div className="d-flex align-items-start mt-2">
-                <label className="me-2" htmlFor="graphType">Select Stat:</label>
-                <select ref={graphType} name="graphType" defaultValue="average" onInput={handleGraphToggle}>
-                    <option value="average">Average Score</option>
-                    <option value="clear">Percent Cleared</option>
-                </select>
+            <div className="row">
+                <div className="col-12 col-xl-4 mb-3">
+                    <div className="d-flex align-items-center mt-2">
+                        <label className="me-2" htmlFor="graphType" style={{whiteSpace: "nowrap"}}>Select Stat:</label>
+                        <select ref={graphType} name="graphType" defaultValue="average" onInput={handleGraphToggle}>
+                            <option value="average">Average Score</option>
+                            <option value="clear">Percent Cleared</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div className="row mt-2">
+                <div className="col-4 col-xl-12 mb-3">
+                    <PlayerNameInput
+                        innerRef={p2.ref}
+                        label="Player 2"
+                        tag="p2"
+                        addPlayerHandler={addPlayer}
+                    />
+                </div>
+                <div className="col-4 col-xl-12 mb-3">
+                    <PlayerNameInput
+                        innerRef={p3.ref}
+                        label="Player 3"
+                        tag="p3"
+                        addPlayerHandler={addPlayer}
+                    />
+                </div>
+                <div className="col-4 col-xl-12 mb-3">
+                    <PlayerNameInput
+                        innerRef={p4.ref}
+                        label="Player 4"
+                        tag="p4"
+                        addPlayerHandler={addPlayer}
+                    />
+                </div>
             </div>
         </div>
     );

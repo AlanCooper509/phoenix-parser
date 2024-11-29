@@ -55,7 +55,7 @@ function Comparisons({info, data}) {
     // rendering
     return (
         <div className="row align-items-top justify-content-center">
-            <div className="col-4">
+            <div className="col-12 col-xl-4">
                 <Sidebar
                     graphType={graphType}
                     handleGraphToggle={updateGraphWrapper}
@@ -65,7 +65,7 @@ function Comparisons({info, data}) {
                     p4={{ref: p4NameInput, setData: setDataP4}}
                 />
             </div>
-            <div className="Comparisons-chart col-8 mb-4">
+            <div className="Comparisons-chart col-12 col-xl-8 mb-4">
                 <LineChart 
                     innerRef={chartRef}
                     graphType={graphType}
