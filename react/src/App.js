@@ -9,6 +9,7 @@ function App() {
       <Routes>
         <Route path="/" element={<LaunchPage/>} />
         <Route path="/user/:name/:number" element={<UserPage/>} />
+        <Route path="/user/:name/:number/:tab" element={<UserPage/>} />
       </Routes>
     </Router>
   );

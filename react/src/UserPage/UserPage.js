@@ -38,7 +38,14 @@ function UserPage() {
     const params = useParams();
     const name = params.name;
     const number = params.number;
+    let [activeTab, setActiveTab] = useState(params.tab || "overview");
     const hashNum = '#' + number;
+
+    function updateUrl(tab) {
+        const newPath = `${window.location.pathname.split('/').slice(0, 4).join('/')}/${tab}`;
+        window.history.pushState(null, '', newPath);
+        setActiveTab(tab);
+    }    
 
     const [info, setInfo] = useState({player: name, number: hashNum, title: {text: "", color: ""}, last_updated: "Unknown"});
     const [data, setData] = useState([]);
@@ -67,7 +74,7 @@ function UserPage() {
             <LoadingUser name={name} hashNum={hashNum}/>
             :
             <div className="container" style={{minWidth: "800px"}}>
-                <Tabs defaultActiveKey="overview" id="navtabs" className="mb-3">
+                <Tabs activeKey={activeTab} id="navtabs" className="mb-3" onSelect={updateUrl}>
                     <Tab eventKey="overview" title="Overview">
                         <Overview info={info} data={data} titles={titles} pumbility={pumbility}/>
                     </Tab>
