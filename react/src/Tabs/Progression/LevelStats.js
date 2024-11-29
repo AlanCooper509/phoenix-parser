@@ -6,6 +6,23 @@ import Collapse from 'react-bootstrap/Collapse';
 
 import "./LevelStats.css";
 
+function renderStatusText(cutoffs, rating, singles, doubles) {
+    const currentCount = singles + doubles;
+    const ratingPerChart = rating/currentCount;
+
+    if (isNaN(ratingPerChart)) {
+        return <ul>No data points yet!</ul>;
+    }
+
+    const nextCutoff = cutoffs.find(m => m.value >= rating)
+    if (!nextCutoff) {
+        return <ul className="text-success"><strong>Titles Achieved!</strong></ul>;
+    }
+
+    const estimate = Math.ceil((nextCutoff.value - rating)/ratingPerChart);
+    return <ul>Estimated: <strong className="fs-5 text-warning">{estimate}</strong> clears to title!</ul>;
+}
+
 function LevelStats({cutoffs, rating, singles, doubles, charts, level}) {
     let titles = [];
     for (const idx in cutoffs) {
@@ -18,20 +35,16 @@ function LevelStats({cutoffs, rating, singles, doubles, charts, level}) {
             </div>
         );
     }
-    const cutoff = 0;
-    const [open, setOpen] = useState(titles.length <= cutoff);
+    const [open, setOpen] = useState(false);
+    const levelStatusText = open ? "" : renderStatusText(cutoffs, rating, singles, doubles);
     return (
         <div className="container">
             <div className="row align-items-center">
                 <div className="col-4">
-                    {titles.length > cutoff ?
-                        <h4 style={{cursor: "pointer"}} onClick={() => {setOpen(!open)}}>
-                            <BsChevronCompactDown style={{transform: `rotate(${open ? 180 : 0}deg)`}}/> LEVEL {level}
-                        </h4> : 
-                        <h4>
-                            LEVEL {level}
-                        </h4>
-                    }
+                    <h4 style={{cursor: "pointer"}} onClick={() => {setOpen(!open)}}>
+                        <BsChevronCompactDown style={{transform: `rotate(${open ? 180 : 0}deg)`}}/> LEVEL {level}
+                    </h4>
+                    <div className="text-muted">{levelStatusText}</div>
                     <Collapse in={open}>
                         <div>
                         {titles}
