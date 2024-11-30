@@ -33,6 +33,7 @@ const FILELIST = [
     process.env.INFO_FILENAME,
     process.env.BEST_SCORES_FILENAME,
     process.env.PUMBILITY_FILENAME,
+    process.env.RECENTS_FILENAME,
     process.env.TITLES_FILENAME
 ];
 
