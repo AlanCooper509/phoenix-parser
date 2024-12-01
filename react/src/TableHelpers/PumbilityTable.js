@@ -52,6 +52,7 @@ function PumbilityTable({ rowData }) {
         </span>
     );
 
+    /*
     const imgRenderer = ({ value }) => (
         <span className="position-relative level-margins" style={{
             marginLeft: "-20px"
@@ -68,6 +69,7 @@ function PumbilityTable({ rowData }) {
             </span>
         </span>
     );
+    */
 
     const rankComparator = function(valueA, valueB) {
         valueA = parseInt(valueA);
@@ -81,11 +83,11 @@ function PumbilityTable({ rowData }) {
     // Column Definitions: Defines & controls grid columns.
     const columnDefs = [
         { field: "ranking", headerName: '', minWidth: 55, maxWidth: 55, comparator: rankComparator, sort: "asc" },
-        { field: "score", minWidth: 82, maxWidth: 82},
         { field: "chart.level", headerName: "Level", minWidth: 92, maxWidth: 92, cellRenderer: levelRenderer, sortable: false},
         { field: "grade", minWidth: 82, maxWidth: 82, cellRenderer: gradeTypeRenderer, sortable: false},
-        { field: "song.url", headerName: "Image", minWidth: 82, maxWidth: 82, cellRenderer: imgRenderer, sortable: false},
-        { field: "song.name", headerName: "Name", cellRenderer: nameRenderer, flex: 1, sortable: false }
+        // { field: "song.url", headerName: "Image", minWidth: 82, maxWidth: 82, cellRenderer: imgRenderer, sortable: false},
+        { field: "song.name", headerName: "Name", cellRenderer: nameRenderer, flex: 1, sortable: false },
+        { field: "score", minWidth: 82, maxWidth: 82}
     ];
   
     const onGridReady = useCallback((params) => {

@@ -38,7 +38,16 @@ function UserPage() {
     const [pumbility, setPumbility] = useState([]);
     
     useEffect(() => getUser(setInfo, setData, setTitles, setPumbility, name, number), [name, number]);
-    const zoomLevel = calculateZoomLevel(minWidth);
+
+    const [zoomLevel, setZoomLevel] = useState(calculateZoomLevel(minWidth));
+    useEffect(() => {
+        const handleResize = () => {
+          setZoomLevel(calculateZoomLevel(minWidth));
+        };
+        window.addEventListener("resize", handleResize);
+        return () => { window.removeEventListener("resize", handleResize); };
+      }, []
+    );
 
     const hideResync = info.last_updated === "Unknown" || checkUpdatedRecently(info.timestamp, 8*60*60);
     const resyncForm =  hideResync ? <></> :

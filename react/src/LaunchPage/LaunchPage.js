@@ -9,7 +9,16 @@ function LaunchPage() {
     const minWidth = 480;
     const [users, setUsers] = useState([]);
     useEffect(() => getUsers(setUsers), []);
-    const zoomLevel = calculateZoomLevel(minWidth);
+
+    const [zoomLevel, setZoomLevel] = useState(calculateZoomLevel(minWidth));
+    useEffect(() => {
+        const handleResize = () => {
+          setZoomLevel(calculateZoomLevel(minWidth));
+        };
+        window.addEventListener("resize", handleResize);
+        return () => { window.removeEventListener("resize", handleResize); };
+      }, []
+    );
 
     let welcomeText = "Welcome!";
     let starterText = "Search for a USER to get started.";
@@ -89,7 +98,7 @@ function LaunchPage() {
                 </ul>
                 <li className="ms-4 mt-3"><b>Recent Updates</b></li>
                 <ul>
-                    <li>(12/01/24) Safari/iPhone users rejoice ~ tweaked the text sizing issues, among other QoL changes</li>
+                    <li>(12/01/24) Safari/iPhone users rejoice ~ text sizing issues have been tweaked, among some other formatting QoL changes</li>
                     <li>(10/31/24) When sync is successful, the page will now auto-refresh upon closing the notification. Also, you can see who your latest sync was!</li>
                     <li>(09/23/24) <b>Breakdown: Show Uncleared</b> properly tracks Co-Op clears, and supports Korean syncs now.</li>
                     <li>(08/19/24) Pumbility support on the Overivew page. Tap the Pumbility number on a user page to show the specific charts.</li>
