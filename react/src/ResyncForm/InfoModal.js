@@ -14,6 +14,7 @@ import scriptImg from './example_scripting.png';
 import settingImg from './example_setting.png';
 import cookieImg from './example_cookie.png';
 import './InfoModal.css';
+import calculateZoomLevel from "../Helpers/calculateZoomLevel";
 
 function InfoModal({show, handleClose}) {
     const params = useParams();
@@ -28,8 +29,14 @@ function InfoModal({show, handleClose}) {
     const [chrome, setChrome] = useState(false);
     const [bookmarklet, setBookmarklet] = useState(false);
 
+    const minWidth = 800;
+    const zoomLevel = calculateZoomLevel(minWidth);
+
     return (
-    <Modal backdropClassName="fixed-backdrop" size="lg" show={show} onHide={handleClose}>
+    <Modal show={show} onHide={handleClose}
+        backdropClassName="fixed-backdrop" size="lg"
+        style={{minWidth: `${minWidth}px`, transform: `scale(${zoomLevel})`, transformOrigin: 'top left', minHeight: `${100/zoomLevel}%`}}
+    >
         <Modal.Header closeButton>
             <Modal.Title>Syncing your PIU Phoenix Data</Modal.Title>
         </Modal.Header>

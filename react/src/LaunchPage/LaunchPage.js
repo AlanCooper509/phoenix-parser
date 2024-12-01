@@ -3,10 +3,13 @@ import React, {useState, useEffect} from 'react';
 import SearchUser from "../SearchUser/SearchUser";
 import getUsers from "../API/users";
 import ProfileMini from '../Profile/ProfileMini';
+import calculateZoomLevel from '../Helpers/calculateZoomLevel';
 
 function LaunchPage() {
+    const minWidth = 480;
     const [users, setUsers] = useState([]);
     useEffect(() => getUsers(setUsers), []);
+    const zoomLevel = calculateZoomLevel(minWidth);
 
     let welcomeText = "Welcome!";
     let starterText = "Search for a USER to get started.";
@@ -73,7 +76,7 @@ function LaunchPage() {
     const totalUserCount = users.length > 0 ? `(${users.length})` : '';
 
     return (
-        <div className="container mt-4">
+        <div className="container mt-4" style={{minWidth: `${minWidth}px`, transform: `scale(${zoomLevel})`, transformOrigin: 'top left'}}>
             <SearchUser open={true} />
             <h3 className="ms-2 mt-4">{welcomeText}</h3>
             <h5 className="ms-4 mt-3">{starterText}</h5>
@@ -86,6 +89,7 @@ function LaunchPage() {
                 </ul>
                 <li className="ms-4 mt-3"><b>Recent Updates</b></li>
                 <ul>
+                    <li>(12/01/24) Safari/iPhone users rejoice ~ tweaked the text sizing issues, among other QoL changes</li>
                     <li>(10/31/24) When sync is successful, the page will now auto-refresh upon closing the notification. Also, you can see who your latest sync was!</li>
                     <li>(09/23/24) <b>Breakdown: Show Uncleared</b> properly tracks Co-Op clears, and supports Korean syncs now.</li>
                     <li>(08/19/24) Pumbility support on the Overivew page. Tap the Pumbility number on a user page to show the specific charts.</li>
