@@ -1,5 +1,6 @@
 import React, {useState, useEffect} from 'react';
 import { useParams } from "react-router-dom";
+import Snowfall from 'react-snowfall'
 
 import Tab from 'react-bootstrap/Tab';
 import Tabs from 'react-bootstrap/Tabs';
@@ -59,7 +60,15 @@ function UserPage() {
 
     return (
         <div className="UserPage" style={{ transform: `scale(${zoomLevel})`, transformOrigin: 'top left' }}>
-            <Profile info={info}/>
+            <div className="position-relative">
+                <Snowfall
+                    snowflakeCount={25}
+                    wind={[-0.3, 0.6]}
+                    speed={[0.5, 0.8]}
+                    radius={[1.0, 2.0]}
+                />
+                <Profile info={info}/>
+            </div>
             <hr/>
             { resyncForm }
             { info.last_updated === "Never" ? 

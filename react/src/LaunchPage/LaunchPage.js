@@ -1,4 +1,5 @@
 import React, {useState, useEffect} from 'react';
+import Snowfall from 'react-snowfall'
 
 import SearchUser from "../SearchUser/SearchUser";
 import getUsers from "../API/users";
@@ -86,25 +87,33 @@ function LaunchPage() {
 
     return (
         <div className="container mt-4" style={{minWidth: `${minWidth}px`, transform: `scale(${zoomLevel})`, transformOrigin: 'top left'}}>
-            <SearchUser open={true} />
-            <h3 className="ms-2 mt-4">{welcomeText}</h3>
-            <h5 className="ms-4 mt-3">{starterText}</h5>
-            {latestSyncOutput}
-            <ul className="mt-">
-                {newUserOutput}
-                <li className="ms-4 mt-3"><b>Troubleshooting?</b></li>
-                <ul>
-                    <li>Reach out to <b>u/PureWasian</b> on Reddit.</li>
+            <div className="position-relative">
+                <Snowfall
+                    snowflakeCount={75}
+                    wind={[-0.3, 0.7]}
+                    speed={[0.8, 1.3]}
+                    radius={[1.0, 2.0]}
+                />
+                <SearchUser open={true} />
+                <h3 className="ms-2 mt-4">{welcomeText}</h3>
+                <h5 className="ms-4 mt-3">{starterText}</h5>
+                {latestSyncOutput}
+                <ul className="mt-">
+                    {newUserOutput}
+                    <li className="ms-4 mt-3"><b>Troubleshooting?</b></li>
+                    <ul>
+                        <li>Reach out to <b>u/PureWasian</b> on Reddit.</li>
+                    </ul>
+                    <li className="ms-4 mt-3"><b>Recent Updates</b></li>
+                    <ul>
+                        <li>(12/01/24) Safari/iPhone users rejoice ~ text sizing issues have been tweaked, among some other formatting QoL changes</li>
+                        <li>(10/31/24) When sync is successful, the page will now auto-refresh upon closing the notification. Also, you can see who your latest sync was!</li>
+                        <li>(09/23/24) <b>Breakdown: Show Uncleared</b> properly tracks Co-Op clears, and supports Korean syncs now.</li>
+                        <li>(08/19/24) Pumbility support on the Overivew page. Tap the Pumbility number on a user page to show the specific charts.</li>
+                    </ul>
                 </ul>
-                <li className="ms-4 mt-3"><b>Recent Updates</b></li>
-                <ul>
-                    <li>(12/01/24) Safari/iPhone users rejoice ~ text sizing issues have been tweaked, among some other formatting QoL changes</li>
-                    <li>(10/31/24) When sync is successful, the page will now auto-refresh upon closing the notification. Also, you can see who your latest sync was!</li>
-                    <li>(09/23/24) <b>Breakdown: Show Uncleared</b> properly tracks Co-Op clears, and supports Korean syncs now.</li>
-                    <li>(08/19/24) Pumbility support on the Overivew page. Tap the Pumbility number on a user page to show the specific charts.</li>
-                </ul>
-            </ul>
-            <hr className="mt-5"/>
+                <hr className="mt-5"/>
+            </div>
             <h4 className="ms-2 mt-4">User Database {totalUserCount}</h4>
             <div className="container">
                 <div className="row">
