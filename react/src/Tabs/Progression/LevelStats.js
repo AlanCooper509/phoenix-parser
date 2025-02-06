@@ -14,7 +14,7 @@ function renderStatusText(cutoffs, rating, singles, doubles) {
         return <ul>No data points yet!</ul>;
     }
 
-    const nextCutoff = cutoffs.find(m => m.value >= rating)
+    const nextCutoff = cutoffs.find(cutoff => cutoff.value > rating)
     if (!nextCutoff) {
         return <ul className="text-success"><strong>Titles Achieved!</strong></ul>;
     }
