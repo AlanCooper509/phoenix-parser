@@ -18,6 +18,7 @@ import Progression from '../Tabs/Progression/Progression.js';
 import Comparisons from '../Tabs/Comparisons/Comparisons';
 import checkUpdatedRecently from '../Helpers/checkUpdatedRecently.js';
 import calculateZoomLevel from '../Helpers/calculateZoomLevel.js';
+import constants from '../Helpers/constants.json';
 
 function UserPage() {
     const params = useParams();
@@ -58,15 +59,20 @@ function UserPage() {
                             />
                         </div>
 
+    let snow = <></>
+    if (constants.winterTheme) {
+        <Snowfall
+            snowflakeCount={25}
+            wind={[-0.3, 0.6]}
+            speed={[0.5, 0.8]}
+            radius={[1.0, 2.0]}
+        />
+    }
+
     return (
         <div className="UserPage" style={{ transform: `scale(${zoomLevel})`, transformOrigin: 'top left' }}>
             <div className="position-relative">
-                <Snowfall
-                    snowflakeCount={25}
-                    wind={[-0.3, 0.6]}
-                    speed={[0.5, 0.8]}
-                    radius={[1.0, 2.0]}
-                />
+                {snow}
                 <Profile info={info}/>
             </div>
             <hr/>
