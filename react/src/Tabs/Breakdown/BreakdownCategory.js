@@ -5,7 +5,6 @@ function BreakdownCategory({ innerRef, onInput }) {
         <select ref={innerRef} className="h-100" name="levelSelect" defaultValue="level" onInput={onInput}>
             <option value="level">Level</option>
             <option value="coop">Co-Op</option>
-            <option value="ucs">UCS</option>
         </select>
         </>
     );

@@ -9,9 +9,6 @@ function ChartTypeSelect({ innerRef, onInput, coopOption, ucsOption }) {
             {coopOption ? 
             <option value="coop">CO-OP</option> : <></>
             }
-            {ucsOption ? 
-            <option value="ucs">UCS</option> : <></>
-            }
         </select>
         </div>
     );

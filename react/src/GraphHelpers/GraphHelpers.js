@@ -4,8 +4,8 @@ class GraphHelpers {
             const chartType = chartTypeValue.current == null ? "bothtypes" : chartTypeValue.current.value;
             let min = minValue.current ? parseInt(minValue.current.value) : 1;
             let minPrev = minValue.current ? minValue.current.getAttribute("previous") : 1;
-            let max = maxValue.current ? parseInt(maxValue.current.value) : 28;
-            let maxPrev = maxValue.current ? maxValue.current.getAttribute("previous") : 28;
+            let max = maxValue.current ? parseInt(maxValue.current.value) : 29;
+            let maxPrev = maxValue.current ? maxValue.current.getAttribute("previous") : 29;
         
             if (changedInput) {
                 switch (changedInput.target.getAttribute("name")) {
@@ -13,7 +13,7 @@ class GraphHelpers {
                         if (isNaN(min)) {
                             min = minPrev;
                         } else {
-                            min = min < 1 ? 1 : (min > 28 ? 28 : min > max ? max : min);
+                            min = min < 1 ? 1 : (min > 29 ? 29 : min > max ? max : min);
                             minValue.current.value = min;
                             minValue.current.setAttribute("previous", min);
                         }
@@ -23,7 +23,7 @@ class GraphHelpers {
                             max = maxPrev;
                             break;
                         }
-                        max = max < 1 ? 1 : max > 28 ? 28 : max < min ? min : max;
+                        max = max < 1 ? 1 : max > 29 ? 29 : max < min ? min : max;
                         maxValue.current.value = max;
                         maxValue.current.setAttribute("previous", max);
                         break;
@@ -39,6 +39,7 @@ class GraphHelpers {
             let labels = [];
             for (let i = inputs["min"]; i <= inputs["max"]; i++) {
                 let label = i < 10 ? `0${i}` : i.toString();
+                if (label === '29') { label = '??'; }
                 labels.push(label);
             }
             return labels;

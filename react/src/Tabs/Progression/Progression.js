@@ -27,7 +27,7 @@ function Progression({data, titles}) {
                     key={ key }
                 />
             );
-            if (["19", "22", "28"].includes(key)) { continue; /* skip adding <hr/> to the bottom of each category */}
+            if (["19", "22", "29"].includes(key)) { continue; /* skip adding <hr/> to the bottom of each category */}
             levels[category].push(<hr key={-key}/>)
         }
     }
@@ -48,7 +48,7 @@ function Progression({data, titles}) {
         // only show expert titles
         showSectionsWithKeys = ['3'];
     } else {
-        for (const level of ["23", "24", "25", "26", "27", "28"]) {
+        for (const level of ["23", "24", "25", "26", "27", "28", "29"]) {
             if (level in data) {
                 showSectionsWithKeys.push('3');
             }

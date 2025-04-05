@@ -10,7 +10,7 @@ import constants  from '../../Helpers/constants.json'
 
 function updateLevelHelper(event) {
     let level = event.target.value;
-    level = level < 1 ? 1 : (level > 28 ? 28 : level);
+    level = level < 1 ? 1 : (level > 29 ? 29 : level);
     return parseInt(level);
 }
 
@@ -93,34 +93,29 @@ function Breakdown({info, data}) {
                 }
                 return barData;
             }
-            case "ucs": {
-                let barData = {"scores": []};
-                if (data["xx"]) {
-                    barData = data["xx"];
-                }
-                return barData;
-            }
             default: return {};
         }
     }
 
     function getTitle() {
+
         switch (category) {
             case "level":
+                let lvlText = levelValue < 10? `0${levelValue}` : levelValue.toString();
+                lvlText = levelValue === '29' ? '??' : levelValue;
+
                 switch (chartType) {
                     case "bothtypes":
-                        return `${info.player}: Level ${levelValue < 10? `0${levelValue}` : levelValue.toString()} Best Scores`;
+                        return `${info.player}: Level ${lvlText} Best Scores`;
                     case "singles":
-                        return `${info.player}: S${levelValue < 10? `0${levelValue}` : levelValue.toString()} Best Scores`;
+                        return `${info.player}: S${lvlText} Best Scores`;
                     case "doubles":
-                        return `${info.player}: D${levelValue < 10? `0${levelValue}` : levelValue.toString()} Best Scores`;
+                        return `${info.player}: D${lvlText} Best Scores`;
                     default:
                         return `Best Scores`;
                     }
             case "coop":
                 return `${info.player}: Co-Op Best Scores`;
-            case "ucs":
-                return `${info.player}: UCS Best Scores`;
             default:
                 return `Best Scores`;
         }
@@ -148,7 +143,7 @@ function Breakdown({info, data}) {
             <div className="px-2">
                 <div className={showLevel ? "visible" : "invisible"}>
                     <label className="me-2" htmlFor="min">Level:</label>
-                    <input ref={levelInput} className="Min-input" name="min" type="number" defaultValue={levelValue} min="1" max="28" previous="1" onKeyDown={handleKeyDown} onClick={updateLevel} onBlur={updateLevel}></input>
+                    <input ref={levelInput} className="Min-input" name="min" type="number" defaultValue={levelValue} min="1" max="29" previous="1" onKeyDown={handleKeyDown} onClick={updateLevel} onBlur={updateLevel}></input>
                 </div>
             </div>
         </div>

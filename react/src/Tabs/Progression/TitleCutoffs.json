@@ -71,6 +71,13 @@
             "value": 1900,
             "description": "[Lv.28 Rating] 1900 points or higher // Earn [EXPERT Lv.10]",
             "tier": "platinum"
+        }],
+        "29": [{
+            "header": "??",
+            "name": "??",
+            "value": 1,
+            "description": "[Lv.??] Stage Pass (Good Luck...)",
+            "tier": "platinum"
         }]
     },
     "advanced": {

@@ -37,6 +37,9 @@ function LevelStats({cutoffs, rating, singles, doubles, charts, level}) {
     }
     const [open, setOpen] = useState(false);
     const levelStatusText = open ? "" : renderStatusText(cutoffs, rating, singles, doubles);
+
+    // thanks 1948
+    if (level === "29") { level = "??"}
     return (
         <div className="container">
             <div className="row align-items-center">
