@@ -26,6 +26,9 @@ app.get('/api/user/:name/:number', async (req, res) => {
     } else {
       res.json(output);
     }
+  }).catch((err) => {
+    console.log(`[GET USER] ERROR: ${err}`);
+    res.status(500).send("Internal Server Error");
   });
 });
 
@@ -37,6 +40,9 @@ app.get('/api/users/', async (req, res) => {
     } else {
       res.json(output);
     }
+  }).catch((err) => {
+    console.log(`[GET USERS] ERROR: ${err}`);
+    res.status(500).send("Internal Server Error");
   });
 });
 
@@ -48,7 +54,10 @@ app.get('/api/users/:name', async (req, res) => {
     } else {
       res.json(output);
     }
-  });
+  }).catch((err) => {
+    console.log(`[GET (NAME) USERS] ERROR: ${err}`);
+    res.status(500).send("Internal Server Error");
+  });;
 });
 
 // [GET] CHART STATS
@@ -58,8 +67,11 @@ app.get('/api/charts/stats', async (req, res) => {
       res.status(output.error.code).send(output.error.message);
     } else {
       res.json(output);
-    }  
-  });
+    }
+  }).catch((err) => {
+    console.log(`[GET CHART STATS] ERROR: ${err}`);
+    res.status(500).send("Internal Server Error");
+  });;
 });
 
 // [GET] CHARTS FOR LEVEL
@@ -70,7 +82,10 @@ app.get('/api/charts/level/:value', async (req, res) => {
     } else {
       res.json(output);
     }  
-  });
+  }).catch((err) => {
+    console.log(`[GET CHARTS FOR LEVEL] ERROR: ${err}`);
+    res.status(500).send("Internal Server Error");
+  });;
 });
 
 app.post('/api/sync/:name/:number', async (req, res) => {
@@ -85,6 +100,9 @@ app.post('/api/sync/:name/:number', async (req, res) => {
     } else {
       res.json(output);
     }
+  }).catch((err) => {
+    console.log(`[SYNC USER] ERROR: ${err}`);
+    res.status(500).send("Internal Server Error");
   });
 });
 
