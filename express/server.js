@@ -57,7 +57,7 @@ app.get('/api/users/:name', async (req, res) => {
   }).catch((err) => {
     console.log(`[GET (NAME) USERS] ERROR: ${err}`);
     res.status(500).send("Internal Server Error");
-  });;
+  });
 });
 
 // [GET] CHART STATS
@@ -71,7 +71,7 @@ app.get('/api/charts/stats', async (req, res) => {
   }).catch((err) => {
     console.log(`[GET CHART STATS] ERROR: ${err}`);
     res.status(500).send("Internal Server Error");
-  });;
+  });
 });
 
 // [GET] CHARTS FOR LEVEL
@@ -85,11 +85,11 @@ app.get('/api/charts/level/:value', async (req, res) => {
   }).catch((err) => {
     console.log(`[GET CHARTS FOR LEVEL] ERROR: ${err}`);
     res.status(500).send("Internal Server Error");
-  });;
+  });
 });
 
 app.post('/api/sync/:name/:number', async (req, res) => {
-  req.setTimeout(0);
+  req.setTimeout(15*60*1000);
   const name = req.params.name.toUpperCase();
   const number = req.params.number;
   const sid = req.body.sid;
