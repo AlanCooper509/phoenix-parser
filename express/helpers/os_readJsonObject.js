@@ -3,7 +3,7 @@ import 'dotenv/config';
 import common from 'oci-common'
 import os from 'oci-objectstorage'
 
-async function readJsonFromobjectStorage(objectName) {
+async function readJsonFromObjectStorage(objectName) {
     const provider = new common.ConfigFileAuthenticationDetailsProvider(
         process.env.OCI_CONFIG_PATH,
         process.env.OCI_CONFIG_PROFILE
@@ -41,4 +41,4 @@ async function readJsonFromobjectStorage(objectName) {
     }
 }
 
-export default readJsonFromobjectStorage;
+export default readJsonFromObjectStorage;
