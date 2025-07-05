@@ -50,9 +50,19 @@ async function sortScores(scores) {
         return chartStats;
     }
 
-    const sortedByLevel = splitByLevelandCalculateRating(scores);
+    const filteredScores = filterScores(scores);
+    const sortedByLevel = splitByLevelandCalculateRating(filteredScores);
     const sortedScores = getStatistics(sortedByLevel, chartStats);
     return sortedScores;
+}
+
+function filterScores(jsonArray) {
+    let outputArray = [];
+    // we don't talk about the Autumn Break incident :)
+    for (const entry of jsonArray) {
+        if (!entry["name"].includes("Autumn Break")) { outputArray.push(entry); }
+    }
+    return outputArray;
 }
 
 function splitByLevelandCalculateRating(jsonArray) {
