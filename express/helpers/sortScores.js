@@ -58,9 +58,16 @@ async function sortScores(scores) {
 
 function filterScores(jsonArray) {
     let outputArray = [];
-    // we don't talk about the Autumn Break incident :)
-    for (const entry of jsonArray) {
-        if (!entry["name"].includes("Autumn Break")) { outputArray.push(entry); }
+    for (let entry of jsonArray) {
+        // we don't talk about the Autumn Break incident :)
+        if (!entry["name"].includes("Autumn Break")) { 
+            // for some reason, a '\n' likes to sneak into this name when synced
+            if (entry["name"] === 'ヨロピク ピクヨロ！\nYoropiku Pikuyoro !') {
+                entry["name"] = 'ヨロピク ピクヨロ！Yoropiku Pikuyoro !'
+            }
+            outputArray.push(entry); 
+        }
+
     }
     return outputArray;
 }
