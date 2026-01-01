@@ -4,10 +4,11 @@
 
 .level-font {
     font-size: 22.5px;
-    text-shadow: 1.5px 1.5px 1px rgba(0, 0, 0,0.9);
+    text-shadow: 1.5px 1.5px 1px rgba(0, 0, 0, 0.9);
     -webkit-text-stroke-color: #111111;
     -webkit-text-stroke-width: 0.9px;
     color: #ffffff;
+    z-index: 2;
 }
 
 .level-font-margin {
@@ -39,4 +40,12 @@
 
 .ucs-text {
     margin-top: 7px;
+}
+
+.stepball-img {
+  width: 45px;
+  height: auto;
+  max-height: 80%;
+  position: relative;
+  z-index: 1;
 }

@@ -61,7 +61,7 @@ function UserPage() {
 
     let snow = <></>
     if (constants.winterTheme) {
-        <Snowfall
+        snow = <Snowfall
             snowflakeCount={25}
             wind={[-0.3, 0.6]}
             speed={[0.5, 0.8]}

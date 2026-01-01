@@ -44,33 +44,39 @@ function ScoresTable({ rowData, sortLevel }) {
         </span>
     );
 
-    const levelRenderer = ({ value, data }) => (
-        <span className="position-relative level-margins">
-            {value && value !== "xx" && 
-            <>
-            <span className="game-font level-font level-font-margin position-absolute">
-                {data.level[0] === "1" ? <span className="onespaceleft"></span> : <></>}
-                {data.level[0] === "n" ? "x" : data.level[0]}
-                {data.level[0] === "1" ? <span className="onespaceright"></span> : <></>}
-                {data.level[1] === "1" ? <span className="onespaceleft"></span> : <></>}
-                {data.level[1]}
-                {data.level[1] === "1" ? <span className="onespaceright"></span> : <></>}
+    const levelRenderer = ({ value, data }) => {
+        const isSamsungInternet = /SamsungBrowser/i.test(navigator.userAgent);
+        return (
+            <span className="level-margins">
+                {value && value !== "xx" && 
+                <>
+                <span
+                    className="game-font level-font level-font-margin position-absolute"
+                    style={isSamsungInternet ? { color: "transparent", textShadow: "0px 0px 0px #ffffff" } : {}}
+                >
+                    {data.level[0] === "1" ? <span className="onespaceleft"></span> : <></>}
+                    {data.level[0] === "n" ? "x" : data.level[0]}
+                    {data.level[0] === "1" ? <span className="onespaceright"></span> : <></>}
+                    {data.level[1] === "1" ? <span className="onespaceleft"></span> : <></>}
+                    {data.level[1]}
+                    {data.level[1] === "1" ? <span className="onespaceright"></span> : <></>}
+                </span>
+                <img className="stepball-img" alt={`${data.type}`}
+                    src={`/images/stepball/${data.type}_bg.png`}
+                    style={{ filter: isSamsungInternet ? "brightness(1.4)" : "brightness(1.0)" }}
+                />
+                </>
+                }
+                {value && value === "xx" &&
+                <>
+                <span className="game-font level-font level-font-margin position-absolute">
+                    !<span className="onespaceleft"></span><span className="onespaceright"></span>!
+                </span>
+                </>
+                }
             </span>
-            <img alt={`${data.type}`}
-                src={`/images/stepball/${data.type}_bg.png`}
-                style={{width: "45px", height: "auto", maxHeight: "80%"}}
-            />
-            </>
-            }
-            {value && value === "xx" &&
-            <>
-            <span className="game-font level-font level-font-margin position-absolute">
-                !<span className="onespaceleft"></span><span className="onespaceright"></span>!
-            </span>
-            </>
-            }
-        </span>
-    );
+        );
+    }
     
     const nameRenderer = ({ value }) => (
         <span className="name-font d-flex h-100 w-100 align-items-center mt-1">
