@@ -3,7 +3,7 @@ import Accordion from 'react-bootstrap/Accordion';
 
 import getChartStats from '../../API/chartstats.js';
 import LevelStats from './LevelStats.js';
-import cutoffs from "./TitleCutoffs.json";
+import cutoffs from "../../Helpers/TitleCutoffs.json";
 
 function Progression({data, titles}) {
     const [chartData, setChartData] = useState({});

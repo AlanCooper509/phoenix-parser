@@ -6,6 +6,8 @@ import BreakdownStats from "./BreakdownStats.js";
 import ChartTypeSelect from "../../Helpers/ChartTypeSelect.js";
 import BarChart from "./BarChart.js";
 import BreakdownRemaining from "./BreakdownRemaining.js";
+import BreakdownOverview from "./BreakdownOverview.js";
+import cutoffs from "../../Helpers/TitleCutoffs.json";
 import constants  from '../../Helpers/constants.json'
 
 function updateLevelHelper(event) {
@@ -167,6 +169,12 @@ function Breakdown({info, data}) {
                 language={info.language ? info.language : "ENGLISH"}
             />
         </div>
+        <BreakdownOverview
+            data={data}
+            chartData = {chartData}
+            levelValue={levelValue}
+            cutoffs={cutoffs}
+        />
         <hr className="my-4"/>
         <div>
             <BreakdownStats
