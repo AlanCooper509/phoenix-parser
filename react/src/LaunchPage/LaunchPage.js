@@ -5,7 +5,7 @@ import SearchUser from "../SearchUser/SearchUser";
 import getUsers from "../API/users";
 import ProfileMini from '../Profile/ProfileMini';
 import calculateZoomLevel from '../Helpers/calculateZoomLevel';
-import constants from '../Helpers/constants.json'
+import isWinterTheme from '../Helpers/isWinter';
 
 function LaunchPage() {
     const minWidth = 480;
@@ -87,7 +87,7 @@ function LaunchPage() {
     const totalUserCount = users.length > 0 ? `(${users.length})` : '';
 
     let snow = <></>
-    if (constants.winterTheme) {
+    if (isWinterTheme()) {
         snow = <Snowfall
             snowflakeCount={75}
             wind={[-0.3, 0.7]}

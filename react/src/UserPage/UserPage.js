@@ -18,7 +18,7 @@ import Progression from '../Tabs/Progression/Progression.js';
 import Comparisons from '../Tabs/Comparisons/Comparisons';
 import checkUpdatedRecently from '../Helpers/checkUpdatedRecently.js';
 import calculateZoomLevel from '../Helpers/calculateZoomLevel.js';
-import constants from '../Helpers/constants.json';
+import isWinterTheme from '../Helpers/isWinter.js';
 
 function UserPage() {
     const params = useParams();
@@ -60,7 +60,7 @@ function UserPage() {
                         </div>
 
     let snow = <></>
-    if (constants.winterTheme) {
+    if (isWinterTheme()) {
         snow = <Snowfall
             snowflakeCount={25}
             wind={[-0.3, 0.6]}
