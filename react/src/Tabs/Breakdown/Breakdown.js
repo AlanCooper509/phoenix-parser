@@ -169,12 +169,14 @@ function Breakdown({info, data}) {
                 language={info.language ? info.language : "ENGLISH"}
             />
         </div>
-        <BreakdownOverview
-            data={data}
-            chartData = {chartData}
-            levelValue={levelValue}
-            cutoffs={cutoffs}
-        />
+        {(category == "level") && 
+            <BreakdownOverview
+                data={data}
+                chartData = {chartData}
+                levelValue={levelValue}
+                cutoffs={cutoffs}
+            />
+        }
         <hr className="my-4"/>
         <div>
             <BreakdownStats
