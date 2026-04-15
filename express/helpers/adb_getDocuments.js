@@ -1,39 +1,43 @@
-import 'dotenv/config';
-
 import oracledb from 'oracledb';
-
-import getClientOpts from './adb_getClientOpts.js';
-import createCollection from './adb_createCollection.js';
 import getConnectionOpts from './adb_getConnectionOpts.js';
 
+try {
+    if (process.platform === 'win32') {
+        oracledb.initOracleClient({ libDir: process.env.ORACLE_INSTANT_CLIENT_PATH });
+    } else {
+        // Linux logic: Use system-installed libraries
+        oracledb.initOracleClient(); 
+    }
+} catch (err) {
+    // Already initialized
+}
+
 async function getDocuments(collectionName, filterSpec) {
-    oracledb.autoCommit = true;
-    oracledb.initOracleClient(getClientOpts());
-
-    let connection = await oracledb.getConnection(getConnectionOpts());
-
-    // Get collection
-    const soda = connection.getSodaDatabase();
-    const myCollection = await createCollection(soda, collectionName);
-
-    // Get filtered documents
-    // const mySodaDocuments = await myCollection.find().filter(filterSpec).getDocuments();
-    const cursor = await myCollection.find().filter(filterSpec).getCursor();
-    let myDocuments = [];
+    let connection;
     try {
+        connection = await oracledb.getConnection(getConnectionOpts());
+        
+        const soda = connection.getSodaDatabase();
+        const myCollection = await soda.openCollection(collectionName);
+
+        const cursor = await myCollection.find().filter(filterSpec).getCursor();
+        let myDocuments = [];
+        
         let doc;
         while (doc = await cursor.getNext()) {
-            let content = doc.getContent();
-            myDocuments.push(content);
+            myDocuments.push(doc.getContent());
         }
+        
+        await cursor.close();
+        return myDocuments;
     } catch (e) {
-        console.log(e);
-        console.log(`WARNING: only fetched ${myDocuments.length} users`);
+        console.error("Database Error:", e);
+        throw e; 
+    } finally {
+        if (connection) {
+            await connection.close();
+        }
     }
-    cursor.close();
-    connection.close();
-
-    return myDocuments;
 }
 
 export default getDocuments;

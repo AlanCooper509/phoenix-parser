@@ -1,28 +1,37 @@
-import 'dotenv/config';
-
 import oracledb from 'oracledb';
-
-import getClientOpts from './adb_getClientOpts.js';
 import createCollection from './adb_createCollection.js';
 import getConnectionOpts from './adb_getConnectionOpts.js';
 
+try {
+    if (process.platform === 'win32') {
+        oracledb.initOracleClient({ libDir: process.env.ORACLE_INSTANT_CLIENT_PATH });
+    } else {
+        // Linux logic: Use system-installed libraries
+        oracledb.initOracleClient(); 
+    }
+} catch (err) {
+    // Already initialized
+}
+
 async function saveDocument(collectionName, jsonDocument, key) {
-    oracledb.autoCommit = true;
-    oracledb.initOracleClient(getClientOpts());
+    let connection;
+    try {
+        connection = await oracledb.getConnection(getConnectionOpts());
+        const soda = connection.getSodaDatabase();
+        const myCollection = await createCollection(soda, collectionName);
 
-    let connection = await oracledb.getConnection(getConnectionOpts());
+        const newDocument = soda.createDocument(jsonDocument, {key: key});
+        const myDocument = await myCollection.saveAndGet(newDocument);
 
-    // Get collection
-    const soda = connection.getSodaDatabase();
-    const myCollection = await createCollection(soda, collectionName);
-
-    // Create and Save a document (updates existing)
-    const newDocument = soda.createDocument(jsonDocument, {key: key});
-    const myDocument = await myCollection.saveAndGet(newDocument);
-
-    connection.close();
-
-    return myDocument;
+        return myDocument;
+    } catch (e) {
+        console.error("Error in saveDocument:", e);
+        throw e;
+    } finally {
+        if (connection) {
+            await connection.close();
+        }
+    }
 }
 
 export default saveDocument;
