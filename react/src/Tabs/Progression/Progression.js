@@ -56,7 +56,7 @@ function Progression({data, titles}) {
     }
 
     return (
-        <div className="container">
+        <div className="container-fluid container-lg">
             <h3 className="mb-3">Title Progression</h3>
             <Accordion defaultActiveKey={showSectionsWithKeys} alwaysOpen>
                 <Accordion.Item eventKey="1" >

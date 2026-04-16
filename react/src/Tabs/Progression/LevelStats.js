@@ -107,36 +107,46 @@ function LevelStats({cutoffs, rating, singles, doubles, charts, level}) {
 
     // thanks 1948
     if (level === "29") { level = "??"}
-    return (
-        <div className="container">
-            <div className="row align-items-center">
-                <div className="col-4">
-                    <h4 style={{cursor: "pointer"}} onClick={() => {setOpen(!open)}}>
-                        <BsChevronCompactDown style={{transform: `rotate(${open ? 180 : 0}deg)`}}/> LEVEL {level}
-                    </h4>
-                    <div className="text-muted">{levelStatusText}</div>
-                    <Collapse in={open}>
-                        <div>
+return (
+    <div className="container-fluid px-0">
+        <div className="row align-items-center g-4">
+            
+            <div className="col-12 col-md-4">
+                <h4 style={{cursor: "pointer"}} onClick={() => {setOpen(!open)}}>
+                    <BsChevronCompactDown style={{transform: `rotate(${open ? 180 : 0}deg)`}}/> LEVEL {level}
+                </h4>
+                <div className="text-muted">{levelStatusText}</div>
+                <Collapse in={open}>
+                    <div>
                         {titles}
-                        </div>
-                    </Collapse>
-                </div>
-                <div className={"col-8 text-start"}>
-                    <span className="float-end me-2 d-flex align-items-center">
+                    </div>
+                </Collapse>
+            </div>
+
+            <div className="col-12 col-md-8 text-start">
+                <div className="d-flex flex-wrap justify-content-between align-items-center mb-2">
+                    <h4 className="mb-0">Rating: {rating.toLocaleString()}</h4>
+                    
+                    <div className="d-flex align-items-center">
                         <img alt="singles" className="stepball" src="/images/stepball/s_bg.png"/>
-                        <span className="ms-1 me-3"><b className="h3">{singles}</b>/{charts ? charts.singles : 0}</span>
+                        <span className="ms-1 me-3">
+                            <b className="h3">{singles}</b>/{charts ? charts.singles : 0}
+                        </span>
                         <img alt="doubles" className="stepball" src="/images/stepball/d_bg.png"/>
-                        <span className="ms-1 me-2"><b className="h3">{doubles}</b>/{charts ? charts.doubles : 0}</span>
-                    </span>
-                    <h4 className="">Rating: {rating.toLocaleString()}</h4>
-                    <BarChart
-                        cutoffs={cutoffs}
-                        rating={rating}
-                    />
+                        <span className="ms-1 me-2">
+                            <b className="h3">{doubles}</b>/{charts ? charts.doubles : 0}
+                        </span>
+                    </div>
                 </div>
+
+                <BarChart
+                    cutoffs={cutoffs}
+                    rating={rating}
+                />
             </div>
         </div>
-    );
+    </div>
+);
 }
 
 export default LevelStats;
