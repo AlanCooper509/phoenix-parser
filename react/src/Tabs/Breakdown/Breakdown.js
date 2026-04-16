@@ -1,9 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 
-import BreakdownCategory from "./BreakdownCategory.js";
 import getChartStats from '../../API/chartstats.js';
 import BreakdownStats from "./BreakdownStats.js";
-import ChartTypeSelect from "../../Helpers/ChartTypeSelect.js";
+import BreakdownHeader from "./BreakdownHeader.js";
 import BarChart from "./BarChart.js";
 import BreakdownRemaining from "./BreakdownRemaining.js";
 import BreakdownOverview from "./BreakdownOverview.js";
@@ -129,26 +128,17 @@ function Breakdown({info, data}) {
 
     return (
         <>
-        <div className="d-flex mt-4 align-items-stretch align-middle justify-content-between mt-3 mb-4">
-            <div className="px-2">
-                <BreakdownCategory
-                    innerRef={categorySelect}
-                    onInput={updateCategory}
-                />
-            </div>
-            <div className={showLevel ? "visible" : "invisible"}>
-                <ChartTypeSelect
-                    innerRef={chartTypeSelect}
-                    onInput={handleTypeChange}
-                />
-            </div>
-            <div className="px-2">
-                <div className={showLevel ? "visible" : "invisible"}>
-                    <label className="me-2" htmlFor="min">Level:</label>
-                    <input ref={levelInput} className="Min-input" name="min" type="number" defaultValue={levelValue} min="1" max="29" previous="1" onKeyDown={handleKeyDown} onClick={updateLevel} onBlur={updateLevel}></input>
-                </div>
-            </div>
-        </div>
+        <BreakdownHeader
+            categorySelect={categorySelect}
+            updateCategory={updateCategory}
+            showLevel={showLevel}
+            chartTypeSelect={chartTypeSelect}
+            handleTypeChange={handleTypeChange}
+            levelInput={levelInput}
+            levelValue={levelValue}
+            handleKeyDown={handleKeyDown}
+            updateLevel={updateLevel}
+        />
         <hr className="mb-4"/>
         <div className="container" style={{maxWidth: "800px"}}>
             <BarChart

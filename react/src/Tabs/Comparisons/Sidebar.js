@@ -41,7 +41,13 @@ function Sidebar({graphType, handleGraphToggle, infoP1, p2, p3, p4}) {
                 <div className="col-12 col-xl-4 mb-3">
                     <div className="d-flex align-items-center mt-2">
                         <label className="me-2" htmlFor="graphType" style={{whiteSpace: "nowrap"}}>Select Stat:</label>
-                        <select ref={graphType} name="graphType" defaultValue="average" onInput={handleGraphToggle}>
+                        <select
+                            ref={graphType}
+                            className="form-select w-auto rounded-3 bg-secondary bg-opacity-10"
+                            name="graphType"
+                            defaultValue="average"
+                            onInput={handleGraphToggle}
+                        >
                             <option value="average">Average Score</option>
                             <option value="clear">Percent Cleared</option>
                         </select>
