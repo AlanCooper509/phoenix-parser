@@ -22,10 +22,12 @@ async function saveDocument(collectionName, jsonDocument, key) {
 
         const newDocument = soda.createDocument(jsonDocument, {key: key});
         const myDocument = await myCollection.saveAndGet(newDocument);
+        await connection.commit();
 
         return myDocument;
     } catch (e) {
         console.error("Error in saveDocument:", e);
+        if (connection) await connection.rollback();
         throw e;
     } finally {
         if (connection) {
