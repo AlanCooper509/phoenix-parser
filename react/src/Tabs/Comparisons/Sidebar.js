@@ -43,7 +43,7 @@ function Sidebar({graphType, handleGraphToggle, infoP1, p2, p3, p4}) {
                         <label className="me-2" htmlFor="graphType" style={{whiteSpace: "nowrap"}}>Select Stat:</label>
                         <select
                             ref={graphType}
-                            className="form-select w-auto rounded-3 bg-secondary bg-opacity-10"
+                            className="form-select w-auto rounded-3"
                             name="graphType"
                             defaultValue="average"
                             onInput={handleGraphToggle}

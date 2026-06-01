@@ -19,7 +19,7 @@ function BreakdownHeader({categorySelect, updateCategory, showLevel, chartTypeSe
                     <label className="me-2 text-nowrap" htmlFor="min">Level:</label>
                     <input 
                         ref={levelInput} 
-                        className="form-control w-auto rounded-3 bg-secondary bg-opacity-10" 
+                        className="form-control w-auto rounded-3" 
                         style={{ maxWidth: '80px' }}
                         name="min" 
                         type="number" 

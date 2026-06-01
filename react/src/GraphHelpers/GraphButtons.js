@@ -16,7 +16,7 @@ function GraphButtons({minValue, maxValue, chartTypeValue, updateLineGraph}) {
                 <label className="me-2 text-nowrap" htmlFor="min">Min Level:</label>
                 <input 
                     ref={minValue} 
-                    className="form-control w-auto rounded-3 bg-secondary bg-opacity-10 text-center px-1" 
+                    className="form-control w-auto rounded-3 text-center px-1" 
                     style={inputStyle}
                     name="min" 
                     type="number" 
@@ -33,7 +33,7 @@ function GraphButtons({minValue, maxValue, chartTypeValue, updateLineGraph}) {
                 <label className="me-2 text-nowrap" htmlFor="max">Max Level:</label>
                 <input 
                     ref={maxValue} 
-                    className="form-control w-auto rounded-3 bg-secondary bg-opacity-10 text-center px-1" 
+                    className="form-control w-auto rounded-3 text-center px-1" 
                     style={inputStyle}
                     name="max" 
                     type="number" 

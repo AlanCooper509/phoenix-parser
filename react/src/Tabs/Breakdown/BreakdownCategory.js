@@ -4,7 +4,7 @@ function BreakdownCategory({ innerRef, onInput }) {
             <label className="me-2 text-nowrap" htmlFor="category">Category:</label>
             <select 
                 ref={innerRef} 
-                className="form-select w-auto rounded-3 bg-secondary bg-opacity-10" 
+                className="form-select w-auto rounded-3" 
                 name="levelSelect" 
                 defaultValue="level" 
                 onInput={onInput}

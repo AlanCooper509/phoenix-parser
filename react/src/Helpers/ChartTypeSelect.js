@@ -4,7 +4,7 @@ function ChartTypeSelect({ innerRef, onInput, coopOption }) {
             <label className="me-2 text-nowrap" htmlFor="chartType">Chart Type:</label>
             <select 
                 ref={innerRef} 
-                className="form-select w-auto rounded-3 bg-secondary bg-opacity-10" 
+                className="form-select w-auto rounded-3" 
                 name="chartType" 
                 defaultValue="bothtypes" 
                 onInput={onInput}
