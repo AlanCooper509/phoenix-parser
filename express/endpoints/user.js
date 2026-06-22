@@ -7,10 +7,25 @@ import sortScores from '../helpers/sortScores.js';
 async function getUser(req) {
     const name = req.params.name.toUpperCase();
     const number = req.params.number;
+    const userId = getUserID(name, number);
+    const userDir = `${process.env.USERS_DIR}/${userId}`;
 
-    // attempt to find USER#NUMBER's latest INFO_FILENAME
-    const infoFileName = `${process.env.USERS_DIR}/${getUserID(name, number)}/${process.env.INFO_FILENAME}`;
-    let info = await readJsonFromObjectStorage(infoFileName);
+    const infoPromise = readJsonFromObjectStorage(`${userDir}/${process.env.INFO_FILENAME}`);
+    const scoresPromise = readJsonFromObjectStorage(`${userDir}/${process.env.BEST_SCORES_FILENAME}`);
+    const titlesPromise = readJsonFromObjectStorage(`${userDir}/${process.env.TITLES_FILENAME}`);
+    const pumbilityPromise = readJsonFromObjectStorage(`${userDir}/${process.env.PUMBILITY_FILENAME}`);
+    const recentsPromise = readJsonFromObjectStorage(`${userDir}/${process.env.RECENTS_FILENAME}`);
+
+    // 2. Wait for all of them to finish at the same time
+    let [info, scores, titles, pumbility, recents] = await Promise.all([
+        infoPromise,
+        scoresPromise,
+        titlesPromise,
+        pumbilityPromise,
+        recentsPromise
+    ]);
+
+    // Info validation (Critical)
     if (info.error) {
         if (info.error.code === 404) {
             info.error.message = "User's INFO could not be found!";
@@ -18,9 +33,7 @@ async function getUser(req) {
         return info;
     }
 
-    // attempt to find USER#NUMBER's latest BEST_SCORES_FILENAME
-    const scoresFileName = `${process.env.USERS_DIR}/${getUserID(name, number)}/${process.env.BEST_SCORES_FILENAME}`;
-    let scores = await readJsonFromObjectStorage(scoresFileName);
+    // Scores validation & processing (Critical)
     if (scores.error) {
         if (scores.error.code === 404) {
             scores.error.message = "User's BEST_SCORES could not be found!";
@@ -32,20 +45,24 @@ async function getUser(req) {
         return sortedScores;
     }
 
-    const titlesFileName = `${process.env.USERS_DIR}/${getUserID(name, number)}/${process.env.TITLES_FILENAME}`;
-    let titles = await readJsonFromObjectStorage(titlesFileName);
+    // Titles fallback (Optional/Migrated)
     if (titles.error) {
         if (titles.error.code === 404) {
-            // titles were migrated from info.titles into its own separate JSON file
             titles = info.titles;
         }
     }
-    const pumbilityFileName = `${process.env.USERS_DIR}/${getUserID(name, number)}/${process.env.PUMBILITY_FILENAME}`;
-    let pumbility = await readJsonFromObjectStorage(pumbilityFileName);
+
+    // Pumbility fallback (Optional)
     if (pumbility.error) {
         if (pumbility.error.code === 404) {
-            // pumbility file is optional; was only collected later on during syncs
             pumbility = [];
+        }
+    }
+
+    // Recents fallback (Optional)
+    if (recents.error) {
+        if (recents.error.code === 404) {
+            recents = [];
         }
     }
 
@@ -53,7 +70,8 @@ async function getUser(req) {
         "scores": sortedScores,
         "info": info.info,
         "titles": titles,
-        "pumbility": pumbility
+        "pumbility": pumbility,
+        "recents": recents
     };
 }
 
