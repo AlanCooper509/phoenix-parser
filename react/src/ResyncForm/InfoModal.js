@@ -50,7 +50,7 @@ function InfoModal({show, handleClose}) {
                 </li>
 
                 <li className="mb-4">
-                    Log in to <a href="https://piugame.com" target="_blank" rel="noreferrer">piugame.com<sup><ImNewTab /></sup></a>
+                    Log in to <a href="https://phoenix.piugame.com" target="_blank" rel="noreferrer">phoenix.piugame.com<sup><ImNewTab /></sup></a>
                 </li>
 
                 <li>

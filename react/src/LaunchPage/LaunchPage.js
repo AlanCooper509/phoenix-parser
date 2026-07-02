@@ -112,6 +112,7 @@ function LaunchPage() {
                     </ul>
                     <li className="ms-4 mt-3"><b>Recent Updates</b></li>
                     <ul>
+                        <li>(07/02/26) This will continue to sync with phoenix.piugame.com for now -- stay tuned for Phoenix 2 integration soon! </li>
                         <li>(04/05/24) Added support for 1948 Lv.?? as a Lv.29 chart, (but no clue on how it would get parsed yet!) </li>
                         <li>(12/01/24) Safari/iPhone users rejoice ~ text sizing issues have been tweaked, among some other formatting QoL changes</li>
                         <li>(10/31/24) When sync is successful, the page will now auto-refresh upon closing the notification. Also, you can see who your latest sync was!</li>
