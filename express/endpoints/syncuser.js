@@ -79,30 +79,27 @@ async function syncUser(sid, name, number) {
         pythonArgs.push(`cmpFile=${scoresFile}`);
     }
 
-    return new Promise((resolve, reject) => {
-        let data = {};
-
-        const pythonProcess = spawn('python', pythonArgs);
+    try {
         console.log(`Starting sync for ${user}`);
-        pythonPromise(pythonProcess).then((output) => {
-            console.log(`Successful sync for ${user}`);
-            data = output;
-            return archiveOldFiles(user, dateObject);
-        }).then(() => {
-            writeNewFiles(user, outDir);
-            saveDocument("info_collection", data, user);
-        }).then(() => {
-            resolve({
-                info: data.info,
-                titles: data.titles.count,
-                scores: data.scores.count,
-                pumbility: data.pumbility.value
-            });
-        }).catch((error) => {
-            // resolve it so the 400 error gets sent back to user
-            resolve(error);
-        });
-    });
+        const pythonProcess = spawn('python', pythonArgs);
+        const data = await pythonPromise(pythonProcess);
+        console.log(`Successful sync for ${user}`);
+
+        // Await each background process sequentially
+        await archiveOldFiles(user, dateObject);
+        await writeNewFiles(user, outDir);
+        await saveDocument("info_collection", data, user);
+
+        return {
+            info: data.info,
+            titles: data.titles.count,
+            scores: data.scores.count,
+            pumbility: data.pumbility.value
+        };
+    } catch (error) {
+        // If pythonPromise fails with ERROR_400 or ERROR_500
+        return error;
+    }
 }
 
 async function getLastSyncDate(infoObject, timeoutSeconds) {
@@ -188,7 +185,11 @@ async function writeNewFiles(user, outDir) {
         }
         const uploadFile = fs.createReadStream(uploadFilePath, {encoding: 'utf8'});
         const objectName = `${process.env.USERS_DIR}/${user}/${file}`;
-        uploadObjectToObjectStorage(objectName, uploadFile);
+        const result = await uploadObjectToObjectStorage(objectName, uploadFile);
+
+        if (result && result.error) {
+            console.error(`Failed to upload ${file}:`, result.error.message);
+        }
     }
     return;
 }
