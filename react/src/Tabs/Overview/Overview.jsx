@@ -7,7 +7,7 @@ import OverviewGraphHelper from "../../GraphHelpers/OverviewGraphHelper.js";
 import GraphButtons from "../../GraphHelpers/GraphButtons.jsx";
 import LineChart from "./LineChart.jsx";
 import ChartTypeSelect from "../../Helpers/ChartTypeSelect.jsx";
-import constants from '../../Helpers/constants.json'
+import constants from '../../games/phx1/constants.json'
 import OverviewStats from "./OverviewStats/OverviewStats.jsx";
 
 function getTableData(data, tableTypeValue) {

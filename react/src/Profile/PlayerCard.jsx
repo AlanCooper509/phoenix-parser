@@ -1,10 +1,12 @@
 import './PlayerCard.css'
 
+import { avatarImg } from '../Helpers/assets';
+
 function PlayerCard({info}) {
     const titleClasses = "Game-title " + (info && info.title ? info.title.color : "");
     let thumbnail = '';
     if (info.last_updated !== 'Unknown') {
-        let profilePic = "https://www.piugame.com/data/avatar_img/4f617606e7751b2dc2559d80f09c40bf.png";
+        let profilePic = avatarImg("phx1");
         if (info.avatar) {
             profilePic = info.avatar;
         }

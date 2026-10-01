@@ -1,4 +1,5 @@
 import ChartTypeSelect from "../Helpers/ChartTypeSelect.jsx";
+import constants from "../games/phx1/constants.json";
 
 function GraphButtons({minValue, maxValue, chartTypeValue, updateLineGraph}) {
     const handleKeyDown = (event) => {
@@ -22,7 +23,7 @@ function GraphButtons({minValue, maxValue, chartTypeValue, updateLineGraph}) {
                     type="number" 
                     defaultValue="1" 
                     min="1" 
-                    max="29" 
+                    max={constants.maxLevel} 
                     onKeyDown={handleKeyDown} 
                     onClick={updateLineGraph} 
                     onBlur={updateLineGraph}
@@ -37,9 +38,9 @@ function GraphButtons({minValue, maxValue, chartTypeValue, updateLineGraph}) {
                     style={inputStyle}
                     name="max" 
                     type="number" 
-                    defaultValue="28" 
+                    defaultValue={constants.defaultGraphMaxLevel} 
                     min="1" 
-                    max="29" 
+                    max={constants.maxLevel} 
                     onKeyDown={handleKeyDown} 
                     onClick={updateLineGraph} 
                     onBlur={updateLineGraph}

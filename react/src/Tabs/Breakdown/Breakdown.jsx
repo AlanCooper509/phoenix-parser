@@ -6,8 +6,8 @@ import BreakdownHeader from "./BreakdownHeader.jsx";
 import BarChart from "./BarChart.jsx";
 import BreakdownRemaining from "./BreakdownRemaining.jsx";
 import BreakdownOverview from "./BreakdownOverview.jsx";
-import cutoffs from "../../Helpers/TitleCutoffs.json";
-import constants  from '../../Helpers/constants.json'
+import cutoffs from "../../games/phx1/TitleCutoffs.json";
+import constants  from '../../games/phx1/constants.json'
 
 function updateLevelHelper(event) {
     let level = event.target.value;

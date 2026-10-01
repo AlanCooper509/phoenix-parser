@@ -5,6 +5,7 @@ import { BsChevronCompactDown } from "react-icons/bs";
 import Collapse from 'react-bootstrap/Collapse';
 
 import "./LevelStats.css";
+import constants from "../../games/phx1/constants.json";
 
 function renderStatusText(cutoffs, rating, singles, doubles) {
     if (!cutoffs || !Array.isArray(cutoffs)) {
@@ -105,8 +106,8 @@ function LevelStats({cutoffs, rating, singles, doubles, charts, level}) {
     const [open, setOpen] = useState(false);
     const levelStatusText = open ? "" : renderStatusText(cutoffs, rating, singles, doubles);
 
-    // thanks 1948
-    if (level === "29") { level = "??"}
+    // display label for levels shown differently in-game (thanks 1948)
+    level = constants.levelLabels[level] ?? level;
 return (
     <div className="container-fluid px-0">
         <div className="row align-items-center g-4">

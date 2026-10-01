@@ -1,4 +1,4 @@
-import constants  from '../../../Helpers/constants.json'
+import constants  from '../../../games/phx1/constants.json'
 import "./OverviewStats.css";
 
 function HighestCleared({scores}) {

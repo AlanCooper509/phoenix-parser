@@ -3,7 +3,7 @@ import Accordion from 'react-bootstrap/Accordion';
 
 import getChartStats from '../../API/chartstats.js';
 import LevelStats from './LevelStats.jsx';
-import cutoffs from "../../Helpers/TitleCutoffs.json";
+import cutoffs from "../../games/phx1/TitleCutoffs.json";
 
 function Progression({data, titles}) {
     const [chartData, setChartData] = useState({});
@@ -27,7 +27,8 @@ function Progression({data, titles}) {
                     key={ key }
                 />
             );
-            if (["19", "22", "29"].includes(key)) { continue; /* skip adding <hr/> to the bottom of each category */}
+            const lastKey = Object.keys(cutoffs[category]).at(-1);
+            if (key === lastKey) { continue; /* skip adding <hr/> to the bottom of each category */}
             levels[category].push(<hr key={-key}/>)
         }
     }
@@ -38,7 +39,7 @@ function Progression({data, titles}) {
         // only show advanced titles
         showSectionsWithKeys = ['2'];
     } else {
-        for (const level of ["20", "21", "22"]) {
+        for (const level of Object.keys(cutoffs.advanced)) {
             if (level in data) {
                 showSectionsWithKeys.push('2');
             }
@@ -48,7 +49,7 @@ function Progression({data, titles}) {
         // only show expert titles
         showSectionsWithKeys = ['3'];
     } else {
-        for (const level of ["23", "24", "25", "26", "27", "28", "29"]) {
+        for (const level of Object.keys(cutoffs.expert)) {
             if (level in data) {
                 showSectionsWithKeys.push('3');
             }

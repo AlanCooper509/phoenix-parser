@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 
-import constants  from '../../../Helpers/constants.json'
+import constants  from '../../../games/phx1/constants.json'
 import PumbilityModal from './PumbilityModal.jsx'
 import "./OverviewStats.css";
 

@@ -1,5 +1,6 @@
 import BreakdownCategory from "./BreakdownCategory.jsx";
 import ChartTypeSelect from "../../Helpers/ChartTypeSelect.jsx";
+import constants from "../../games/phx1/constants.json";
 
 function BreakdownHeader({categorySelect, updateCategory, showLevel, chartTypeSelect, handleTypeChange, levelInput, levelValue, handleKeyDown, updateLevel}) {
     return (
@@ -25,7 +26,7 @@ function BreakdownHeader({categorySelect, updateCategory, showLevel, chartTypeSe
                         type="number" 
                         defaultValue={levelValue} 
                         min="1" 
-                        max="29" 
+                        max={constants.maxLevel} 
                         onKeyDown={handleKeyDown} 
                         onClick={updateLevel} 
                         onBlur={updateLevel}
