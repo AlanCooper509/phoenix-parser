@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 
 import getUser from "../../API/user.js";
-import PlayerNameInput from "./PlayerNameInput.js";
+import PlayerNameInput from "./PlayerNameInput.jsx";
 import splitNameNumber from "../../Helpers/splitNameNumber.js";
 
 function Sidebar({graphType, handleGraphToggle, infoP1, p2, p3, p4}) {

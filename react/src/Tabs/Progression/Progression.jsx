@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import Accordion from 'react-bootstrap/Accordion';
 
 import getChartStats from '../../API/chartstats.js';
-import LevelStats from './LevelStats.js';
+import LevelStats from './LevelStats.jsx';
 import cutoffs from "../../Helpers/TitleCutoffs.json";
 
 function Progression({data, titles}) {

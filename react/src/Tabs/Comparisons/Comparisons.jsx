@@ -3,9 +3,9 @@ import React, { useRef, useState } from "react";
 import "./Comparisons.css";
 
 import ComparisonsGraphHelper from "../../GraphHelpers/ComparisonsGraphHelper.js";
-import GraphButtons from "../../GraphHelpers/GraphButtons.js";
-import Sidebar from "./Sidebar.js";
-import LineChart from "./LineChart.js";
+import GraphButtons from "../../GraphHelpers/GraphButtons.jsx";
+import Sidebar from "./Sidebar.jsx";
+import LineChart from "./LineChart.jsx";
 
 function formatName(value) {
     return value.toUpperCase().replaceAll(/\s/g, '').replaceAll(/#/g, " #");

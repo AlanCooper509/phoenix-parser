@@ -1,6 +1,6 @@
-import Pumbility from './Pumbility.js';
-import Titles from './Titles.js';
-import HighestCleared from "./HighestCleared.js";
+import Pumbility from './Pumbility.jsx';
+import Titles from './Titles.jsx';
+import HighestCleared from "./HighestCleared.jsx";
 
 import "./OverviewStats.css";
 

@@ -1,4 +1,4 @@
-import ScoresTable from '../../TableHelpers/ScoresTable.js';
+import ScoresTable from '../../TableHelpers/ScoresTable.jsx';
 
 function addChartsForLevel(userData, level, chartType) {
     let rowData = [];

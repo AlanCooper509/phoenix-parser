@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-import PlayerCard from '../Profile/PlayerCard.js';
+import PlayerCard from '../Profile/PlayerCard.jsx';
 import getHostPath from './getHostPath';
 
 function postSyncData(params, submitBtn, openNotify) {

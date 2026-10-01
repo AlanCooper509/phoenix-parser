@@ -1,14 +1,14 @@
 import React, { useRef, useState } from "react";
 
-import ScoresTable from '../../TableHelpers/ScoresTable.js';
+import ScoresTable from '../../TableHelpers/ScoresTable.jsx';
 import "./Overview.css";
 
 import OverviewGraphHelper from "../../GraphHelpers/OverviewGraphHelper.js";
-import GraphButtons from "../../GraphHelpers/GraphButtons.js";
-import LineChart from "./LineChart.js";
-import ChartTypeSelect from "../../Helpers/ChartTypeSelect.js";
+import GraphButtons from "../../GraphHelpers/GraphButtons.jsx";
+import LineChart from "./LineChart.jsx";
+import ChartTypeSelect from "../../Helpers/ChartTypeSelect.jsx";
 import constants from '../../Helpers/constants.json'
-import OverviewStats from "./OverviewStats/OverviewStats.js";
+import OverviewStats from "./OverviewStats/OverviewStats.jsx";
 
 function getTableData(data, tableTypeValue) {
     const coopCategories = ["n2", "n3", "n4", "n5"];

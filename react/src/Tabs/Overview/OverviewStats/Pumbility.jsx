@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 
 import constants  from '../../../Helpers/constants.json'
-import PumbilityModal from './PumbilityModal.js'
+import PumbilityModal from './PumbilityModal.jsx'
 import "./OverviewStats.css";
 
 function manuallyCalculatePumbility(data) {

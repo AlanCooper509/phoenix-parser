@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { TbInfoCircle } from "react-icons/tb";
-import BarChart from "./BarChart.js";
+import BarChart from "./BarChart.jsx";
 import { BsChevronCompactDown } from "react-icons/bs";
 import Collapse from 'react-bootstrap/Collapse';
 

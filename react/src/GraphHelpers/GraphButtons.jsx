@@ -1,4 +1,4 @@
-import ChartTypeSelect from "../Helpers/ChartTypeSelect.js";
+import ChartTypeSelect from "../Helpers/ChartTypeSelect.jsx";
 
 function GraphButtons({minValue, maxValue, chartTypeValue, updateLineGraph}) {
     const handleKeyDown = (event) => {

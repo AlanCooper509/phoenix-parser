@@ -1,5 +1,5 @@
-import BreakdownCategory from "./BreakdownCategory.js";
-import ChartTypeSelect from "../../Helpers/ChartTypeSelect.js";
+import BreakdownCategory from "./BreakdownCategory.jsx";
+import ChartTypeSelect from "../../Helpers/ChartTypeSelect.jsx";
 
 function BreakdownHeader({categorySelect, updateCategory, showLevel, chartTypeSelect, handleTypeChange, levelInput, levelValue, handleKeyDown, updateLevel}) {
     return (

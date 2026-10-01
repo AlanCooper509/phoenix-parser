@@ -1,4 +1,4 @@
-import LevelStats from '../Progression/LevelStats.js';
+import LevelStats from '../Progression/LevelStats.jsx';
 
 export default function BreakdownOverview({ data, chartData, levelValue, cutoffs }) {
     const currentLevelCutoffs = 

@@ -1,11 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
 
 import getChartStats from '../../API/chartstats.js';
-import BreakdownStats from "./BreakdownStats.js";
-import BreakdownHeader from "./BreakdownHeader.js";
-import BarChart from "./BarChart.js";
-import BreakdownRemaining from "./BreakdownRemaining.js";
-import BreakdownOverview from "./BreakdownOverview.js";
+import BreakdownStats from "./BreakdownStats.jsx";
+import BreakdownHeader from "./BreakdownHeader.jsx";
+import BarChart from "./BarChart.jsx";
+import BreakdownRemaining from "./BreakdownRemaining.jsx";
+import BreakdownOverview from "./BreakdownOverview.jsx";
 import cutoffs from "../../Helpers/TitleCutoffs.json";
 import constants  from '../../Helpers/constants.json'
 
