@@ -14,14 +14,9 @@ async function uploadObjectToObjectStorage(objectName, objectBody) {
         };
 
         // making the call to OCI: Object Storage
-        const putObjectResponse = await client.putObject(putObjectRequest);
-
-        // Reading Object Response
-        const chunks = [];
-        for await (const chunk of putObjectResponse.value) {
-            chunks.push(Buffer.from(chunk));
-        }
-        const jsonObject = JSON.parse(Buffer.concat(chunks).toString("utf-8"));
+        // put returns no body: reaching here means it succeeded
+        await client.putObject(putObjectRequest);
+        return {};
     } catch (error) {
         return {
             error: {

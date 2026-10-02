@@ -77,6 +77,12 @@ function UserPage() {
                         <div className="container overlap-bottom">
                             <ResyncForm
                                 info={info}
+                                onSynced={(user) => {
+                                    setInfo(user.info);
+                                    setData(user.scores);
+                                    setTitles(user.titles);
+                                    setPumbility(user.pumbility);
+                                }}
                             />
                         </div>
 

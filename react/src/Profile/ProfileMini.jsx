@@ -7,8 +7,10 @@ import splitNameNumber from "../Helpers/splitNameNumber";
 import { userPath } from "../Helpers/paths";
 import useGame from "../games/useGame";
 
-function ProfileMini({info}) {
-    const game = useGame();
+// gameId: the game this profile belongs to, when it isn't the current page's game
+function ProfileMini({info, gameId}) {
+    const currentGame = useGame();
+    const game = { id: gameId || currentGame.id };
     function redirect() {
         const user = splitNameNumber(info.player + info.number);
         return userPath(game.id, user.name, user.number);

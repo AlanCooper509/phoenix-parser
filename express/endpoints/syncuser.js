@@ -1,6 +1,7 @@
 import 'dotenv/config';
 
 import fs from 'fs';
+import path from 'path';
 import { spawn } from "node:child_process";
 
 import getUserID from '../helpers/getUserID.js';
@@ -8,6 +9,7 @@ import readJsonFromObjectStorage from '../helpers/os_readJsonObject.js';
 import renameObjectInObjectStorage from '../helpers/os_renameObject.js';
 import uploadObjectToObjectStorage from '../helpers/os_uploadObject.js';
 import saveDocument from '../helpers/adb_saveDocument.js';
+import { buildUserResponse } from './user.js';
 
 function ERROR_400(msg) {
     return {
@@ -21,6 +23,12 @@ const ERROR_429 = {
     error: {
         code: 429,
         message: `This user was already updated recently! Try again later.`
+    }
+}
+const ERROR_409 = {
+    error: {
+        code: 409,
+        message: `A sync for this user is already in progress. Please wait for it to finish.`
     }
 }
 const ERROR_500 = {
@@ -37,18 +45,36 @@ const FILELIST = [
     process.env.TITLES_FILENAME
 ];
 
+// "<game>/<NAME#NUM>" of syncs currently running, so a double submit can't run two at once
+const syncsInProgress = new Set();
+
 async function syncUser(sid, name, number, game) {
-    const dirname = fs.realpathSync('.');
     const user = getUserID(name, number);
-    const outDir = `${dirname}/tmp/${user}`;
-    const scoresFile = `${dirname}/tmp/${user}/old_best_scores.json`;
+    const syncKey = `${game.id}/${user}`;
+    if (syncsInProgress.has(syncKey)) {
+        return ERROR_409;
+    }
+    syncsInProgress.add(syncKey);
+
+    // per-game scratch folder, removed afterwards (it only holds copies of what gets uploaded)
+    const outDir = path.join(fs.realpathSync('.'), 'tmp', game.id, user);
+    try {
+        return await runSync(sid, user, game, outDir);
+    } finally {
+        syncsInProgress.delete(syncKey);
+        fs.rmSync(outDir, { recursive: true, force: true });
+    }
+}
+
+async function runSync(sid, user, game, outDir) {
+    const userDir = `${game.usersDir}/${user}`;
+    const scoresFile = path.join(outDir, 'old_best_scores.json');
     let pythonArgs = [game.syncScript,
         `sid=${sid}`, `user=${user}`, `outDir=${outDir}`
     ];
 
     // grab Object Storage copy of user's info file from most recent previous sync
-    const infoFileName = `${game.usersDir}/${user}/${process.env.INFO_FILENAME}`;
-    const infoObject = await readJsonFromObjectStorage(infoFileName);
+    const infoObject = await readJsonFromObjectStorage(`${userDir}/${process.env.INFO_FILENAME}`);
 
     // pass in the language used during previous sync
     if (!infoObject.error) {
@@ -66,40 +92,43 @@ async function syncUser(sid, name, number, game) {
         return ERROR_429;
     }
 
-    // ensure outDir is clean before starting test
+    // start from an empty scratch folder
     fs.rmSync(outDir, { recursive: true, force: true });
-    fs.mkdirSync(outDir);
+    fs.mkdirSync(outDir, { recursive: true });
 
     // check if Object Storage has a history for the user's Best Scores that can be passed to Python script
     // (goal of reducing requests needed to make to piugame server)
-    const scoresFileName = `${game.usersDir}/${getUserID(name, number)}/${process.env.BEST_SCORES_FILENAME}`;
-    let scores = await readJsonFromObjectStorage(scoresFileName);
+    const scores = await readJsonFromObjectStorage(`${userDir}/${process.env.BEST_SCORES_FILENAME}`);
     if (!scores.error) {
         fs.writeFileSync(scoresFile, JSON.stringify(scores));
         pythonArgs.push(`cmpFile=${scoresFile}`);
     }
 
+    let data;
     try {
         console.log(`Starting sync for ${user}`);
         const pythonProcess = spawn('python', pythonArgs);
-        const data = await pythonPromise(pythonProcess);
+        data = await pythonPromise(pythonProcess);
         console.log(`Successful sync for ${user}`);
-
-        // Await each background process sequentially
-        await archiveOldFiles(game, user, dateObject);
-        await writeNewFiles(game, user, outDir);
-        await saveDocument(game.usersCollection, data, user);
-
-        return {
-            info: data.info,
-            titles: data.titles.count,
-            scores: data.scores.count,
-            pumbility: data.pumbility.value
-        };
     } catch (error) {
         // If pythonPromise fails with ERROR_400 or ERROR_500
         return error;
     }
+
+    const uploaded = await replaceUserFiles(game, user, outDir, dateObject);
+    if (!uploaded.includes(process.env.INFO_FILENAME) || !uploaded.includes(process.env.BEST_SCORES_FILENAME)) {
+        return ERROR_500;
+    }
+    await saveDocument(game.usersCollection, data, user);
+
+    return {
+        info: data.info,
+        titles: data.titles.count,
+        scores: data.scores.count,
+        pumbility: data.pumbility.value,
+        // same shape as GET /user, so the page can update without reloading
+        user: await buildUserResponse(game, readLocalUserFiles(outDir))
+    };
 }
 
 async function getLastSyncDate(infoObject, timeoutSeconds) {
@@ -177,43 +206,58 @@ function pythonPromise(pythonProcess) {
     });
 }
 
-async function archiveOldFiles(game, user, dateObject) {
-    if (!dateObject.exists) return;
-    for await (const file of FILELIST) {
-        const filePath = `${game.usersDir}/${user}/${file}`;
-        const filePathDated = `${game.usersDir}/${user}/${dateObject.date.string}/${file}`;
-        const testObject = await readJsonFromObjectStorage(filePath);
-        if (!("error" in testObject)) {
-            await renameObjectInObjectStorage(filePath, filePathDated);
-        }
-    }
-    return;
-}
-
-async function writeNewFiles(game, user, outDir) {
-    for await (const file of FILELIST) {
-        const uploadFilePath = `${outDir}/${file}`;
-
-        const maxRetries = 5;
-        let timeout;
-        for(timeout = 0; !fs.existsSync(uploadFilePath); timeout++) {
-            if (timeout == maxRetries) { break; }
-            await new Promise(resolve => setTimeout(resolve, 1000));
-        }
-
-        if (timeout == maxRetries) { 
-            console.log(`FILE ${uploadFilePath} NOT FOUND`);
+// Swap in each freshly scraped file: the current copy moves to the previous sync's dated
+// folder, then the new one is uploaded (moving the old copy back if that fails).
+// Files the scraper didn't produce are left as they are. Returns the uploaded file names.
+async function replaceUserFiles(game, user, outDir, dateObject) {
+    const uploaded = [];
+    for (const file of FILELIST) {
+        const localFile = path.join(outDir, file);
+        if (!fs.existsSync(localFile)) {
+            console.log(`Sync for ${user} produced no ${file}; keeping the current one`);
             continue;
         }
-        const uploadFile = fs.createReadStream(uploadFilePath, {encoding: 'utf8'});
-        const objectName = `${game.usersDir}/${user}/${file}`;
-        const result = await uploadObjectToObjectStorage(objectName, uploadFile);
 
-        if (result && result.error) {
-            console.error(`Failed to upload ${file}:`, result.error.message);
+        const currentName = `${game.usersDir}/${user}/${file}`;
+        let archivedName = null;
+        if (dateObject.exists) {
+            const datedName = `${game.usersDir}/${user}/${dateObject.date.string}/${file}`;
+            const archived = await renameObjectInObjectStorage(currentName, datedName);
+            if (!archived.error) {
+                archivedName = datedName;
+            } else if (archived.error.code !== 404) {
+                console.error(`Failed to archive ${file} for ${user} (${archived.error.code})`);
+            }
         }
+
+        const result = await uploadObjectToObjectStorage(currentName, fs.createReadStream(localFile, {encoding: 'utf8'}));
+        if (result.error) {
+            console.error(`Failed to upload ${file} for ${user} (${result.error.code})`);
+            if (archivedName) {
+                await renameObjectInObjectStorage(archivedName, currentName);
+            }
+            continue;
+        }
+        uploaded.push(file);
     }
-    return;
+    return uploaded;
+}
+
+// the scraped files in the same shape readJsonFromObjectStorage returns them
+function readLocalUserFiles(outDir) {
+    const read = (file) => {
+        try {
+            return JSON.parse(fs.readFileSync(path.join(outDir, file), 'utf8'));
+        } catch (error) {
+            return { error: { code: 404 } };
+        }
+    };
+    return {
+        info: read(process.env.INFO_FILENAME),
+        scores: read(process.env.BEST_SCORES_FILENAME),
+        titles: read(process.env.TITLES_FILENAME),
+        pumbility: read(process.env.PUMBILITY_FILENAME),
+    };
 }
 
 export default syncUser;

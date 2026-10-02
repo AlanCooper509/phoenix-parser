@@ -17,13 +17,19 @@ async function getUser(req, game) {
 
     // Wait for all of them to finish at the same time
     // (recents.json is still synced but isn't read here: the frontend doesn't use it)
-    let [info, scores, titles, pumbility] = await Promise.all([
+    const [info, scores, titles, pumbility] = await Promise.all([
         infoPromise,
         scoresPromise,
         titlesPromise,
         pumbilityPromise
     ]);
 
+    return buildUserResponse(game, { info, scores, titles, pumbility });
+}
+
+// Shapes a user's synced files into the API response (shared with /sync, which builds it
+// from the freshly scraped files). Each file is its JSON content or { error: { code } }.
+export async function buildUserResponse(game, { info, scores, titles, pumbility }) {
     // Info validation (Critical)
     if (info.error) {
         if (info.error.code === 404) {

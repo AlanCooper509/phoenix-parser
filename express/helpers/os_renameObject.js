@@ -16,20 +16,14 @@ async function renameObjectInObjectStorage(oldObjectName, newObjectName) {
         };
 
         // making the call to OCI: Object Storage
-        const renameObjectResponse = await client.renameObject(renameObjectRequest);
-
-        // Reading Object Response
-        const chunks = [];
-        for await (const chunk of renameObjectResponse.value) {
-            chunks.push(Buffer.from(chunk));
-        }
-        const jsonObject = JSON.parse(Buffer.concat(chunks).toString("utf-8"));
-        return jsonObject;
+        // rename returns no body: reaching here means it succeeded
+        await client.renameObject(renameObjectRequest);
+        return {};
     } catch (error) {
         return {
             error: {
                 code: error.statusCode,
-                message: "Unable to retrieve a requested JSON Object in Object Storage"
+                message: `Unable to rename ${oldObjectName} in Object Storage`
             }
         }
     }

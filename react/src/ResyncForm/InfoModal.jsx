@@ -8,6 +8,7 @@ import { ImNewTab } from "react-icons/im";
 import { RxQuestionMarkCircled } from "react-icons/rx";
 import { IoShareOutline } from "react-icons/io5";
 
+import useGame from '../games/useGame';
 import example from './example_sid.png';
 import bookmark from './example_bookmark.png';
 import scriptImg from './example_scripting.png';
@@ -17,6 +18,7 @@ import './InfoModal.css';
 import calculateZoomLevel from "../Helpers/calculateZoomLevel";
 
 function InfoModal({show, handleClose}) {
+    const { constants } = useGame();
     const params = useParams();
     const name = params.name ? params.name.toUpperCase() : '';
     const number = params.number ? params.number : "HomePage";
@@ -50,7 +52,7 @@ function InfoModal({show, handleClose}) {
                 </li>
 
                 <li className="mb-4">
-                    Log in to <a href="https://phoenix.piugame.com" target="_blank" rel="noreferrer">phoenix.piugame.com<sup><ImNewTab /></sup></a>
+                    Log in to <a href={`https://${constants.syncSite}`} target="_blank" rel="noreferrer">{constants.syncSite}<sup><ImNewTab /></sup></a>
                 </li>
 
                 <li>

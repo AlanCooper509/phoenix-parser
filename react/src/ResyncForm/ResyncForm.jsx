@@ -43,7 +43,7 @@ function SyncComplete({ result }) {
                     </li>
                 </ul>
             </h4>
-            <i className="text-muted">(Changes will display after you refresh the page)</i>
+            <i className="text-muted">(Your page will update when you close this message)</i>
         </div>
     );
 }
@@ -58,7 +58,7 @@ function SyncFailed({ message }) {
     );
 }
 
-function ResyncForm({info}) {
+function ResyncForm({info, onSynced}) {
     // for info modal
     const [show, setShow] = useState(false);
     const handleClose = () => setShow(false);
@@ -68,11 +68,17 @@ function ResyncForm({info}) {
     const [notify, setNotify] = useState(false);
     const [message, setMessage] = useState('');
     const [success, setSuccess] = useState(false);
+    // the synced user (same shape as GET /user), applied to the page when the message is closed
+    const [syncedUser, setSyncedUser] = useState(null);
     const closeNotify = () => {
-        // refresh the page as workaround until updating sync API call (and front-end processing)
-        // to fetch back same payload as GET USER API (or follow-up with GET API on front-end upon completion)
-        if (success) { window.location.reload(); }
         setNotify(false);
+        if (success) {
+            if (syncedUser && onSynced) {
+                onSynced(syncedUser);
+            } else {
+                window.location.reload();
+            }
+        }
     };
     const openNotify = (status, msg) => {setMessage(msg); setSuccess(status); setNotify(true)};
 
@@ -101,7 +107,8 @@ function ResyncForm({info}) {
         setStatus("loading");
         try {
             const result = await postSyncData(game.id, name, number, input);
-            localStorage.setItem('latestSync', JSON.stringify(result.info));
+            localStorage.setItem('latestSync', JSON.stringify({...result.info, game: game.id}));
+            setSyncedUser(result.user);
             setStatus("success");
             openNotify(true, <SyncComplete result={result}/>);
         } catch (error) {

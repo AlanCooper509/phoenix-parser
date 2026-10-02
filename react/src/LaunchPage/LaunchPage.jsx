@@ -45,7 +45,7 @@ function LaunchPage() {
         latestSyncOutput = (
             <div className="row ms-4">
                 <span className="row ms-2">
-                    <ProfileMini info={latestInfo} />
+                    <ProfileMini info={latestInfo} gameId={latestInfo.game} />
                 </span>
             </div>
         );
