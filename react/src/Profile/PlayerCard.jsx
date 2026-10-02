@@ -1,6 +1,6 @@
 import './PlayerCard.css'
 
-import { avatarImg } from '../Helpers/assets';
+import { avatarImg, fromPiugameUrl } from '../Helpers/assets';
 
 function PlayerCard({info}) {
     const titleClasses = "Game-title " + (info && info.title ? info.title.color : "");
@@ -8,7 +8,7 @@ function PlayerCard({info}) {
     if (info.last_updated !== 'Unknown') {
         let profilePic = avatarImg("phx1");
         if (info.avatar) {
-            profilePic = info.avatar;
+            profilePic = fromPiugameUrl(info.avatar);
         }
         thumbnail = 
         <img 

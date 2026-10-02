@@ -1,10 +1,10 @@
 import './PlayerCard.css'
 
-import { avatarImg } from '../Helpers/assets';
+import { avatarImg, fromPiugameUrl } from '../Helpers/assets';
 
 function PlayerCardMini({info}) {
     const titleClasses = "Game-title-mini " + (info && info.title ? info.title.color : "");
-    const profilePic = info && info.avatar ? info.avatar : avatarImg("phx1");
+    const profilePic = info && info.avatar ? fromPiugameUrl(info.avatar) : avatarImg("phx1");
     return (
     <div className="d-flex justify-content-center align-items-center">
         <div>

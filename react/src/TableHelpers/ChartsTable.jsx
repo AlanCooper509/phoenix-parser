@@ -4,6 +4,7 @@ import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-quartz.css";
 
 import "./ScoresTable.css";
+import { fromPiugameUrl } from "../Helpers/assets";
 
 function ChartsTable({ rowData, sortLevel, language }) {
     // Displays {Co-Op, Single, Double} stepball image based on "type" value
@@ -46,7 +47,7 @@ function ChartsTable({ rowData, sortLevel, language }) {
             marginLeft: "-20px"
         }}>
             <span className="position-absolute" style={{
-                backgroundImage: `url(${value})`,
+                backgroundImage: `url(${fromPiugameUrl(value)})`,
                 backgroundPosition: "center center",
                 backgroundSize: "cover",
                 backgroundRepeat: "no-repeat",
