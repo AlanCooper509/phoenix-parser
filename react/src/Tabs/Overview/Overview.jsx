@@ -68,7 +68,7 @@ function Overview({info, data, titles, pumbility}) {
 
     // for Overview Graph
     function updateGraphWrapper(changedInput) {
-        const helper = new OverviewGraphHelper();
+        const helper = new OverviewGraphHelper(constants);
         const labels = helper.makeLevelLabelsFromInputs(chartTypeValue, minValue, maxValue, changedInput);
         return helper.updateGraph(chartRef, labels, data, info, chartTypeValue, changedInput);
     }

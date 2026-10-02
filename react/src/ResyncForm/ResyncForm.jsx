@@ -43,7 +43,6 @@ function SyncComplete({ result }) {
                     </li>
                 </ul>
             </h4>
-            <i className="text-muted">(Your page will update when you close this message)</i>
         </div>
     );
 }

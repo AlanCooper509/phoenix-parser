@@ -1,11 +1,22 @@
 class GraphHelpers {
+    // constants: the game's constants (maxLevel, defaultGraphMaxLevel, levelLabels)
+    constructor(constants) {
+        this.constants = constants;
+    }
+    // levels as shown on the x-axis (e.g. "29" -> "??")
+    displayLabels(levels) {
+        return levels.map((level) => this.constants.levelLabels[level] ?? level);
+    }
+    // level keys ("01".."29") for the min/max inputs; the data is looked up by these keys
     makeLevelLabelsFromInputs(chartTypeValue, minValue, maxValue, changedInput) {
+        const { maxLevel, defaultGraphMaxLevel } = this.constants;
         function validateFormInputs(chartTypeValue, minValue, maxValue, changedInput) {
             const chartType = chartTypeValue.current == null ? "bothtypes" : chartTypeValue.current.value;
             let min = minValue.current ? parseInt(minValue.current.value) : 1;
             let minPrev = minValue.current ? minValue.current.getAttribute("previous") : 1;
-            let max = maxValue.current ? parseInt(maxValue.current.value) : 29;
-            let maxPrev = maxValue.current ? maxValue.current.getAttribute("previous") : 29;
+            // before the inputs are mounted (first render), use the same default the max input shows
+            let max = maxValue.current ? parseInt(maxValue.current.value) : defaultGraphMaxLevel;
+            let maxPrev = maxValue.current ? maxValue.current.getAttribute("previous") : defaultGraphMaxLevel;
         
             if (changedInput) {
                 switch (changedInput.target.getAttribute("name")) {
@@ -13,7 +24,7 @@ class GraphHelpers {
                         if (isNaN(min)) {
                             min = minPrev;
                         } else {
-                            min = min < 1 ? 1 : (min > 29 ? 29 : min > max ? max : min);
+                            min = min < 1 ? 1 : (min > maxLevel ? maxLevel : min > max ? max : min);
                             minValue.current.value = min;
                             minValue.current.setAttribute("previous", min);
                         }
@@ -23,7 +34,7 @@ class GraphHelpers {
                             max = maxPrev;
                             break;
                         }
-                        max = max < 1 ? 1 : max > 29 ? 29 : max < min ? min : max;
+                        max = max < 1 ? 1 : max > maxLevel ? maxLevel : max < min ? min : max;
                         maxValue.current.value = max;
                         maxValue.current.setAttribute("previous", max);
                         break;
@@ -38,9 +49,7 @@ class GraphHelpers {
         function  makeLevelLabels(inputs) {
             let labels = [];
             for (let i = inputs["min"]; i <= inputs["max"]; i++) {
-                let label = i < 10 ? `0${i}` : i.toString();
-                if (label === '29') { label = '??'; }
-                labels.push(label);
+                labels.push(i < 10 ? `0${i}` : i.toString());
             }
             return labels;
         }
@@ -77,7 +86,7 @@ class GraphHelpers {
         return subtitle;
     }
     updateGraphData(chartRef, labels, datasets, title, subtitle) {
-        chartRef.current.data.labels = labels;
+        chartRef.current.data.labels = this.displayLabels(labels);
         for (const idx in datasets) {
             chartRef.current.data.datasets[idx].data = datasets[idx].data;
             chartRef.current.data.datasets[idx].label = datasets[idx].label;

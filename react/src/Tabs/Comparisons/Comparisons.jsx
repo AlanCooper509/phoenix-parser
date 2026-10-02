@@ -5,6 +5,7 @@ import "./Comparisons.css";
 import ComparisonsGraphHelper from "../../GraphHelpers/ComparisonsGraphHelper.js";
 import GraphButtons from "../../GraphHelpers/GraphButtons.jsx";
 import Sidebar from "./Sidebar.jsx";
+import useGame from "../../games/useGame.js";
 import LineChart from "./LineChart.jsx";
 
 function formatName(value) {
@@ -12,6 +13,7 @@ function formatName(value) {
 }
 
 function Comparisons({info, data}) {
+    const { constants } = useGame();
     const minValue = useRef(null);
     const maxValue = useRef(null);
     const chartTypeValue = useRef(null);
@@ -28,7 +30,7 @@ function Comparisons({info, data}) {
     const p4NameInput = useRef(null);
     
     function updateGraphWrapper(changedInput) {
-        const helper = new ComparisonsGraphHelper();
+        const helper = new ComparisonsGraphHelper(constants);
         const labels = helper.makeLevelLabelsFromInputs(chartTypeValue, minValue, maxValue, changedInput);
         const datasets = [
             {data: data, label: `${info.player} ${info.number}`}

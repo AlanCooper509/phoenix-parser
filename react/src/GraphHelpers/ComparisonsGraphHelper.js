@@ -25,7 +25,7 @@ class ComparisonsGraphHelper extends GraphHelpers {
             title: title,
             subtitle: subtitle,
             chartData: {
-                labels: labels,
+                labels: this.displayLabels(labels),
                 datasets: datasets
             }
         }

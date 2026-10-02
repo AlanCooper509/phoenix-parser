@@ -6,7 +6,7 @@ class OverviewGraphHelper extends GraphHelpers {
             "subtitle": subtitle,
             "title": title,
             "chartData": {
-                labels: labels,
+                labels: this.displayLabels(labels),
                 datasets: [{
                     type: datasets[0].type,
                     label:  datasets[0].label,
