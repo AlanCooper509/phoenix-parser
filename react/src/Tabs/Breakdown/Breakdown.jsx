@@ -1,6 +1,5 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 
-import getChartStats from '../../API/chartstats.js';
 import BreakdownStats from "./BreakdownStats.jsx";
 import BreakdownHeader from "./BreakdownHeader.jsx";
 import BarChart from "./BarChart.jsx";
@@ -11,7 +10,7 @@ import constants  from '../../games/phx1/constants.json'
 
 function updateLevelHelper(event) {
     let level = event.target.value;
-    level = level < 1 ? 1 : (level > 29 ? 29 : level);
+    level = level < 1 ? 1 : (level > constants.maxLevel ? constants.maxLevel : level);
     return parseInt(level);
 }
 
@@ -28,13 +27,11 @@ function getHighestClearLevel(data) {
     return 1;
 }
 
-function Breakdown({info, data}) {
-    const [chartData, setChartData] = useState({});
+function Breakdown({info, data, chartData}) {
     const [showLevel, setShowLevel] = useState(true);
     const [chartType, setChartType] = useState("bothtypes");
     const [category, setCategory] = useState("level");
     const [levelValue, setLevelValue] = useState(getHighestClearLevel(data));
-    useEffect(() => getChartStats(setChartData), []);
     const categorySelect = useRef(null);
     const chartTypeSelect = useRef(null);
     const levelInput = useRef(null);

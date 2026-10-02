@@ -1,13 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import Accordion from 'react-bootstrap/Accordion';
 
-import getChartStats from '../../API/chartstats.js';
 import LevelStats from './LevelStats.jsx';
 import cutoffs from "../../games/phx1/TitleCutoffs.json";
 
-function Progression({data, titles}) {
-    const [chartData, setChartData] = useState({});
-    useEffect(() => getChartStats(setChartData), []);
+function Progression({data, titles, chartData}) {
 
     let levels = {
         intermediate: [],

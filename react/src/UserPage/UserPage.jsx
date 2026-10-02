@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import Snowfall from 'react-snowfall'
 
 import Tab from 'react-bootstrap/Tab';
@@ -9,7 +9,9 @@ import './UserPage.css';
 import NewUser from './NewUser';
 import LoadingUser from './LoadingUser';
 
-import getUser from '../API/user.js';
+import getUser, { newUserInfo } from '../API/user.js';
+import getChartStats from '../API/chartstats.js';
+import { userPath } from '../Helpers/paths.js';
 import Profile from '../Profile/Profile';
 import ResyncForm from '../ResyncForm/ResyncForm';
 import Overview from '../Tabs/Overview/Overview.jsx';
@@ -24,22 +26,39 @@ function UserPage() {
     const params = useParams();
     const name = params.name;
     const number = params.number;
-    let [activeTab, setActiveTab] = useState(params.tab || "overview");
+    const navigate = useNavigate();
+    // the URL is the source of truth for the tab, so back/forward also switch tabs
+    const activeTab = params.tab || "overview";
     const hashNum = '#' + number;
     const minWidth = 800;
 
     function updateUrl(tab) {
-        const newPath = `${window.location.pathname.split('/').slice(0, 4).join('/')}/${tab}`;
-        window.history.pushState(null, '', newPath);
-        setActiveTab(tab);
-    }    
+        navigate(userPath(name, number, tab));
+    }
 
     const [info, setInfo] = useState({player: name, number: hashNum, title: {text: "", color: ""}, last_updated: "Unknown"});
     const [data, setData] = useState([]);
     const [titles, setTitles] = useState([]);
     const [pumbility, setPumbility] = useState([]);
     
-    useEffect(() => getUser(setInfo, setData, setTitles, setPumbility, name, number), [name, number]);
+    useEffect(() => {
+        getUser(name, number)
+            .then((user) => {
+                setInfo(user.info);
+                setData(user.scores);
+                setTitles(user.titles);
+                setPumbility(user.pumbility);
+            })
+            .catch(() => setInfo(newUserInfo(name, number)));
+    }, [name, number]);
+
+    // chart counts per level, shared by the Breakdown and Progression tabs
+    const [chartStats, setChartStats] = useState({});
+    useEffect(() => {
+        getChartStats()
+            .then(setChartStats)
+            .catch((error) => console.error('Error fetching chart stats:', error));
+    }, []);
 
     const [zoomLevel, setZoomLevel] = useState(calculateZoomLevel(minWidth));
     useEffect(() => {
@@ -88,10 +107,10 @@ function UserPage() {
                         <Overview info={info} data={data} titles={titles} pumbility={pumbility}/>
                     </Tab>
                     <Tab eventKey="breakdown" title="Breakdown">
-                        <Breakdown info={info} data={data}/>
+                        <Breakdown info={info} data={data} chartData={chartStats}/>
                     </Tab>
                     <Tab eventKey="progression" title="Progression">
-                        <Progression data={data} titles={titles}/>
+                        <Progression data={data} titles={titles} chartData={chartStats}/>
                     </Tab>
                     <Tab eventKey="comparisons" title="Comparisons">
                         <Comparisons info={info} data={data}/>

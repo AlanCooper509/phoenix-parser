@@ -2,21 +2,10 @@ import axios from 'axios';
 
 import getHostPath from './getHostPath';
 
-function getChartsForLevel(level, callback) {
-    const fetchData = async () => {
-        const hostname = getHostPath();
-        try {
-            const response = await axios.get(`${hostname}/api/charts/level/${level}`);
-            const responseData = response.data;
-
-            // Update state or perform actions with the data
-            callback(responseData);
-        } catch (error) {
-            console.error('Error fetching data:', error);
-        }
-    };
-
-    fetchData();
+// resolves to the chart list for a level ("01".."29") or "coop"
+async function getChartsForLevel(level) {
+    const response = await axios.get(`${getHostPath()}/api/charts/level/${level}`);
+    return response.data;
 }
 
 export default getChartsForLevel;

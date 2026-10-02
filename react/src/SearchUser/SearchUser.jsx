@@ -1,10 +1,12 @@
 import { useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import Button from 'react-bootstrap/Button';
 import Collapse from 'react-bootstrap/Collapse';
 import { FaMagnifyingGlass } from "react-icons/fa6";
 import { BsChevronCompactDown } from "react-icons/bs";
 
 import getUsers from "../API/users";
+import { userPath } from "../Helpers/paths";
 import splitNameNumber from "../Helpers/splitNameNumber";
 import UsersModal from "./UsersModal";
 
@@ -25,52 +27,70 @@ function validationChecks(formInput) {
     return tokens;
 }
 
+const STATUS_CLASS = { success: "btn-success", error: "btn-danger" };
+const STATUS_ICON = { success: "✓", error: "✕" };
+
 function SearchUser({open}) {
-    const [users, setUsers] = useState([]);
+    const navigate = useNavigate();
     const [showModal, setShowModal] = useState(false);
     const [modalData, setModalData] = useState([]);
     const [showForm, setShowForm] = useState(open);
     const [statusText, setStatusText] = useState('');
+    // "idle" | "loading" | "success" | "error"
+    const [status, setStatus] = useState("idle");
     const formInput = useRef(null);
-    const submitBtn = useRef(null);
-
-    if (users.length === 1) {
-        submitBtn.current.classList.add("btn-success");
-        submitBtn.current.classList.remove("btn-secondary");
-        let user = users[0];
-        let player = user.info.player;
-        let number = user.info.number.slice(1);
-        window.location.href = `/user/${player}/${number}`;
-    } else if (users.length > 1) {
-        setShowModal(true);
-        setModalData(users);
-        setUsers([]);
-    }
 
     const handleCloseModal = () => setShowModal(false);
     const handleOnEnter = (event) => {
         if (event.key !== 'Enter') { return }
         handleSubmit();
     }
+    async function searchByName(name) {
+        setStatus("loading");
+        let users;
+        try {
+            users = await getUsers(name);
+        } catch (error) {
+            setStatus("error");
+            setStatusText(`Error! Try again later.`);
+            return;
+        }
+        if (users.length === 0) {
+            setStatus("error");
+            setStatusText(`No users found!`);
+            return;
+        }
+        setStatus("success");
+        setStatusText(`Found ${users.length} user${users.length === 1 ? '' : 's'}!`);
+        if (users.length === 1) {
+            const user = users[0];
+            navigate(userPath(user.info.player, user.info.number.slice(1)));
+        } else {
+            setModalData(users);
+            setShowModal(true);
+        }
+    }
     const handleSubmit = () => {
         const tokens = validationChecks(formInput);
         if (!tokens) {
+            setStatus("error");
             setStatusText("Invalid USER search");
-            submitBtn.current.classList.add("btn-danger");
-            submitBtn.current.classList.remove("btn-secondary");
             return;
         }
+        setStatusText('');
         if (tokens.name && tokens.number) {
-            submitBtn.current.firstChild.innerHTML = '';
-            submitBtn.current.firstChild.classList.add("spinner-border");
-            submitBtn.current.firstChild.classList.add("spinner-border-sm");
-            window.location.href = `/user/${tokens.name}/${tokens.number}`;
+            setStatus("idle");
+            navigate(userPath(tokens.name, tokens.number));
         } else if (tokens.name) {
-            submitBtn.current.firstChild.innerHTML = '';
-            submitBtn.current.firstChild.classList.add("spinner-border");
-            submitBtn.current.firstChild.classList.add("spinner-border-sm");
-            getUsers(setUsers, tokens.name, submitBtn, setStatusText);
+            searchByName(tokens.name);
         }
+    }
+
+    let buttonContent = <FaMagnifyingGlass />;
+    if (status === "loading") {
+        buttonContent = <span className="spinner-border spinner-border-sm" role="status"></span>;
+    } else if (STATUS_ICON[status] && statusText !== "Invalid USER search") {
+        buttonContent = <div>{STATUS_ICON[status]}</div>;
     }
     return (
         <div className="container-fluid w-100 d-flex flex-column align-items-end">
@@ -81,7 +101,7 @@ function SearchUser({open}) {
                     <div className="d-flex flex-column">
                     <div className="d-flex">
                         <input ref={formInput} type="text" className="form-control me-2" onKeyDown={handleOnEnter} placeholder="USER #1234"/>
-                        <Button ref={submitBtn} className="btn-secondary btn-sm" type="submit" onClick={handleSubmit}><FaMagnifyingGlass /></Button>
+                        <Button className={`${STATUS_CLASS[status] || "btn-secondary"} btn-sm`} type="submit" onClick={handleSubmit}>{buttonContent}</Button>
                     </div>
                     {statusText}
                     </div>

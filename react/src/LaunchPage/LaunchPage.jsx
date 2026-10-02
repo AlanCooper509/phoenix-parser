@@ -10,7 +10,9 @@ import isWinterTheme from '../Helpers/isWinter';
 function LaunchPage() {
     const minWidth = 480;
     const [users, setUsers] = useState([]);
-    useEffect(() => getUsers(setUsers), []);
+    useEffect(() => {
+        getUsers().then(setUsers).catch(() => setUsers([]));
+    }, []);
 
     const [zoomLevel, setZoomLevel] = useState(calculateZoomLevel(minWidth));
     useEffect(() => {

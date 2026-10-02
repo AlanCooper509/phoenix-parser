@@ -137,20 +137,42 @@ async function getLastSyncDate(infoObject, timeoutSeconds) {
 
 function pythonPromise(pythonProcess) {
     return new Promise((resolve, reject) => {
-        // only one print statement is returned to resolve the promise
-        // (it's not being flushed, so it all comes back together after script ends regardless)
-        pythonProcess.stdout.on('data', (data) => {
-            resolve(JSON.parse(data.toString()));
+        // collect all output and decide once the script exits: stdout can arrive in
+        // several chunks, and stderr may carry warnings alongside a successful result
+        let stdout = '';
+        let stderr = '';
+        pythonProcess.stdout.on('data', (data) => { stdout += data.toString(); });
+        pythonProcess.stderr.on('data', (data) => { stderr += data.toString(); });
+
+        pythonProcess.on('error', (error) => {
+            console.log(`Failed to start sync script: ${error}`);
+            reject(ERROR_500);
         });
 
-        // any printing to sys.stderr sends back a 400 error (for now)
-        pythonProcess.stderr.on('data', (data) => {
-            const msg = data.toString()
-            if (msg.startsWith("Traceback")) {
-                console.log(msg);
-                reject(ERROR_500);
+        pythonProcess.on('close', () => {
+            // success: the script prints its JSON result to stdout
+            if (stdout.trim()) {
+                try {
+                    resolve(JSON.parse(stdout));
+                    return;
+                } catch (error) {
+                    console.log(`Unparseable sync output: ${error}\n${stdout.slice(0, 500)}`);
+                    reject(ERROR_500);
+                    return;
+                }
             }
-            reject(ERROR_400(data.toString()));
+            // crash: log it, but don't show the traceback to the user
+            if (stderr.includes("Traceback")) {
+                console.log(stderr);
+                reject(ERROR_500);
+                return;
+            }
+            // expected failures (e.g. expired SID) are printed to stderr for the user
+            if (stderr.trim()) {
+                reject(ERROR_400(stderr.trim()));
+                return;
+            }
+            reject(ERROR_500);
         });
     });
 }

@@ -118,12 +118,12 @@ function BreakdownRemaining({userData, chartData, category, levelValue, chartTyp
         switch (category) {
             case "ucs": break;
             case "coop":
-                getChartsForLevel(category, updateChartList);
+                getChartsForLevel(category).then(updateChartList).catch((error) => console.error('Error fetching charts:', error));
                 setShow(true);
                 break;
             case "level":
                 const level = levelValue < 10 ? `0${levelValue}` : levelValue.toString();
-                getChartsForLevel(level, updateChartList);
+                getChartsForLevel(level).then(updateChartList).catch((error) => console.error('Error fetching charts:', error));
                 setShow(true);
                 break;
             default: break;

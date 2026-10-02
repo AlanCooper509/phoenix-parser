@@ -6,8 +6,56 @@ import { BsChevronCompactDown } from "react-icons/bs";
 
 import InfoModal from "./InfoModal";
 import ResponseModal from "./ResponseModal";
+import PlayerCard from "../Profile/PlayerCard";
 import postSyncData from "../API/syncdata";
 import checkUpdatedRecently from "../Helpers/checkUpdatedRecently";
+
+const STATUS_CLASS = { success: "btn-success", error: "btn-danger" };
+const STATUS_LABEL = { success: "Success!", error: "Failed" };
+
+function SyncComplete({ result }) {
+    const info = result.info; // player / number / title / last_updated
+    return (
+        <div>
+            <h3 className="text-center">Data Sync: <span className="text-success">Complete</span></h3>
+            <hr/>
+            <PlayerCard
+                info={info}
+            />
+            <hr/>
+            <h4 className="mt-4">Synced data for&nbsp;
+                <span className="Game-name">
+                    {info.player} {info.number}
+                </span>
+                :
+            </h4>
+            <h4>
+                <ul>
+                    <li>
+                        Best Scores: <code>{result.scores.toLocaleString()}</code>
+                    </li>
+                    <li>
+                        Pumbility: <code>{result.pumbility.toLocaleString()}</code>
+                    </li>
+                    <li>
+                        Titles: <code>{result.titles.toLocaleString()}</code>
+                    </li>
+                </ul>
+            </h4>
+            <i className="text-muted">(Changes will display after you refresh the page)</i>
+        </div>
+    );
+}
+
+function SyncFailed({ message }) {
+    return (
+        <div>
+            <h3 className="text-center">Data Sync: <span className="text-danger">Failed</span></h3>
+            <hr/>
+            <p>{message}</p>
+        </div>
+    );
+}
 
 function ResyncForm({info}) {
     // for info modal
@@ -27,10 +75,10 @@ function ResyncForm({info}) {
     };
     const openNotify = (status, msg) => {setMessage(msg); setSuccess(status); setNotify(true)};
 
-    // for submitting
+    // for submitting: "idle" | "loading" | "success" | "error"
+    const [status, setStatus] = useState("idle");
     const [showForm, setShowForm] = useState(false);
     const sid = useRef(null);
-    const submitBtn = useRef(null);
     const params = useParams();
     const name = params.name.toUpperCase();
     const number = params.number;
@@ -38,15 +86,26 @@ function ResyncForm({info}) {
         if (event.key !== 'Enter') { return }
         handleSubmit();
     }
-    function handleSubmit() {
-        if(!sid.current) { return };
-        if(!sid.current.value) { return };
+    async function handleSubmit() {
+        if (status === "loading") { return; }
+        if (!sid.current) { return };
+        if (!sid.current.value) { return };
+        // accept a pasted cookie string ("sid=...; ...") as well as the bare SID
         let input = sid.current.value;
-        if(input.includes("sid=")) input = input.split("sid=")[1];
-        if(input.includes(";")) input = input.split(";")[0];
-        if(input.match(/[^a-zA-Z0-9]/g)) { return };
-        const params = {name: name, number: number, sid: sid.current.value};
-        postSyncData(params, submitBtn, openNotify);
+        if (input.includes("sid=")) input = input.split("sid=")[1];
+        if (input.includes(";")) input = input.split(";")[0];
+        if (input.match(/[^a-zA-Z0-9]/g)) { return };
+
+        setStatus("loading");
+        try {
+            const result = await postSyncData(name, number, input);
+            localStorage.setItem('latestSync', JSON.stringify(result.info));
+            setStatus("success");
+            openNotify(true, <SyncComplete result={result}/>);
+        } catch (error) {
+            setStatus("error");
+            openNotify(false, <SyncFailed message={error.message}/>);
+        }
     }
 
     if (checkUpdatedRecently(info.timestamp, 8*60*60)) {
@@ -66,8 +125,10 @@ function ResyncForm({info}) {
                                 show={show}
                                 handleClose={handleClose}
                             />
-                            <Button ref={submitBtn} className=" btn btn-sm border-dark btn-secondary ms-2" onClick={handleSubmit}>
-                                <span>Submit</span>
+                            <Button className={`btn btn-sm border-dark ${STATUS_CLASS[status] || "btn-secondary"} ms-2`} onClick={handleSubmit}>
+                                {status === "loading"
+                                    ? <span className="spinner-border spinner-border-sm" role="status"></span>
+                                    : <span>{STATUS_LABEL[status] || "Submit"}</span>}
                             </Button>
                             <ResponseModal
                                 show={notify}

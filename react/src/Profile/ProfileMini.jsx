@@ -1,21 +1,23 @@
+import { Link } from 'react-router-dom';
+
 import PlayerCardMini from './PlayerCardMini';
 import './PlayerCard.css'
 
 import splitNameNumber from "../Helpers/splitNameNumber";
+import { userPath } from "../Helpers/paths";
 
 function ProfileMini({info}) {
     function redirect() {
         const user = splitNameNumber(info.player + info.number);
-        return `/user/${user.name}/${user.number}`;
+        return userPath(user.name, user.number);
     }
     let timestamp = info.last_updated;
     if (info.timestamp) {
         timestamp = new Date(parseInt(info.timestamp) * 1000).toLocaleDateString();
     }
     return (
-        <a
-          href={redirect()}
-          rel="noopener noreferrer"
+        <Link
+          to={redirect()}
           className="container-mini mt-3 text-decoration-none d-block"
           style={{ minWidth: '350px', maxHeight: '115px' }}
         >
@@ -30,7 +32,7 @@ function ProfileMini({info}) {
           >
             Last Synced: {timestamp}
           </i>
-        </a>
+        </Link>
     );
 }
 

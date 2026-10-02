@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-import getUser from "../../API/user.js";
+import getUser, { newUserInfo } from "../../API/user.js";
 import PlayerNameInput from "./PlayerNameInput.jsx";
 import splitNameNumber from "../../Helpers/splitNameNumber.js";
 
@@ -32,7 +32,12 @@ function Sidebar({graphType, handleGraphToggle, infoP1, p2, p3, p4}) {
         }
         let tokens = splitNameNumber(player.ref.current.value);
         if (!tokens) { return; }
-        getUser(player.setInfo, player.setData, () => {return;}, () => {return;}, tokens.name, tokens.number);
+        getUser(tokens.name, tokens.number)
+            .then((user) => {
+                player.setInfo(user.info);
+                player.setData(user.scores);
+            })
+            .catch(() => player.setInfo(newUserInfo(tokens.name, tokens.number)));
     }
 
     return (

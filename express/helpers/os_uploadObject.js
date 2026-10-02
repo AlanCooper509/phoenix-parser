@@ -1,17 +1,9 @@
 import 'dotenv/config';
 
-import common from 'oci-common'
-import os from 'oci-objectstorage'
+import getObjectStorageClient from './os_client.js';
 
 async function uploadObjectToObjectStorage(objectName, objectBody) {
-    const provider = new common.ConfigFileAuthenticationDetailsProvider(
-        process.env.OCI_CONFIG_PATH,
-        process.env.OCI_CONFIG_PROFILE
-    );
-
-    const client = new os.ObjectStorageClient({
-        authenticationDetailsProvider: provider
-    });
+    const client = getObjectStorageClient();
 
     try {
         const putObjectRequest = {

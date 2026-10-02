@@ -14,15 +14,14 @@ async function getUser(req) {
     const scoresPromise = readJsonFromObjectStorage(`${userDir}/${process.env.BEST_SCORES_FILENAME}`);
     const titlesPromise = readJsonFromObjectStorage(`${userDir}/${process.env.TITLES_FILENAME}`);
     const pumbilityPromise = readJsonFromObjectStorage(`${userDir}/${process.env.PUMBILITY_FILENAME}`);
-    const recentsPromise = readJsonFromObjectStorage(`${userDir}/${process.env.RECENTS_FILENAME}`);
 
-    // 2. Wait for all of them to finish at the same time
-    let [info, scores, titles, pumbility, recents] = await Promise.all([
+    // Wait for all of them to finish at the same time
+    // (recents.json is still synced but isn't read here: the frontend doesn't use it)
+    let [info, scores, titles, pumbility] = await Promise.all([
         infoPromise,
         scoresPromise,
         titlesPromise,
-        pumbilityPromise,
-        recentsPromise
+        pumbilityPromise
     ]);
 
     // Info validation (Critical)
@@ -59,19 +58,11 @@ async function getUser(req) {
         }
     }
 
-    // Recents fallback (Optional)
-    if (recents.error) {
-        if (recents.error.code === 404) {
-            recents = [];
-        }
-    }
-
     return {
         "scores": sortedScores,
         "info": info.info,
         "titles": titles,
-        "pumbility": pumbility,
-        "recents": recents
+        "pumbility": pumbility
     };
 }
 

@@ -1,7 +1,6 @@
 // external packages
 import express from 'express';
 import cors from 'cors';
-import bodyParser from 'body-parser';
 
 // local helpers
 import getUser from './endpoints/user.js';
@@ -15,8 +14,8 @@ const app = express();
 app.use(cors());
 const port = 3001;
 
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
+app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
 
 // [GET] USER
 app.get('/api/user/:name/:number', async (req, res) => {
