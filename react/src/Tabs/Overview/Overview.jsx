@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 
 import ScoresTable from '../../TableHelpers/ScoresTable.jsx';
 import "./Overview.css";
@@ -76,7 +76,8 @@ function Overview({info, data, titles, pumbility}) {
     let graphSetupObject = updateGraphWrapper();
 
     // for Best Scores Table
-    let rowData = getTableData(data, tableTypeValue, constants.levelsDescending);
+    // same array between renders unless the data or filter changes, so the grid keeps its rows
+    const rowData = useMemo(() => getTableData(data, tableTypeValue, constants.levelsDescending), [data, tableTypeValue, constants.levelsDescending]);
 
     function updateRowData(event) {
         setTableTypeValue(event.target.value);

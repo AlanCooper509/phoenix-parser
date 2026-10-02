@@ -1,181 +1,184 @@
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { AgGridReact } from 'ag-grid-react';
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-quartz.css";
 
 import "./ScoresTable.css";
 
-function ScoresTable({ rowData, sortLevel }) {
-    // Displays {Co-Op, Single, Double} stepball image based on "type" value
-    const chartTypeRenderer = ({ value }) => (
-        <span className="d-flex h-100 w-100 align-items-center justify-content-center">
-            {value && 
-                <img alt={`${value}`}
-                    src={`/images/stepball/${value}_bg.png`}
-                    style={{width: "45px", height: "auto", maxHeight: "80%"}}
-                />
-            }
-        </span>
-    );
+// cell renderers and column settings live outside the component: defining them inside
+// made every re-render a new component type, so the grid remounted every cell (images flickered)
+// Displays {Co-Op, Single, Double} stepball image based on "type" value
+const chartTypeRenderer = ({ value }) => (
+    <span className="d-flex h-100 w-100 align-items-center justify-content-center">
+        {value && 
+            <img alt={`${value}`}
+                src={`/images/stepball/${value}_bg.png`}
+                style={{width: "45px", height: "auto", maxHeight: "80%"}}
+            />
+        }
+    </span>
+);
 
-    // Displays grade image based on "grade" value
-    const gradeTypeRenderer = ({ value }) => (
-        <span className="d-flex h-100 w-100 align-items-center justify-content-center">
-            {value && 
-                <img alt={`${value}`}
-                    src={`/images/grade/${value}.png`}
-                    className="d-block"
-                    style={{width: "40px", height: "auto", maxHeight: "50%"}}
-                />
-            }
-        </span>
-    );
+// Displays grade image based on "grade" value
+const gradeTypeRenderer = ({ value }) => (
+    <span className="d-flex h-100 w-100 align-items-center justify-content-center">
+        {value && 
+            <img alt={`${value}`}
+                src={`/images/grade/${value}.png`}
+                className="d-block"
+                style={{width: "40px", height: "auto", maxHeight: "50%"}}
+            />
+        }
+    </span>
+);
 
-    // Displays plate image based on "plate" value
-    const plateTypeRenderer = ({ value }) => (
-        <span className="d-flex h-100 w-100 align-items-center ms-3">
-            {value && 
-                <img alt={`${value}`}
-                    src={`/images/plate/s_${value}.png`}
-                    className="d-block"
-                    style={{width: "40px", height: "auto", maxHeight: "50%"}}
-                />
-            }
-        </span>
-    );
+// Displays plate image based on "plate" value
+const plateTypeRenderer = ({ value }) => (
+    <span className="d-flex h-100 w-100 align-items-center ms-3">
+        {value && 
+            <img alt={`${value}`}
+                src={`/images/plate/s_${value}.png`}
+                className="d-block"
+                style={{width: "40px", height: "auto", maxHeight: "50%"}}
+            />
+        }
+    </span>
+);
 
-    const levelRenderer = ({ value, data }) => {
-        const isSamsungInternet = /SamsungBrowser/i.test(navigator.userAgent);
-        return (
-            <span className="level-margins">
-                {value && value !== "xx" && 
-                <>
-                <span
-                    className="game-font level-font level-font-margin position-absolute"
-                    style={isSamsungInternet ? { color: "transparent", textShadow: "0px 0px 0px #ffffff" } : {}}
-                >
-                    {data.level[0] === "1" ? <span className="onespaceleft"></span> : <></>}
-                    {data.level[0] === "n" ? "x" : data.level[0]}
-                    {data.level[0] === "1" ? <span className="onespaceright"></span> : <></>}
-                    {data.level[1] === "1" ? <span className="onespaceleft"></span> : <></>}
-                    {data.level[1]}
-                    {data.level[1] === "1" ? <span className="onespaceright"></span> : <></>}
-                </span>
-                <img className="stepball-img" alt={`${data.type}`}
-                    src={`/images/stepball/${data.type}_bg.png`}
-                    style={{ filter: isSamsungInternet ? "brightness(1.4)" : "brightness(1.0)" }}
-                />
-                </>
-                }
-                {value && value === "xx" &&
-                <>
-                <span className="game-font level-font level-font-margin position-absolute">
-                    !<span className="onespaceleft"></span><span className="onespaceright"></span>!
-                </span>
-                </>
-                }
+const levelRenderer = ({ value, data }) => {
+    const isSamsungInternet = /SamsungBrowser/i.test(navigator.userAgent);
+    return (
+        <span className="level-margins">
+            {value && value !== "xx" && 
+            <>
+            <span
+                className="game-font level-font level-font-margin position-absolute"
+                style={isSamsungInternet ? { color: "transparent", textShadow: "0px 0px 0px #ffffff" } : {}}
+            >
+                {data.level[0] === "1" ? <span className="onespaceleft"></span> : <></>}
+                {data.level[0] === "n" ? "x" : data.level[0]}
+                {data.level[0] === "1" ? <span className="onespaceright"></span> : <></>}
+                {data.level[1] === "1" ? <span className="onespaceleft"></span> : <></>}
+                {data.level[1]}
+                {data.level[1] === "1" ? <span className="onespaceright"></span> : <></>}
             </span>
-        );
-    }
-    
-    const nameRenderer = ({ value }) => (
-        <span className="name-font d-flex h-100 w-100 align-items-center mt-1">
-            {value}
+            <img className="stepball-img" alt={`${data.type}`}
+                src={`/images/stepball/${data.type}_bg.png`}
+                style={{ filter: isSamsungInternet ? "brightness(1.4)" : "brightness(1.0)" }}
+            />
+            </>
+            }
+            {value && value === "xx" &&
+            <>
+            <span className="game-font level-font level-font-margin position-absolute">
+                !<span className="onespaceleft"></span><span className="onespaceright"></span>!
+            </span>
+            </>
+            }
         </span>
     );
+}
 
-    const scoreRenderer = ({ value }) => (
-        <b className="score-font d-flex h-100 w-100 align-items-center justify-content-start mt-1">
-            {value}
-        </b>
-    );
+const nameRenderer = ({ value }) => (
+    <span className="name-font d-flex h-100 w-100 align-items-center mt-1">
+        {value}
+    </span>
+);
 
-    const levelComparator = function(valueA, valueB, nodeA, nodeB, isDescending) {
-        let levelA = Number(nodeA.data.level.replace(/,/g, ''));
-        let levelB = Number(nodeB.data.level.replace(/,/g, ''));
-        if (levelA !== levelB) {
-            return (levelA > levelB) ? 1 : -1;
-        }
-        return 0;
-    }    
+const scoreRenderer = ({ value }) => (
+    <b className="score-font d-flex h-100 w-100 align-items-center justify-content-start mt-1">
+        {value}
+    </b>
+);
 
-    const scoreComparator = function(valueA, valueB, nodeA, nodeB, isDescending) {
-        let scoreA = Number(valueA.replace(/,/g, ''));
-        let scoreB = Number(valueB.replace(/,/g, ''));
-        let levelA = Number(nodeA.data.level.replace(/,/g, ''));
-        let levelB = Number(nodeB.data.level.replace(/,/g, ''));
-        if (scoreA !== scoreB) {
-            return (scoreA > scoreB) ? 1 : -1;
-        }
-        if (levelA !== levelB) {
-            return (levelA > levelB) ? 1 : -1;
-        }
-        return 0;
+const levelComparator = function(valueA, valueB, nodeA, nodeB, isDescending) {
+    let levelA = Number(nodeA.data.level.replace(/,/g, ''));
+    let levelB = Number(nodeB.data.level.replace(/,/g, ''));
+    if (levelA !== levelB) {
+        return (levelA > levelB) ? 1 : -1;
     }
+    return 0;
+}    
 
-    const gradeComparator = function(valueA, valueB, nodeA, nodeB, isDescending) {
-        // use score value directly rather than grade
-        let scoreA = Number(nodeA.data.score.replace(/,/g, ''));
-        let scoreB = Number(nodeB.data.score.replace(/,/g, ''));
-        let levelA = Number(nodeA.data.level.replace(/,/g, ''));
-        let levelB = Number(nodeB.data.level.replace(/,/g, ''));
-        if (scoreA !== scoreB) {
-            return (scoreA > scoreB) ? 1 : -1;
-        }
-        if (levelA !== levelB) {
-            return (levelA > levelB) ? 1 : -1;
-        }
-        return 0;
+const scoreComparator = function(valueA, valueB, nodeA, nodeB, isDescending) {
+    let scoreA = Number(valueA.replace(/,/g, ''));
+    let scoreB = Number(valueB.replace(/,/g, ''));
+    let levelA = Number(nodeA.data.level.replace(/,/g, ''));
+    let levelB = Number(nodeB.data.level.replace(/,/g, ''));
+    if (scoreA !== scoreB) {
+        return (scoreA > scoreB) ? 1 : -1;
     }
-
-    const plateComparator = function(valueA, valueB, nodeA, nodeB, isDescending) {
-        let order = ["rg", "fg", "tg", "mg", "sg", "eg", "ug", "pg"];
-        let plateA = order.indexOf(valueA);
-        let plateB = order.indexOf(valueB);
-        let scoreA = Number(nodeA.data.score.replace(/,/g, ''));
-        let scoreB = Number(nodeB.data.score.replace(/,/g, ''));
-        let levelA = Number(nodeA.data.level.replace(/,/g, ''));
-        let levelB = Number(nodeB.data.level.replace(/,/g, ''));
-        if (plateA !== plateB) {
-            return (plateA > plateB) ? 1 : -1;
-        }
-        if (scoreA !== scoreB) {
-            return (scoreA > scoreB) ? 1 : -1;
-        }
-        if (levelA !== levelB) {
-            return (scoreA > scoreB) ? 1 : -1;
-        }
-        return 0;
+    if (levelA !== levelB) {
+        return (levelA > levelB) ? 1 : -1;
     }
+    return 0;
+}
 
-    const scoreFilterParams = {
-        allowedCharPattern: '\\d\\,',
-        numberParser: text => {
-            return text == null ? null : Number(text.replace(/,/g, ''));
-        },
-        numberFormatter: value => {
-            return value == null ? null : value.toLocaleString();
-        }
+const gradeComparator = function(valueA, valueB, nodeA, nodeB, isDescending) {
+    // use score value directly rather than grade
+    let scoreA = Number(nodeA.data.score.replace(/,/g, ''));
+    let scoreB = Number(nodeB.data.score.replace(/,/g, ''));
+    let levelA = Number(nodeA.data.level.replace(/,/g, ''));
+    let levelB = Number(nodeB.data.level.replace(/,/g, ''));
+    if (scoreA !== scoreB) {
+        return (scoreA > scoreB) ? 1 : -1;
     }
-
-    const gradeFilterParams = {
-        filterOptions: ['equals', 'notEqual', 'startsWith'],
-        defaultOption: 'equals'
+    if (levelA !== levelB) {
+        return (levelA > levelB) ? 1 : -1;
     }
+    return 0;
+}
 
-    const levelFilterValueGetter = function(params) {
-        return Number(params.data.level.replace(/,/g, ''));
+const plateComparator = function(valueA, valueB, nodeA, nodeB, isDescending) {
+    let order = ["rg", "fg", "tg", "mg", "sg", "eg", "ug", "pg"];
+    let plateA = order.indexOf(valueA);
+    let plateB = order.indexOf(valueB);
+    let scoreA = Number(nodeA.data.score.replace(/,/g, ''));
+    let scoreB = Number(nodeB.data.score.replace(/,/g, ''));
+    let levelA = Number(nodeA.data.level.replace(/,/g, ''));
+    let levelB = Number(nodeB.data.level.replace(/,/g, ''));
+    if (plateA !== plateB) {
+        return (plateA > plateB) ? 1 : -1;
     }
-
-    const scoreFilterValueGetter = function(params) {
-        return Number(params.data.score.replace(/,/g, ''));
+    if (scoreA !== scoreB) {
+        return (scoreA > scoreB) ? 1 : -1;
     }
-
-    const gradeFilterValueGetter = function(params) {
-        return params.data.grade.replace(/_p/g, '+');
+    if (levelA !== levelB) {
+        return (scoreA > scoreB) ? 1 : -1;
     }
+    return 0;
+}
 
-    // Column Definitions: Defines & controls grid columns.
+const scoreFilterParams = {
+    allowedCharPattern: '\\d\\,',
+    numberParser: text => {
+        return text == null ? null : Number(text.replace(/,/g, ''));
+    },
+    numberFormatter: value => {
+        return value == null ? null : value.toLocaleString();
+    }
+}
+
+const gradeFilterParams = {
+    filterOptions: ['equals', 'notEqual', 'startsWith'],
+    defaultOption: 'equals'
+}
+
+const levelFilterValueGetter = function(params) {
+    return Number(params.data.level.replace(/,/g, ''));
+}
+
+const scoreFilterValueGetter = function(params) {
+    return Number(params.data.score.replace(/,/g, ''));
+}
+
+const gradeFilterValueGetter = function(params) {
+    return params.data.grade.replace(/_p/g, '+');
+}
+
+// Column Definitions: Defines & controls grid columns.
+
+function makeColumnDefs(sortLevel) {
     const columnDefs = [
         { field: "type", minWidth: 80, maxWidth: 80, hide: true, cellRenderer: chartTypeRenderer },
         { field: "level", minWidth: 100, maxWidth: 100, floatingFilter: sortLevel ? true : false, filter: "agNumberColumnFilter", filterValueGetter: levelFilterValueGetter, comparator: levelComparator, cellRenderer: levelRenderer},
@@ -184,7 +187,12 @@ function ScoresTable({ rowData, sortLevel }) {
         { field: "grade", minWidth: 120, maxWidth: 120, floatingFilter: true, filter: "agTextColumnFilter", filterParams: gradeFilterParams, filterValueGetter: gradeFilterValueGetter, comparator: gradeComparator, cellRenderer: gradeTypeRenderer },
         { field: "plate", minWidth: 120, maxWidth: 120, floatingFilter: true, filter: "agTextColumnFilter", comparator: plateComparator, cellRenderer: plateTypeRenderer }
     ];
-  
+    return columnDefs;
+}
+
+function ScoresTable({ rowData, sortLevel }) {
+    const columnDefs = useMemo(() => makeColumnDefs(sortLevel), [sortLevel]);
+
     const onGridReady = useCallback((params) => {
         window.addEventListener('resize', () => {
             setTimeout(() => {
