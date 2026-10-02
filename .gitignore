@@ -4,3 +4,5 @@
 
 # misc
 /_local
+# local Claude Code config (dev-server launch settings)
+/.claude/
