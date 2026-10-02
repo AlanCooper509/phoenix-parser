@@ -94,12 +94,11 @@ function makeColumnDefs(sortLevel, language) {
 function ChartsTable({ rowData, sortLevel, language }) {
     const columnDefs = useMemo(() => makeColumnDefs(sortLevel, language), [sortLevel, language]);
 
-    const onGridReady = useCallback((params) => {
-        window.addEventListener('resize', () => {
-            setTimeout(() => {
-            params.api.sizeColumnsToFit();
-            });
-        });
+    // refit columns whenever the grid's own width changes: first layout, a hidden tab being
+    // shown, rotating a phone, resizing (window resize events alone missed most of these)
+    const fitColumns = useCallback((params) => {
+        if (params.clientWidth === 0) { return; }  // grid is hidden (inactive tab / closed modal)
+        params.api.sizeColumnsToFit();
     }, []);
   
     return (
@@ -113,8 +112,8 @@ function ChartsTable({ rowData, sortLevel, language }) {
                 columnDefs={columnDefs}
                 domLayout="autoHeight"
                 autoSizeStrategy={{type: "fitGridWidth"}}
-                onGridReady={onGridReady}
-                stateUpdated={onGridReady}
+                onGridSizeChanged={fitColumns}
+                onFirstDataRendered={fitColumns}
                 suppressDragLeaveHidesColumns={true}
                 rowDragManaged={true}
               />
