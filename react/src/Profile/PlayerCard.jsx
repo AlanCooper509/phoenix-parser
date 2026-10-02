@@ -1,12 +1,14 @@
 import './PlayerCard.css'
 
 import { avatarImg, fromPiugameUrl } from '../Helpers/assets';
+import useGame from '../games/useGame';
 
 function PlayerCard({info}) {
+    const game = useGame();
     const titleClasses = "Game-title " + (info && info.title ? info.title.color : "");
     let thumbnail = '';
     if (info.last_updated !== 'Unknown') {
-        let profilePic = avatarImg("phx1");
+        let profilePic = avatarImg(game.id);
         if (info.avatar) {
             profilePic = fromPiugameUrl(info.avatar);
         }

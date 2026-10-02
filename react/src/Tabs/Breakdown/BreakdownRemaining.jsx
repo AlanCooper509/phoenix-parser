@@ -1,6 +1,7 @@
 import { useState } from "react";
 import BreakdownModal from './BreakdownModal';
 import getChartsForLevel from "../../API/chartlevel";
+import useGame from "../../games/useGame";
 
 function setTitle(userData, chartData, category, levelValue, chartType) {
     let count = 0;
@@ -44,6 +45,7 @@ function setTitle(userData, chartData, category, levelValue, chartType) {
 }
 
 function BreakdownRemaining({userData, chartData, category, levelValue, chartType, language}) {
+    const game = useGame();
     const [show, setShow] = useState(false);
     const [chartList, setChartList] = useState([]);
     const handleClose = () => setShow(false);
@@ -118,12 +120,12 @@ function BreakdownRemaining({userData, chartData, category, levelValue, chartTyp
         switch (category) {
             case "ucs": break;
             case "coop":
-                getChartsForLevel(category).then(updateChartList).catch((error) => console.error('Error fetching charts:', error));
+                getChartsForLevel(game.id, category).then(updateChartList).catch((error) => console.error('Error fetching charts:', error));
                 setShow(true);
                 break;
             case "level":
                 const level = levelValue < 10 ? `0${levelValue}` : levelValue.toString();
-                getChartsForLevel(level).then(updateChartList).catch((error) => console.error('Error fetching charts:', error));
+                getChartsForLevel(game.id, level).then(updateChartList).catch((error) => console.error('Error fetching charts:', error));
                 setShow(true);
                 break;
             default: break;

@@ -1,6 +1,6 @@
 import readJsonFromAssets from '../helpers/assets_readJson.js';
 
-async function getChartStats(req) {
+async function getChartsForLevel(req, game) {
     const value = req.params.value;
     // only "01".."29" or "coop": the value becomes part of the asset URL
     if (!/^(0[1-9]|1[0-9]|2[0-9]|coop)$/.test(value)) {
@@ -13,7 +13,7 @@ async function getChartStats(req) {
     }
 
     // get charts JSON for a given level from the public piu-assets bucket (cached in memory)
-    let objectName = "phx1/charts/";
+    let objectName = `${game.chartsDir}/`;
     if (value === "coop") {
         objectName += `coop.json`;
     } else {
@@ -24,4 +24,4 @@ async function getChartStats(req) {
     return charts;
 }
 
-export default getChartStats;
+export default getChartsForLevel;

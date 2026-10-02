@@ -7,16 +7,16 @@ import OverviewGraphHelper from "../../GraphHelpers/OverviewGraphHelper.js";
 import GraphButtons from "../../GraphHelpers/GraphButtons.jsx";
 import LineChart from "./LineChart.jsx";
 import ChartTypeSelect from "../../Helpers/ChartTypeSelect.jsx";
-import constants from '../../games/phx1/constants.json'
+import useGame from '../../games/useGame';
 import OverviewStats from "./OverviewStats/OverviewStats.jsx";
 
-function getTableData(data, tableTypeValue) {
+function getTableData(data, tableTypeValue, levelsDescending) {
     const coopCategories = ["n2", "n3", "n4", "n5"];
     const ucsCategory = ["xx"];
     let rowData = [];
 
     if (tableTypeValue === "bothtypes" || tableTypeValue === "singles" || tableTypeValue === "doubles") {
-        for (const key of constants.levelsDescending) {
+        for (const key of levelsDescending) {
             if (data[key]) {
                 rowData.push(...data[key].scores);
             }
@@ -58,6 +58,7 @@ function getTableData(data, tableTypeValue) {
 }
 
 function Overview({info, data, titles, pumbility}) {
+    const { constants } = useGame();
     const minValue = useRef(null);
     const maxValue = useRef(null);
     const chartTypeValue = useRef(null);
@@ -75,7 +76,7 @@ function Overview({info, data, titles, pumbility}) {
     let graphSetupObject = updateGraphWrapper();
 
     // for Best Scores Table
-    let rowData = getTableData(data, tableTypeValue);
+    let rowData = getTableData(data, tableTypeValue, constants.levelsDescending);
 
     function updateRowData(event) {
         setTableTypeValue(event.target.value);

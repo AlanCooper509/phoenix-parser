@@ -1,57 +1,14 @@
 import getChartStats from '../endpoints/chartstats.js';
 
-const gradeMultipliers = {
-    "f":     0.40,
-    "d":     0.50,
-    "c":     0.60,
-    "b":     0.70,
-    "a":     0.80,
-    "a_p":   0.90,
-    "aa":    1.00,
-    "aa_p":  1.05,
-    "aaa":   1.10,
-    "aaa_p": 1.15,
-    "s":     1.20,
-    "s_p":   1.26,
-    "ss":    1.32,
-    "ss_p":  1.38,
-    "sss":   1.44,
-    "sss_p": 1.50
-}
-
-const levelMultipliers = {
-    "10": 100,
-    "11": 110,
-    "12": 130,
-    "13": 160,
-    "14": 200,
-    "15": 250,
-    "16": 310,
-    "17": 380,
-    "18": 460,
-    "19": 550,
-    "20": 650,
-    "21": 760,
-    "22": 880,
-    "23": 1010,
-    "24": 1150,
-    "25": 1300,
-    "26": 1460,
-    "27": 1630,
-    "28": 1810,
-    "29": 2000,
-    "coop": 2200
-}
-
-async function sortScores(scores) {
+async function sortScores(scores, game) {
     // attempt retrieval of chart counts per level (piu-assets bucket, cached in memory)
-    let chartStats = await getChartStats();
+    let chartStats = await getChartStats(game);
     if (chartStats.error) {
         return chartStats;
     }
 
     const filteredScores = filterScores(scores);
-    const sortedByLevel = splitByLevelandCalculateRating(filteredScores);
+    const sortedByLevel = splitByLevelandCalculateRating(filteredScores, game);
     const sortedScores = getStatistics(sortedByLevel, chartStats);
     return sortedScores;
 }
@@ -72,7 +29,8 @@ function filterScores(jsonArray) {
     return outputArray;
 }
 
-function splitByLevelandCalculateRating(jsonArray) {
+function splitByLevelandCalculateRating(jsonArray, game) {
+    const { gradeMultipliers, levelMultipliers } = game;
     // already iterating through all entries, just add Rating field to each
     let levels = {};
     for (const idx in jsonArray) {

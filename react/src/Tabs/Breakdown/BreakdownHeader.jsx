@@ -1,8 +1,9 @@
 import BreakdownCategory from "./BreakdownCategory.jsx";
 import ChartTypeSelect from "../../Helpers/ChartTypeSelect.jsx";
-import constants from "../../games/phx1/constants.json";
+import useGame from "../../games/useGame";
 
 function BreakdownHeader({categorySelect, updateCategory, showLevel, chartTypeSelect, handleTypeChange, levelInput, levelValue, handleKeyDown, updateLevel}) {
+    const { constants } = useGame();
     return (
         <div className="d-flex mt-4 align-items-center justify-content-between mt-3 mb-4">
             <BreakdownCategory

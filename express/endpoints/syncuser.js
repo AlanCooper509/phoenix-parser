@@ -37,17 +37,17 @@ const FILELIST = [
     process.env.TITLES_FILENAME
 ];
 
-async function syncUser(sid, name, number) {
+async function syncUser(sid, name, number, game) {
     const dirname = fs.realpathSync('.');
     const user = getUserID(name, number);
     const outDir = `${dirname}/tmp/${user}`;
     const scoresFile = `${dirname}/tmp/${user}/old_best_scores.json`;
-    let pythonArgs = [process.env.PYTHON_SCRIPT,
+    let pythonArgs = [game.syncScript,
         `sid=${sid}`, `user=${user}`, `outDir=${outDir}`
     ];
 
     // grab Object Storage copy of user's info file from most recent previous sync
-    const infoFileName = `${process.env.USERS_DIR}/${user}/${process.env.INFO_FILENAME}`;
+    const infoFileName = `${game.usersDir}/${user}/${process.env.INFO_FILENAME}`;
     const infoObject = await readJsonFromObjectStorage(infoFileName);
 
     // pass in the language used during previous sync
@@ -72,7 +72,7 @@ async function syncUser(sid, name, number) {
 
     // check if Object Storage has a history for the user's Best Scores that can be passed to Python script
     // (goal of reducing requests needed to make to piugame server)
-    const scoresFileName = `${process.env.USERS_DIR}/${getUserID(name, number)}/${process.env.BEST_SCORES_FILENAME}`;
+    const scoresFileName = `${game.usersDir}/${getUserID(name, number)}/${process.env.BEST_SCORES_FILENAME}`;
     let scores = await readJsonFromObjectStorage(scoresFileName);
     if (!scores.error) {
         fs.writeFileSync(scoresFile, JSON.stringify(scores));
@@ -86,9 +86,9 @@ async function syncUser(sid, name, number) {
         console.log(`Successful sync for ${user}`);
 
         // Await each background process sequentially
-        await archiveOldFiles(user, dateObject);
-        await writeNewFiles(user, outDir);
-        await saveDocument("info_collection", data, user);
+        await archiveOldFiles(game, user, dateObject);
+        await writeNewFiles(game, user, outDir);
+        await saveDocument(game.usersCollection, data, user);
 
         return {
             info: data.info,
@@ -177,11 +177,11 @@ function pythonPromise(pythonProcess) {
     });
 }
 
-async function archiveOldFiles(user, dateObject) {
+async function archiveOldFiles(game, user, dateObject) {
     if (!dateObject.exists) return;
     for await (const file of FILELIST) {
-        const filePath = `${process.env.USERS_DIR}/${user}/${file}`;
-        const filePathDated = `${process.env.USERS_DIR}/${user}/${dateObject.date.string}/${file}`;
+        const filePath = `${game.usersDir}/${user}/${file}`;
+        const filePathDated = `${game.usersDir}/${user}/${dateObject.date.string}/${file}`;
         const testObject = await readJsonFromObjectStorage(filePath);
         if (!("error" in testObject)) {
             await renameObjectInObjectStorage(filePath, filePathDated);
@@ -190,7 +190,7 @@ async function archiveOldFiles(user, dateObject) {
     return;
 }
 
-async function writeNewFiles(user, outDir) {
+async function writeNewFiles(game, user, outDir) {
     for await (const file of FILELIST) {
         const uploadFilePath = `${outDir}/${file}`;
 
@@ -206,7 +206,7 @@ async function writeNewFiles(user, outDir) {
             continue;
         }
         const uploadFile = fs.createReadStream(uploadFilePath, {encoding: 'utf8'});
-        const objectName = `${process.env.USERS_DIR}/${user}/${file}`;
+        const objectName = `${game.usersDir}/${user}/${file}`;
         const result = await uploadObjectToObjectStorage(objectName, uploadFile);
 
         if (result && result.error) {

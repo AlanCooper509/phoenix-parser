@@ -4,9 +4,9 @@ import getHostPath from './getHostPath';
 
 // resolves to { info, scores, titles, pumbility } counts from the sync;
 // rejects with an Error whose message is meant for the user
-async function postSyncData(name, number, sid) {
+async function postSyncData(game, name, number, sid) {
     try {
-        const response = await axios.post(`${getHostPath()}/api/sync/${name}/${number}`, {
+        const response = await axios.post(`${getHostPath()}/api/${game}/sync/${name}/${number}`, {
             sid: sid
         });
         return response.data;

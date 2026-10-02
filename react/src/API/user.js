@@ -8,8 +8,8 @@ export function newUserInfo(name, number) {
 }
 
 // resolves to { info, scores, titles, pumbility }
-async function getUser(name, number) {
-    const response = await axios.get(`${getHostPath()}/api/user/${name}/${number}`);
+async function getUser(game, name, number) {
+    const response = await axios.get(`${getHostPath()}/api/${game}/user/${name}/${number}`);
     return response.data;
 }
 

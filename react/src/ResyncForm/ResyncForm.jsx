@@ -9,6 +9,7 @@ import ResponseModal from "./ResponseModal";
 import PlayerCard from "../Profile/PlayerCard";
 import postSyncData from "../API/syncdata";
 import checkUpdatedRecently from "../Helpers/checkUpdatedRecently";
+import useGame from "../games/useGame";
 
 const STATUS_CLASS = { success: "btn-success", error: "btn-danger" };
 const STATUS_LABEL = { success: "Success!", error: "Failed" };
@@ -80,6 +81,7 @@ function ResyncForm({info}) {
     const [showForm, setShowForm] = useState(false);
     const sid = useRef(null);
     const params = useParams();
+    const game = useGame();
     const name = params.name.toUpperCase();
     const number = params.number;
     const handleOnEnter = (event) => {
@@ -98,7 +100,7 @@ function ResyncForm({info}) {
 
         setStatus("loading");
         try {
-            const result = await postSyncData(name, number, input);
+            const result = await postSyncData(game.id, name, number, input);
             localStorage.setItem('latestSync', JSON.stringify(result.info));
             setStatus("success");
             openNotify(true, <SyncComplete result={result}/>);

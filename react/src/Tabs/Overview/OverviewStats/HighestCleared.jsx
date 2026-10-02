@@ -1,7 +1,8 @@
-import constants  from '../../../games/phx1/constants.json'
+import useGame from '../../../games/useGame';
 import "./OverviewStats.css";
 
 function HighestCleared({scores}) {
+    const { constants } = useGame();
     let highestDoubles;
     let highestSingles;
     for (const level of constants.levelsDescending) {

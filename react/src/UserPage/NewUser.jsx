@@ -5,9 +5,11 @@ import { ImNewTab } from "react-icons/im";
 import './NewUser.css';
 import InfoModal from "../ResyncForm/InfoModal";
 import { userPath } from "../Helpers/paths";
+import useGame from "../games/useGame";
 
 function NewUser() {
     const params = useParams();
+    const game = useGame();
     const name = params.name.toUpperCase();
     const number = params.number;
     const hashNum = '#' + number;
@@ -43,7 +45,7 @@ function NewUser() {
                         This will take a public snapshot of your PIU Phoenix data (Titles, Best Scores, Ranking points) and make pretty graphs and stat trackers with them.
                         <ul>
                             <li className="mt-2">
-                                For example, see <a href={userPath("TUSA", "7085")} target="_blank" rel="noreferrer">TUSA #7085<sup><ImNewTab /></sup></a>
+                                For example, see <a href={userPath(game.id, "TUSA", "7085")} target="_blank" rel="noreferrer">TUSA #7085<sup><ImNewTab /></sup></a>
                             </li>
                         </ul>
                     </li>

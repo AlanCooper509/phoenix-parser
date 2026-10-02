@@ -1,13 +1,13 @@
 import React, {useState} from 'react';
 
-import constants  from '../../../games/phx1/constants.json'
+import useGame from '../../../games/useGame';
 import PumbilityModal from './PumbilityModal.jsx'
 import "./OverviewStats.css";
 
-function manuallyCalculatePumbility(data) {
+function manuallyCalculatePumbility(data, levelsDescending) {
     let value = 0;
     let ratings = [];
-    for (const level of constants.levelsDescending) {
+    for (const level of levelsDescending) {
         if (level < 10) { break; }
         if (!(level in data)) { continue; }
         const records = data[level].scores;
@@ -25,7 +25,7 @@ function manuallyCalculatePumbility(data) {
     return value.toLocaleString();
 }
 
-function calculatePumbility(top50, scores) {
+function calculatePumbility(top50, scores, levelsDescending) {
     let value = 0;
     if (top50.length > 0) {
         for (const record of top50) {
@@ -33,16 +33,17 @@ function calculatePumbility(top50, scores) {
         }
         value = value.toLocaleString();
     } else {
-        value = manuallyCalculatePumbility(scores);
+        value = manuallyCalculatePumbility(scores, levelsDescending);
     }
     return value;
 }
 
 function Pumbility({top50, scores}) {
+    const { constants } = useGame();
     const [show, setShow] = useState(false);
     const handleClose = () => setShow(false);
 
-    let value = calculatePumbility(top50, scores);
+    let value = calculatePumbility(top50, scores, constants.levelsDescending);
     
     return (
         <>

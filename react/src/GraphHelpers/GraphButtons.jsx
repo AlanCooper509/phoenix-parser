@@ -1,7 +1,8 @@
 import ChartTypeSelect from "../Helpers/ChartTypeSelect.jsx";
-import constants from "../games/phx1/constants.json";
+import useGame from "../games/useGame";
 
 function GraphButtons({minValue, maxValue, chartTypeValue, updateLineGraph}) {
+    const { constants } = useGame();
     const handleKeyDown = (event) => {
         if (event.key === 'Enter') {
             updateLineGraph(event);

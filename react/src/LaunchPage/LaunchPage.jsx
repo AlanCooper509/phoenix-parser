@@ -6,13 +6,15 @@ import getUsers from "../API/users";
 import ProfileMini from '../Profile/ProfileMini';
 import calculateZoomLevel from '../Helpers/calculateZoomLevel';
 import isWinterTheme from '../Helpers/isWinter';
+import useGame from '../games/useGame';
 
 function LaunchPage() {
     const minWidth = 480;
+    const game = useGame();
     const [users, setUsers] = useState([]);
     useEffect(() => {
-        getUsers().then(setUsers).catch(() => setUsers([]));
-    }, []);
+        getUsers(game.id).then(setUsers).catch(() => setUsers([]));
+    }, [game.id]);
 
     const [zoomLevel, setZoomLevel] = useState(calculateZoomLevel(minWidth));
     useEffect(() => {

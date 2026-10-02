@@ -2,9 +2,10 @@ import React from "react";
 import Accordion from 'react-bootstrap/Accordion';
 
 import LevelStats from './LevelStats.jsx';
-import cutoffs from "../../games/phx1/TitleCutoffs.json";
+import useGame from "../../games/useGame";
 
 function Progression({data, titles, chartData}) {
+    const { cutoffs } = useGame();
 
     let levels = {
         intermediate: [],

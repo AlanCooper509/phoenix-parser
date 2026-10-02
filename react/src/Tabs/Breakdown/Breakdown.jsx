@@ -5,21 +5,20 @@ import BreakdownHeader from "./BreakdownHeader.jsx";
 import BarChart from "./BarChart.jsx";
 import BreakdownRemaining from "./BreakdownRemaining.jsx";
 import BreakdownOverview from "./BreakdownOverview.jsx";
-import cutoffs from "../../games/phx1/TitleCutoffs.json";
-import constants  from '../../games/phx1/constants.json'
+import useGame from "../../games/useGame";
 
-function updateLevelHelper(event) {
+function updateLevelHelper(event, maxLevel) {
     let level = event.target.value;
-    level = level < 1 ? 1 : (level > constants.maxLevel ? constants.maxLevel : level);
+    level = level < 1 ? 1 : (level > maxLevel ? maxLevel : level);
     return parseInt(level);
 }
 
-function getHighestClearLevel(data) {
+function getHighestClearLevel(data, levelsDescending) {
     if (!data) {
         return 1;
     }
 
-    for (const level of constants.levelsDescending) {
+    for (const level of levelsDescending) {
         if (level in data) {
             return parseInt(level);
         }
@@ -28,10 +27,11 @@ function getHighestClearLevel(data) {
 }
 
 function Breakdown({info, data, chartData}) {
+    const { constants, cutoffs } = useGame();
     const [showLevel, setShowLevel] = useState(true);
     const [chartType, setChartType] = useState("bothtypes");
     const [category, setCategory] = useState("level");
-    const [levelValue, setLevelValue] = useState(getHighestClearLevel(data));
+    const [levelValue, setLevelValue] = useState(getHighestClearLevel(data, constants.levelsDescending));
     const categorySelect = useRef(null);
     const chartTypeSelect = useRef(null);
     const levelInput = useRef(null);
@@ -42,7 +42,7 @@ function Breakdown({info, data, chartData}) {
     }
 
     function updateLevel(event) {
-        let level = updateLevelHelper(event);
+        let level = updateLevelHelper(event, constants.maxLevel);
         levelInput.current.value = level;
         setLevelValue(level);
     }

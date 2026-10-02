@@ -4,11 +4,11 @@ import getUserID from '../helpers/getUserID.js';
 import readJsonFromObjectStorage from '../helpers/os_readJsonObject.js';
 import sortScores from '../helpers/sortScores.js';
 
-async function getUser(req) {
+async function getUser(req, game) {
     const name = req.params.name.toUpperCase();
     const number = req.params.number;
     const userId = getUserID(name, number);
-    const userDir = `${process.env.USERS_DIR}/${userId}`;
+    const userDir = `${game.usersDir}/${userId}`;
 
     const infoPromise = readJsonFromObjectStorage(`${userDir}/${process.env.INFO_FILENAME}`);
     const scoresPromise = readJsonFromObjectStorage(`${userDir}/${process.env.BEST_SCORES_FILENAME}`);
@@ -39,7 +39,7 @@ async function getUser(req) {
         }
         return scores;
     }
-    const sortedScores = await sortScores(scores);
+    const sortedScores = await sortScores(scores, game);
     if (sortedScores.error) {
         return sortedScores;
     }

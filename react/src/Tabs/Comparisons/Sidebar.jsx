@@ -3,8 +3,10 @@ import React, { useState } from "react";
 import getUser, { newUserInfo } from "../../API/user.js";
 import PlayerNameInput from "./PlayerNameInput.jsx";
 import splitNameNumber from "../../Helpers/splitNameNumber.js";
+import useGame from "../../games/useGame.js";
 
 function Sidebar({graphType, handleGraphToggle, infoP1, p2, p3, p4}) {
+    const game = useGame();
     const [infoP2, setInfoP2] = useState({});
     const [infoP3, setInfoP3] = useState({});
     const [infoP4, setInfoP4] = useState({});
@@ -32,7 +34,7 @@ function Sidebar({graphType, handleGraphToggle, infoP1, p2, p3, p4}) {
         }
         let tokens = splitNameNumber(player.ref.current.value);
         if (!tokens) { return; }
-        getUser(tokens.name, tokens.number)
+        getUser(game.id, tokens.name, tokens.number)
             .then((user) => {
                 player.setInfo(user.info);
                 player.setData(user.scores);

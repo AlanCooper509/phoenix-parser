@@ -7,6 +7,7 @@ import { BsChevronCompactDown } from "react-icons/bs";
 
 import getUsers from "../API/users";
 import { userPath } from "../Helpers/paths";
+import useGame from "../games/useGame";
 import splitNameNumber from "../Helpers/splitNameNumber";
 import UsersModal from "./UsersModal";
 
@@ -32,6 +33,7 @@ const STATUS_ICON = { success: "✓", error: "✕" };
 
 function SearchUser({open}) {
     const navigate = useNavigate();
+    const game = useGame();
     const [showModal, setShowModal] = useState(false);
     const [modalData, setModalData] = useState([]);
     const [showForm, setShowForm] = useState(open);
@@ -49,7 +51,7 @@ function SearchUser({open}) {
         setStatus("loading");
         let users;
         try {
-            users = await getUsers(name);
+            users = await getUsers(game.id, name);
         } catch (error) {
             setStatus("error");
             setStatusText(`Error! Try again later.`);
@@ -64,7 +66,7 @@ function SearchUser({open}) {
         setStatusText(`Found ${users.length} user${users.length === 1 ? '' : 's'}!`);
         if (users.length === 1) {
             const user = users[0];
-            navigate(userPath(user.info.player, user.info.number.slice(1)));
+            navigate(userPath(game.id, user.info.player, user.info.number.slice(1)));
         } else {
             setModalData(users);
             setShowModal(true);
@@ -80,7 +82,7 @@ function SearchUser({open}) {
         setStatusText('');
         if (tokens.name && tokens.number) {
             setStatus("idle");
-            navigate(userPath(tokens.name, tokens.number));
+            navigate(userPath(game.id, tokens.name, tokens.number));
         } else if (tokens.name) {
             searchByName(tokens.name);
         }

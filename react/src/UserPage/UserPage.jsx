@@ -12,6 +12,7 @@ import LoadingUser from './LoadingUser';
 import getUser, { newUserInfo } from '../API/user.js';
 import getChartStats from '../API/chartstats.js';
 import { userPath } from '../Helpers/paths.js';
+import useGame from '../games/useGame.js';
 import Profile from '../Profile/Profile';
 import ResyncForm from '../ResyncForm/ResyncForm';
 import Overview from '../Tabs/Overview/Overview.jsx';
@@ -27,13 +28,14 @@ function UserPage() {
     const name = params.name;
     const number = params.number;
     const navigate = useNavigate();
+    const game = useGame();
     // the URL is the source of truth for the tab, so back/forward also switch tabs
     const activeTab = params.tab || "overview";
     const hashNum = '#' + number;
     const minWidth = 800;
 
     function updateUrl(tab) {
-        navigate(userPath(name, number, tab));
+        navigate(userPath(game.id, name, number, tab));
     }
 
     const [info, setInfo] = useState({player: name, number: hashNum, title: {text: "", color: ""}, last_updated: "Unknown"});
@@ -42,7 +44,7 @@ function UserPage() {
     const [pumbility, setPumbility] = useState([]);
     
     useEffect(() => {
-        getUser(name, number)
+        getUser(game.id, name, number)
             .then((user) => {
                 setInfo(user.info);
                 setData(user.scores);
@@ -50,15 +52,15 @@ function UserPage() {
                 setPumbility(user.pumbility);
             })
             .catch(() => setInfo(newUserInfo(name, number)));
-    }, [name, number]);
+    }, [game.id, name, number]);
 
     // chart counts per level, shared by the Breakdown and Progression tabs
     const [chartStats, setChartStats] = useState({});
     useEffect(() => {
-        getChartStats()
+        getChartStats(game.id)
             .then(setChartStats)
             .catch((error) => console.error('Error fetching chart stats:', error));
-    }, []);
+    }, [game.id]);
 
     const [zoomLevel, setZoomLevel] = useState(calculateZoomLevel(minWidth));
     useEffect(() => {

@@ -5,11 +5,13 @@ import './PlayerCard.css'
 
 import splitNameNumber from "../Helpers/splitNameNumber";
 import { userPath } from "../Helpers/paths";
+import useGame from "../games/useGame";
 
 function ProfileMini({info}) {
+    const game = useGame();
     function redirect() {
         const user = splitNameNumber(info.player + info.number);
-        return userPath(user.name, user.number);
+        return userPath(game.id, user.name, user.number);
     }
     let timestamp = info.last_updated;
     if (info.timestamp) {

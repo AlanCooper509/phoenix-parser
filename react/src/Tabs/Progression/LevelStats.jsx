@@ -5,7 +5,7 @@ import { BsChevronCompactDown } from "react-icons/bs";
 import Collapse from 'react-bootstrap/Collapse';
 
 import "./LevelStats.css";
-import constants from "../../games/phx1/constants.json";
+import useGame from "../../games/useGame";
 
 function renderStatusText(cutoffs, rating, singles, doubles) {
     if (!cutoffs || !Array.isArray(cutoffs)) {
@@ -92,6 +92,7 @@ function renderStatusText(cutoffs, rating, singles, doubles) {
 }
 
 function LevelStats({cutoffs, rating, singles, doubles, charts, level}) {
+    const { constants } = useGame();
     let titles = [];
     for (const idx in cutoffs) {
         let title = cutoffs[idx];
