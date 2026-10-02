@@ -44,7 +44,7 @@ const levelMultipliers = {
 }
 
 async function sortScores(scores) {
-    // attempt retrieval of LEVEL_COUNTS from Object Storage
+    // attempt retrieval of chart counts per level (piu-assets bucket, cached in memory)
     let chartStats = await getChartStats();
     if (chartStats.error) {
         return chartStats;
