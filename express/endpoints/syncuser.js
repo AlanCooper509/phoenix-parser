@@ -1,24 +1,13 @@
-import 'dotenv/config';
-
 import fs from 'fs';
 import path from 'path';
-import { spawn } from "node:child_process";
 
 import getUserID from '../helpers/getUserID.js';
 import readJsonFromObjectStorage from '../helpers/os_readJsonObject.js';
 import renameObjectInObjectStorage from '../helpers/os_renameObject.js';
 import uploadObjectToObjectStorage from '../helpers/os_uploadObject.js';
-import saveDocument from '../helpers/adb_saveDocument.js';
-import { buildUserResponse } from './user.js';
+import USER_FILES from '../helpers/userFiles.js';
+import { ERROR_400, ERROR_500 } from '../helpers/syncErrors.js';
 
-function ERROR_400(msg) {
-    return {
-        error: {
-            code: 400,
-            message: msg
-        }
-    }
-}
 const ERROR_429 = {
     error: {
         code: 429,
@@ -31,24 +20,17 @@ const ERROR_409 = {
         message: `A sync for this user is already in progress. Please wait for it to finish.`
     }
 }
-const ERROR_500 = {
-    error: {
-        code: 500,
-        message: "Internal Error... Please try again later."
-    }
-}
-const FILELIST = [
-    process.env.INFO_FILENAME,
-    process.env.BEST_SCORES_FILENAME,
-    process.env.PUMBILITY_FILENAME,
-    process.env.RECENTS_FILENAME,
-    process.env.TITLES_FILENAME
-];
+const FILELIST = Object.values(USER_FILES);
 
 // "<game>/<NAME#NUM>" of syncs currently running, so a double submit can't run two at once
 const syncsInProgress = new Set();
 
 async function syncUser(sid, name, number, game) {
+    // PHP session ids: it gets sent on as a cookie, so nothing else gets through
+    if (typeof sid !== 'string' || !/^[A-Za-z0-9,-]{1,128}$/.test(sid)) {
+        return ERROR_400("Please enter a valid SID.");
+    }
+
     const user = getUserID(name, number);
     const syncKey = `${game.id}/${user}`;
     if (syncsInProgress.has(syncKey)) {
@@ -68,18 +50,9 @@ async function syncUser(sid, name, number, game) {
 
 async function runSync(sid, user, game, outDir) {
     const userDir = `${game.usersDir}/${user}`;
-    const scoresFile = path.join(outDir, 'old_best_scores.json');
-    let pythonArgs = [game.syncScript,
-        `sid=${sid}`, `user=${user}`, `outDir=${outDir}`
-    ];
 
     // grab Object Storage copy of user's info file from most recent previous sync
-    const infoObject = await readJsonFromObjectStorage(`${userDir}/${process.env.INFO_FILENAME}`);
-
-    // pass in the language used during previous sync
-    if (!infoObject.error) {
-        pythonArgs.push(`language=${infoObject.info.language}`);
-    }
+    const infoObject = await readJsonFromObjectStorage(`${userDir}/${USER_FILES.info}`);
 
     // check if user has been updated today already
     let dateObject = '';
@@ -96,38 +69,39 @@ async function runSync(sid, user, game, outDir) {
     fs.rmSync(outDir, { recursive: true, force: true });
     fs.mkdirSync(outDir, { recursive: true });
 
-    // check if Object Storage has a history for the user's Best Scores that can be passed to Python script
-    // (goal of reducing requests needed to make to piugame server)
-    const scores = await readJsonFromObjectStorage(`${userDir}/${process.env.BEST_SCORES_FILENAME}`);
-    if (!scores.error) {
-        fs.writeFileSync(scoresFile, JSON.stringify(scores));
-        pythonArgs.push(`cmpFile=${scoresFile}`);
-    }
-
-    let data;
+    // the game's scraper writes the user's files into outDir and resolves to a summary
+    let summary;
     try {
-        console.log(`Starting sync for ${user}`);
-        const pythonProcess = spawn('python', pythonArgs);
-        data = await pythonPromise(pythonProcess);
-        console.log(`Successful sync for ${user}`);
+        console.log(`Starting ${game.id} sync for ${user}`);
+        summary = await game.scrape({ sid, user, userDir, outDir, info: infoObject });
+        console.log(`Successful ${game.id} sync for ${user}`);
     } catch (error) {
-        // If pythonPromise fails with ERROR_400 or ERROR_500
-        return error;
+        // scrapers reject with { error } (ERROR_400, ERROR_500, ...)
+        if (error && error.error) {
+            return error;
+        }
+        console.log(`Sync failed for ${user}: ${error}`);
+        return ERROR_500;
     }
 
     const uploaded = await replaceUserFiles(game, user, outDir, dateObject);
-    if (!uploaded.includes(process.env.INFO_FILENAME) || !uploaded.includes(process.env.BEST_SCORES_FILENAME)) {
+    if (!uploaded.includes(USER_FILES.info) || !uploaded.includes(USER_FILES.scores)) {
         return ERROR_500;
     }
-    await saveDocument(game.usersCollection, data, user);
+    // the user's files are in place, so a failed listing update (home page, search) doesn't fail the sync
+    try {
+        await game.saveListing(user, summary);
+    } catch (error) {
+        console.log(`Failed to update the ${game.id} user listing for ${user}: ${error}`);
+    }
 
     return {
-        info: data.info,
-        titles: data.titles.count,
-        scores: data.scores.count,
-        pumbility: data.pumbility.value,
+        info: summary.info,
+        titles: summary.titles.count,
+        scores: summary.scores.count,
+        pumbility: summary.pumbility.value,
         // same shape as GET /user, so the page can update without reloading
-        user: await buildUserResponse(game, readLocalUserFiles(outDir))
+        user: await game.buildUser(readLocalUserFiles(outDir, game))
     };
 }
 
@@ -162,48 +136,6 @@ async function getLastSyncDate(infoObject, timeoutSeconds) {
             day: dateArray[1]
         }
     };
-}
-
-function pythonPromise(pythonProcess) {
-    return new Promise((resolve, reject) => {
-        // collect all output and decide once the script exits: stdout can arrive in
-        // several chunks, and stderr may carry warnings alongside a successful result
-        let stdout = '';
-        let stderr = '';
-        pythonProcess.stdout.on('data', (data) => { stdout += data.toString(); });
-        pythonProcess.stderr.on('data', (data) => { stderr += data.toString(); });
-
-        pythonProcess.on('error', (error) => {
-            console.log(`Failed to start sync script: ${error}`);
-            reject(ERROR_500);
-        });
-
-        pythonProcess.on('close', () => {
-            // success: the script prints its JSON result to stdout
-            if (stdout.trim()) {
-                try {
-                    resolve(JSON.parse(stdout));
-                    return;
-                } catch (error) {
-                    console.log(`Unparseable sync output: ${error}\n${stdout.slice(0, 500)}`);
-                    reject(ERROR_500);
-                    return;
-                }
-            }
-            // crash: log it, but don't show the traceback to the user
-            if (stderr.includes("Traceback")) {
-                console.log(stderr);
-                reject(ERROR_500);
-                return;
-            }
-            // expected failures (e.g. expired SID) are printed to stderr for the user
-            if (stderr.trim()) {
-                reject(ERROR_400(stderr.trim()));
-                return;
-            }
-            reject(ERROR_500);
-        });
-    });
 }
 
 // Swap in each freshly scraped file: the current copy moves to the previous sync's dated
@@ -243,8 +175,8 @@ async function replaceUserFiles(game, user, outDir, dateObject) {
     return uploaded;
 }
 
-// the scraped files in the same shape readJsonFromObjectStorage returns them
-function readLocalUserFiles(outDir) {
+// the scraped files for GET /user, in the same shape readJsonFromObjectStorage returns them
+function readLocalUserFiles(outDir, game) {
     const read = (file) => {
         try {
             return JSON.parse(fs.readFileSync(path.join(outDir, file), 'utf8'));
@@ -252,12 +184,7 @@ function readLocalUserFiles(outDir) {
             return { error: { code: 404 } };
         }
     };
-    return {
-        info: read(process.env.INFO_FILENAME),
-        scores: read(process.env.BEST_SCORES_FILENAME),
-        titles: read(process.env.TITLES_FILENAME),
-        pumbility: read(process.env.PUMBILITY_FILENAME),
-    };
+    return Object.fromEntries(game.userFiles.map((key) => [key, read(USER_FILES[key])]));
 }
 
 export default syncUser;

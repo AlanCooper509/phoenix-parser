@@ -69,7 +69,7 @@ api.post('/sync/:name/:number', (req, res) => {
   respond("SYNC USER", res, syncUser(sid, name, number, req.game));
 });
 
-// pre-split URLs (/api/user/...) are Phoenix (1); matched first, so a game can't be named "user", "users", "charts" or "sync"
+// URLs without a game (/api/user/...) are the default game; matched first, so a game can't be named "user", "users", "charts" or "sync"
 app.use('/api', (req, res, next) => {
   req.game = getGame(DEFAULT_GAME);
   next();

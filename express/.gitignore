@@ -13,6 +13,7 @@
 oci-config
 oci_api_key.pem
 /python
+/scrapers
 /users
 /tmp
 

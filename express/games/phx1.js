@@ -1,5 +1,11 @@
 import 'dotenv/config';
 
+import getDocuments from '../helpers/adb_getDocuments.js';
+import saveDocument from '../helpers/adb_saveDocument.js';
+import scrapeWithPython from '../helpers/scrape_python.js';
+import sortScores from '../helpers/sortScores.js';
+import { missingRequiredFile } from '../helpers/userFiles.js';
+
 // Pump It Up PHOENIX (1): where its data lives and how its ratings are scored
 const phx1 = {
     id: "phx1",
@@ -10,8 +16,14 @@ const phx1 = {
     usersCollection: "info_collection",
     // public piu-assets bucket
     chartsDir: "phx1/charts",
-    // scraper run by /sync
-    syncScript: process.env.PYTHON_SCRIPT,
+    // files returned by GET /user (recents.json is still synced but the frontend doesn't use it)
+    userFiles: ["info", "scores", "titles", "pumbility"],
+
+    // /sync: Python scraper of phoenix.piugame.com, which also checks the SID is the page's user
+    scrape: (options) => scrapeWithPython(process.env.PYTHON_SCRIPT, options),
+    saveListing: (user, summary) => saveDocument(phx1.usersCollection, summary, user),
+    listUsers,
+    buildUser,
 
     gradeMultipliers: {
         "f":     0.40,
@@ -56,5 +68,56 @@ const phx1 = {
         "coop": 2200
     },
 };
+
+// user search: ADB documents (each sync's summary), most recently synced first
+async function listUsers(name) {
+    let filterSpec = {
+        "$orderby": [{
+            "path": "info.timestamp",
+            "datatype": "number",
+            "order": "desc" }
+        ]
+    };
+    if (name) {
+        filterSpec["$query"] = {
+            "info.player": name
+        };
+    }
+    return await getDocuments(phx1.usersCollection, filterSpec);
+}
+
+// Shapes a user's synced files into the GET /user response (also returned by /sync).
+// Each file is its JSON content or { error: { code } }.
+async function buildUser({ info, scores, titles, pumbility }) {
+    const missing = missingRequiredFile({ info, scores });
+    if (missing) {
+        return missing;
+    }
+    const sortedScores = await sortScores(scores, phx1);
+    if (sortedScores.error) {
+        return sortedScores;
+    }
+
+    // Titles fallback (Optional/Migrated)
+    if (titles.error) {
+        if (titles.error.code === 404) {
+            titles = info.titles;
+        }
+    }
+
+    // Pumbility fallback (Optional)
+    if (pumbility.error) {
+        if (pumbility.error.code === 404) {
+            pumbility = [];
+        }
+    }
+
+    return {
+        "scores": sortedScores,
+        "info": info.info,
+        "titles": titles,
+        "pumbility": pumbility
+    };
+}
 
 export default phx1;

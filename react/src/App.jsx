@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useParams } from 'rea
 
 import LaunchPage from "./LaunchPage/LaunchPage";
 import UserPage from "./UserPage/UserPage";
-import { DEFAULT_GAME, getGame } from "./games";
+import { LEGACY_GAME, getGame } from "./games";
 import { userPath } from "./Helpers/paths";
 
 // a fresh UserPage per game/user (tabs only change :tab, which keeps the same page)
@@ -17,7 +17,7 @@ function UserRoute() {
 // links from before the game was part of the URL
 function LegacyUserRedirect() {
   const { name, number, tab } = useParams();
-  return <Navigate to={userPath(DEFAULT_GAME, name, number, tab)} replace/>;
+  return <Navigate to={userPath(LEGACY_GAME, name, number, tab)} replace/>;
 }
 
 function App() {

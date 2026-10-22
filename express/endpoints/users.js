@@ -1,28 +1,12 @@
-import getDocuments from '../helpers/adb_getDocuments.js';
-
 async function getUsers(req, game) {
     let name;
     if (req.params.name) {
         name = req.params.name.toUpperCase();
     }
+
     let users = [];
-
-    const collectionName = game.usersCollection;
-    let filterSpec = {
-        "$orderby": [{ 
-            "path": "info.timestamp",
-            "datatype": "number",
-            "order": "desc" }
-        ]
-    };
-    if (name) {
-        filterSpec["$query"] = {
-            "info.player": name
-        };
-    }
-
     try {
-        users = await getDocuments(collectionName, filterSpec);
+        users = await game.listUsers(name);
     } catch (error) {
         console.log(error);
         return {
