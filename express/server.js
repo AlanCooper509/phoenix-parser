@@ -88,3 +88,13 @@ app.use('/api/:game', (req, res, next) => {
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
+
+// memory at startup and every 30 minutes, to see whether it grows between restarts:
+// rss growing with a flat heap points at native memory/buffers, a growing heap at JS objects
+function logMemory() {
+  const mb = (n) => Math.round(n / 1024 / 1024);
+  const { rss, heapUsed, heapTotal, external } = process.memoryUsage();
+  console.log(`[MEMORY] rss ${mb(rss)}MB, heap ${mb(heapUsed)}/${mb(heapTotal)}MB, external ${mb(external)}MB`);
+}
+logMemory();
+setInterval(logMemory, 30*60*1000).unref();
