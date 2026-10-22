@@ -1,7 +1,6 @@
 import 'dotenv/config';
 
-import getDocuments from '../helpers/adb_getDocuments.js';
-import saveDocument from '../helpers/adb_saveDocument.js';
+import { listIndexedUsers, updateIndexedUser } from '../helpers/os_usersIndex.js';
 import scrapeWithPython from '../helpers/scrape_python.js';
 import sortScores from '../helpers/sortScores.js';
 import { missingRequiredFile } from '../helpers/userFiles.js';
@@ -10,10 +9,9 @@ import { missingRequiredFile } from '../helpers/userFiles.js';
 const phx1 = {
     id: "phx1",
 
-    // private bucket: express-build/users/<NAME#NUM>/ (kept at its original, pre-split location)
+    // private bucket: express-build/users/<NAME#NUM>/ (kept at its original, pre-split location),
+    // plus index.json listing every user
     usersDir: process.env.USERS_DIR,
-    // ADB collection backing user search
-    usersCollection: "info_collection",
     // public piu-assets bucket
     chartsDir: "phx1/charts",
     // files returned by GET /user (recents.json is still synced but the frontend doesn't use it)
@@ -21,8 +19,8 @@ const phx1 = {
 
     // /sync: Python scraper of phoenix.piugame.com, which also checks the SID is the page's user
     scrape: (options) => scrapeWithPython(process.env.PYTHON_SCRIPT, options),
-    saveListing: (user, summary) => saveDocument(phx1.usersCollection, summary, user),
-    listUsers,
+    saveListing: (user, summary) => updateIndexedUser(phx1, user, { info: summary.info }),
+    listUsers: (name) => listIndexedUsers(phx1, name),
     buildUser,
 
     gradeMultipliers: {
@@ -68,23 +66,6 @@ const phx1 = {
         "coop": 2200
     },
 };
-
-// user search: ADB documents (each sync's summary), most recently synced first
-async function listUsers(name) {
-    let filterSpec = {
-        "$orderby": [{
-            "path": "info.timestamp",
-            "datatype": "number",
-            "order": "desc" }
-        ]
-    };
-    if (name) {
-        filterSpec["$query"] = {
-            "info.player": name
-        };
-    }
-    return await getDocuments(phx1.usersCollection, filterSpec);
-}
 
 // Shapes a user's synced files into the GET /user response (also returned by /sync).
 // Each file is its JSON content or { error: { code } }.
