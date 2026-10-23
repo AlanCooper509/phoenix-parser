@@ -26,12 +26,22 @@ const FILELIST = Object.values(USER_FILES);
 const syncsInProgress = new Set();
 
 async function syncUser(sid, name, number, game) {
+    const user = getUserID(name, number);
+    const result = await startSync(sid, user, game);
+    // every failure gets a line (successes and server errors log their own details);
+    // the messages never include the SID
+    if (result.error) {
+        console.log(`Failed ${game.id} sync for ${user} (${result.error.code}): ${result.error.message}`);
+    }
+    return result;
+}
+
+async function startSync(sid, user, game) {
     // PHP session ids: it gets sent on as a cookie, so nothing else gets through
     if (typeof sid !== 'string' || !/^[A-Za-z0-9,-]{1,128}$/.test(sid)) {
         return ERROR_400("Please enter a valid SID.");
     }
 
-    const user = getUserID(name, number);
     const syncKey = `${game.id}/${user}`;
     if (syncsInProgress.has(syncKey)) {
         return ERROR_409;
