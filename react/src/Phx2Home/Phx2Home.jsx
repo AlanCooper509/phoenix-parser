@@ -269,14 +269,16 @@ function Phx2HomeContent() {
 
             <Container css={PAGE_WIDTH} px={{ base: '4', md: '6' }} py={{ base: '6', md: '10' }}>
                 <VStack align="stretch" gap="8">
-                    <Box>
+                    <Box textAlign="center">
                         <Heading size={{ base: 'xl', md: '2xl' }}>{welcomeText()}</Heading>
                         <Text fontSize={{ base: 'md', md: 'lg' }} fontWeight="medium" mt="2">
                             Search for a USER to get started.
                         </Text>
-                        <InputGroup startElement={<LuSearch />} maxW="md" mt="5">
+                        <InputGroup startElement={<LuSearch />} maxW="md" mt="5" mx="auto">
                             <Input
                                 size="lg" placeholder="Player name, e.g. TUSA"
+                                borderColor="phx2.emphasized" _hover={{ borderColor: 'phx2.border' }}
+                                borderRadius="25px"
                                 value={search} onChange={(e) => onSearch(e.target.value)}
                             />
                         </InputGroup>
