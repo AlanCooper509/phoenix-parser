@@ -12,7 +12,7 @@ import { ERROR_400, ERROR_500, ERROR_503 } from './syncErrors.js';
 //   async scrape(sid, previous) -> {
 //     profile:   { player, number (digits only), userNo, title: { text, color }, avatar, language },
 //     scores:    [{ name, jacket, type, level, score, stageBreak, grade, plate, firstPlayed }],
-//     pumbility: { tier, value, entries: [...] },
+//     pumbility: { tier, icon (piugame's pumbility_NN.png number), value, entries: [...] },
 //     titles:    [name],
 //     recents:   [...],
 //     stats:     { ... }  (logged)
@@ -82,7 +82,7 @@ async function scrapeWithModule(file, { sid, user, userDir, outDir, info: previo
             title: profile.title,
             avatar: profile.avatar,
             language: profile.language,
-            pumbility: { tier: pumbility.tier, value: pumbility.value },
+            pumbility: { tier: pumbility.tier, icon: pumbility.icon, value: pumbility.value },
             // same formats as Phoenix (1): mm/dd/yy, and seconds since epoch
             last_updated: `${pad(now.getMonth() + 1)}/${pad(now.getDate())}/${pad(now.getFullYear() % 100)}`,
             timestamp: now.getTime() / 1000
