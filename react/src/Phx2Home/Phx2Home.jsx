@@ -271,14 +271,17 @@ function Phx2HomeContent() {
                 <VStack align="stretch" gap="8">
                     <Box textAlign="center">
                         <Heading size={{ base: 'xl', md: '2xl' }}>{welcomeText()}</Heading>
-                        <Text fontSize={{ base: 'md', md: 'lg' }} fontWeight="medium" mt="2">
+                        <Text fontSize={{ base: 'lg', md: 'xl' }} fontWeight="medium" mt="5">
                             Search for a USER to get started.
                         </Text>
-                        <InputGroup startElement={<LuSearch />} maxW="md" mt="5" mx="auto">
+                        <InputGroup startElement={<LuSearch />} maxW="md" mt="4" mx="auto">
                             <Input
                                 size="lg" placeholder="Player name, e.g. TUSA"
                                 borderColor="phx2.emphasized" _hover={{ borderColor: 'phx2.border' }}
                                 borderRadius="25px"
+                                // centered text, with right padding matching the left padding the icon
+                                // gets (calc(var(--input-height))), so it centers on the box's real middle
+                                textAlign="center" pe="var(--input-height)"
                                 value={search} onChange={(e) => onSearch(e.target.value)}
                             />
                         </InputGroup>
