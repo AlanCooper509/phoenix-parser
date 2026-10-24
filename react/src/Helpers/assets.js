@@ -1,4 +1,5 @@
 // Public piu-assets bucket, laid out as <game>/{songs,avatars,charts}/<hash>.png
+// (plus phx2/pumbility/pumbility_NN.png, piugame's PUMBILITY tier icons)
 // (the same hash can be a different image in each game, so always pass the game)
 const ASSETS_BASE_URL = "https://objectstorage.ca-toronto-1.oraclecloud.com/n/yz1xhpsymsqz/b/piu-assets/o";
 
@@ -18,6 +19,11 @@ export function songImg(game, hash) {
 
 export function avatarImg(game, hash = DEFAULT_AVATAR_HASH) {
     return `${ASSETS_BASE_URL}/${game}/avatars/${hash}.png`;
+}
+
+// PUMBILITY tier icon: 0 (no tier yet) .. 36, as numbered on piugame.com
+export function pumbilityImg(game, icon) {
+    return `${ASSETS_BASE_URL}/${game}/pumbility/pumbility_${String(icon).padStart(2, '0')}.png`;
 }
 
 // Synced data and chart lists store piugame.com image URLs

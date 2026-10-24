@@ -1,0 +1,6 @@
+/* Bootstrap (loaded globally for the Phoenix 1 pages) adds bottom margins to every p and heading.
+   Chakra's styles live in CSS layers, which lose to Bootstrap's unlayered rules whatever their
+   specificity, so this plain rule takes them back out within the Phoenix 2 page only. */
+.phx2-root :is(p, h1, h2, h3, h4, h5, h6) {
+    margin-bottom: 0;
+}
