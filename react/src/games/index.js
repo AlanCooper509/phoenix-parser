@@ -6,7 +6,7 @@ const GAMES = {
     phx1: { id: "phx1", constants: phx1Constants, cutoffs: phx1Cutoffs },
 };
 
-// pages without a game in the URL (launch page) use the default game
+// Phoenix (1) pages without a game in the URL (the /phx1 launch page) use the default game
 export const DEFAULT_GAME = "phx1";
 
 // old /user/... links (from before games were split) are Phoenix (1) pages

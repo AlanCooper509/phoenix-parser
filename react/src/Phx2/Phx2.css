@@ -1,0 +1,40 @@
+/* Bootstrap (loaded globally for the Phoenix 1 pages) adds bottom margins to every p and heading.
+   Chakra's styles live in CSS layers, which lose to Bootstrap's unlayered rules whatever their
+   specificity, so this plain rule takes them back out within the Phoenix 2 page only. */
+.phx2-root :is(p, h1, h2, h3, h4, h5, h6) {
+    margin-bottom: 0;
+}
+
+/* Bootstrap also colors and underlines every link. Plain links in the Phoenix 2 pages (the logo,
+   whole player cards) take their text's own colors instead; Chakra's Link keeps its styling. */
+.phx2-root a:not(.chakra-link) {
+    color: inherit;
+    text-decoration: none;
+}
+
+/* piugame.com's text font, Pretendard (shared.jsx loads it). The Phoenix 1 body font (index.css:
+   Segoe UI on Windows) would otherwise reach any text Chakra doesn't set a font on. */
+.phx2-root {
+    font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+}
+
+/* ag-grid (Best Scores) in the Phoenix 2 look: its quartz dark theme, recolored to the page's
+   panel, borders, text and green, in Pretendard */
+.phx2-root .phx2-grid {
+    --ag-font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    --ag-font-size: 14px;
+    --ag-background-color: #141518;
+    --ag-header-background-color: #1a1b1e;
+    --ag-odd-row-background-color: #141518;
+    --ag-foreground-color: #fafafa;
+    --ag-data-color: #fafafa;
+    --ag-header-foreground-color: #a1a1aa;
+    --ag-secondary-foreground-color: #a1a1aa;
+    --ag-border-color: rgba(255, 255, 255, 0.08);
+    --ag-row-border-color: rgba(255, 255, 255, 0.06);
+    --ag-row-hover-color: rgba(4, 164, 35, 0.08);
+    --ag-active-color: #04a423;
+    --ag-input-focus-border-color: #04a423;
+    --ag-checkbox-checked-color: #04a423;
+    --ag-wrapper-border-radius: 8px;
+}

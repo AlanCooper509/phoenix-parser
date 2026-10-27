@@ -5,6 +5,11 @@ import { createSystem, defaultConfig, defineConfig } from '@chakra-ui/react';
 const config = defineConfig({
     theme: {
         tokens: {
+            // piugame.com's own text font (Phx2.css loads it)
+            fonts: {
+                body: { value: "'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif" },
+                heading: { value: "'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif" },
+            },
             colors: {
                 phx2: {
                     50: { value: '#edfdf0' },

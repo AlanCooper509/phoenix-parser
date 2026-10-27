@@ -32,7 +32,7 @@ function PlayerCard({info}) {
     }
     return (
     <div className="d-flex justify-content-center align-items-center">
-        <a href="/">
+        <a href="/phx1">
             {thumbnail}
         </a>
         <div className="Game-info">

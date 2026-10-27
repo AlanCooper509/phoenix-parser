@@ -1,5 +1,6 @@
 // Public piu-assets bucket, laid out as <game>/{songs,avatars,charts}/<hash>.png
-// (plus phx2/pumbility/pumbility_NN.png, piugame's PUMBILITY tier icons)
+// (plus phx2/pumbility/pumbility_NN.png, piugame's PUMBILITY tier icons, and
+// phx2/stepball/{s,d}_bg.png, its red singles and green doubles step balls)
 // (the same hash can be a different image in each game, so always pass the game)
 const ASSETS_BASE_URL = "https://objectstorage.ca-toronto-1.oraclecloud.com/n/yz1xhpsymsqz/b/piu-assets/o";
 
@@ -24,6 +25,11 @@ export function avatarImg(game, hash = DEFAULT_AVATAR_HASH) {
 // PUMBILITY tier icon: 0 (no tier yet) .. 36, as numbered on piugame.com
 export function pumbilityImg(game, icon) {
     return `${ASSETS_BASE_URL}/${game}/pumbility/pumbility_${String(icon).padStart(2, '0')}.png`;
+}
+
+// piugame's step ball for singles ('s') or doubles ('d')
+export function stepballImg(game, type) {
+    return `${ASSETS_BASE_URL}/${game}/stepball/${type}_bg.png`;
 }
 
 // Synced data and chart lists store piugame.com image URLs

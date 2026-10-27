@@ -13,6 +13,8 @@ import { ERROR_400, ERROR_500, ERROR_503 } from './syncErrors.js';
 //     profile:   { player, number (digits only), userNo, title: { text, color }, avatar, language },
 //     scores:    [{ name, jacket, type, level, score, stageBreak, grade, plate, firstPlayed }],
 //     pumbility: { tier, icon (piugame's pumbility_NN.png number), value, entries: [...] },
+//     ranking:   { all, singles, doubles } (the player's PUMBILITY ranking places: a number, or what the
+//                ranking page shows instead past its top 1,000; null if nothing),
 //     titles:    [name],
 //     recents:   [...],
 //     stats:     { ... }  (logged)
@@ -66,7 +68,7 @@ async function scrapeWithModule(file, { sid, user, userDir, outDir, info: previo
     }
 
     // only the SID's own player can be synced to this user's page
-    const { profile, scores, pumbility, titles, recents, stats } = data;
+    const { profile, scores, pumbility, ranking, titles, recents, stats } = data;
     console.log(`Scraped ${user}: ${JSON.stringify(stats)}`);
     const scrapedUser = getUserID(profile.player, profile.number).toUpperCase();
     if (scrapedUser !== user.toUpperCase()) {
@@ -83,6 +85,7 @@ async function scrapeWithModule(file, { sid, user, userDir, outDir, info: previo
             avatar: profile.avatar,
             language: profile.language,
             pumbility: { tier: pumbility.tier, icon: pumbility.icon, value: pumbility.value },
+            ranking: ranking || null,
             // same formats as Phoenix (1): mm/dd/yy, and seconds since epoch
             last_updated: `${pad(now.getMonth() + 1)}/${pad(now.getDate())}/${pad(now.getFullYear() % 100)}`,
             timestamp: now.getTime() / 1000

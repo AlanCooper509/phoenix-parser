@@ -6,9 +6,10 @@ import UserPage from "./UserPage/UserPage";
 import { LEGACY_GAME, getGame } from "./games";
 import { userPath } from "./Helpers/paths";
 
-// PROTOTYPE Phoenix 2 home page: loaded only when /phx2 is visited, so Chakra UI and its
-// dependencies stay out of the bundle for the Phoenix (1) pages
-const Phx2Home = lazy(() => import("./Phx2Home/Phx2Home"));
+// Phoenix 2 pages: loaded only when visited, so Chakra UI and its dependencies stay
+// out of the bundle for the Phoenix (1) pages
+const Phx2Home = lazy(() => import("./Phx2/Phx2Home"));
+const Phx2User = lazy(() => import("./Phx2/Phx2User"));
 
 // a fresh UserPage per game/user (tabs only change :tab, which keeps the same page)
 function UserRoute() {
@@ -29,9 +30,12 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<LaunchPage/>} />
-        {/* PROTOTYPE: Phoenix 2 home page (Chakra UI) */}
-        <Route path="/phx2" element={<Suspense fallback={null}><Phx2Home/></Suspense>} />
+        {/* Phoenix 2 is the home page; the Phoenix (1) launch page moved to /phx1 */}
+        <Route path="/" element={<Suspense fallback={null}><Phx2Home/></Suspense>} />
+        <Route path="/phx1" element={<LaunchPage/>} />
+        <Route path="/phx2" element={<Navigate to="/" replace/>} />
+        <Route path="/phx2/user/:name/:number" element={<Suspense fallback={null}><Phx2User/></Suspense>} />
+        <Route path="/phx2/user/:name/:number/:tab" element={<Suspense fallback={null}><Phx2User/></Suspense>} />
         <Route path="/:game/user/:name/:number" element={<UserRoute/>} />
         <Route path="/:game/user/:name/:number/:tab" element={<UserRoute/>} />
         <Route path="/user/:name/:number" element={<LegacyUserRedirect/>} />
