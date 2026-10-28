@@ -90,7 +90,7 @@ export function bestFifty(values) {
 // The PUMBILITY each tier starts at. Every tier below ABYSS ABSOLUTE has five levels, evenly
 // spaced up to the next tier (BRONZE Lv.2 at 10,500, ...); icons count up from BRONZE Lv.1 (1)
 // to ABYSS ABSOLUTE (36).
-const TIER_STARTS = [
+export const TIER_STARTS = [
     ['BRONZE', 10000], ['SILVER', 12500], ['GOLD', 15000], ['PLATINUM', 16000],
     ['DIAMOND', 17000], ['RED BERYL', 18000], ['ALEXANDRITE', 19000], ['ABYSS ABSOLUTE', 20000],
 ];

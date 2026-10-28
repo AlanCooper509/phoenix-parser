@@ -4,6 +4,7 @@ import { Box, Heading, HStack, Image, Table, Text, VStack } from '@chakra-ui/rea
 import { ChartBadge, ExpBar, formatPumbility, pumbilityTier, TierName } from './shared';
 import { pumbilityProgress } from './pumbility';
 import { newChartTargets } from './stats';
+import { TypeProgress } from './UserOverview';
 
 // PUMBILITY: where a player's total comes from and what it takes for a chart to count. Values use the Phoenix 2 formula (see pumbility.js).
 
@@ -115,12 +116,17 @@ function NewCharts({ targets }) {
     );
 }
 
-function UserPumbility({ scores, counts, summary, pumbility }) {
+function UserPumbility({ scores, counts, summary, info }) {
+    const { pumbility } = info;
     const targets = useMemo(() => (counts ? newChartTargets(scores, counts, summary.floor) : []), [scores, counts, summary]);
 
     return (
         <VStack align="stretch" gap="10">
-            <Total pumbility={pumbility} summary={summary} />
+            <VStack align="stretch" gap="8">
+                <Total pumbility={pumbility} summary={summary} />
+                {/* each toward its next title (the Overview shows the whole way) */}
+                <TypeProgress info={info} scores={scores} />
+            </VStack>
 
             <Section title="Where it comes from" description="Your best 50 charts by level, and the points each level adds.">
                 <Sources topScores={summary.topScores} values={summary.valueOf} />

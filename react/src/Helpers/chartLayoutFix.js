@@ -22,10 +22,20 @@ function layoutSize(chart) {
 }
 
 function fitToLayout(chart) {
+    // resize() fires this hook again: one correction per measurement, or a size that Chart.js rounds
+    // or clamps differently would loop until the stack overflows
+    if (chart.$fittingLayout) {
+        return;
+    }
     const size = layoutSize(chart);
     if (size && (Math.abs(chart.width - size.width) > 1 || Math.abs(chart.height - size.height) > 1)) {
         // explicit sizes skip Chart.js's transform-affected measurement
-        chart.resize(size.width, size.height);
+        chart.$fittingLayout = true;
+        try {
+            chart.resize(size.width, size.height);
+        } finally {
+            chart.$fittingLayout = false;
+        }
     }
 }
 

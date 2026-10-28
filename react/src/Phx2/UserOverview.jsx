@@ -5,7 +5,9 @@ import 'chart.js/auto';
 
 import { stepballImg } from '../Helpers/assets';
 import { DOUBLE_MILESTONES, progressAlong, pumbilityProgress, SINGLE_MILESTONES, typePumbility } from './pumbility';
-import { ExpBar, formatPumbility, pumbilityTier, RankTag, TierName, UnfilledFifty } from './shared';
+import {
+    ExpBar, formatPumbility, Ladder, ladderPercent, PUMBILITY_LADDER, pumbilityTier, RankTag, TierName, TitleText, titleLadder, UnfilledFifty,
+} from './shared';
 import { levelRows } from './stats';
 
 // Overview: progress toward the next PUMBILITY tier and singles and doubles titles, then how much
@@ -44,12 +46,13 @@ const DEFAULT_LEVELS = { from: 10, to: 28 };
 const SCORE_AXIS_MIN = 900000;
 
 // smaller tick text on narrow (phone-sized) charts
-const tickFont = (context) => ({ size: context.chart.width < 500 ? 10 : 12 });
+const narrow = (context) => context.chart.width < 500;
+const tickFont = (context) => ({ size: narrow(context) ? 10 : 12 });
 
 const TYPE_NAMES = { both: 'Singles and Doubles', s: 'Singles', d: 'Doubles' };
 
-// titled as on Phoenix (1): "NAME (Singles and Doubles)", with when it was synced, so a screenshot
-// of the chart stands on its own
+// titled as on Phoenix (1): "NAME (Singles and Doubles)", so a screenshot of the chart stands on its
+// own (when it was synced sits under it, beside the level range)
 function LevelChart({ rows, filter, info }) {
     const averages = rows.map((r) => r.average).filter(Boolean);
     const low = Math.min(SCORE_AXIS_MIN, ...averages.map((a) => Math.floor(a / 50000) * 50000));
@@ -58,7 +61,10 @@ function LevelChart({ rows, filter, info }) {
         datasets: [
             {
                 type: 'line', label: 'Average score', data: rows.map((r) => r.average && Math.round(r.average)),
-                yAxisID: 'score', borderColor: '#e4e4e7', backgroundColor: '#e4e4e7', pointRadius: 3, borderWidth: 2,
+                yAxisID: 'score', borderColor: '#e4e4e7', backgroundColor: '#e4e4e7',
+                // a finer line and smaller points on narrow charts, where the usual ones crowd the bars
+                pointRadius: (c) => (narrow(c) ? 1.75 : 3), pointHoverRadius: (c) => (narrow(c) ? 3 : 4),
+                pointBorderWidth: (c) => (narrow(c) ? 0 : 1), borderWidth: (c) => (narrow(c) ? 1.25 : 2),
                 // drawn past the plot's edge, so averages near 1,000,000 aren't cut off at the top
                 spanGaps: true, order: 0, clip: 8,
             },
@@ -75,11 +81,7 @@ function LevelChart({ rows, filter, info }) {
         plugins: {
             title: {
                 display: true, text: `${info.player} (${TYPE_NAMES[filter]})`,
-                color: '#e4e4e7', font: { size: 16, weight: '600' }, padding: { top: 0, bottom: 2 },
-            },
-            subtitle: {
-                display: true, text: `Last synced ${new Date(info.timestamp * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`,
-                align: 'end', color: TEXT, font: { size: 12, style: 'italic' }, padding: { bottom: 8 },
+                color: '#e4e4e7', font: { size: 16, weight: '600' }, padding: { top: 0, bottom: 8 },
             },
             legend: { labels: { color: TEXT, boxWidth: 12 } },
             tooltip: {
@@ -145,21 +147,16 @@ function useLevelRange(rows) {
     };
 }
 
-// PUMBILITY as the headline: its tier and total large, over a thicker bar with the tier icon
-// riding the fill
-function PumbilityHero({ pumbility, counted, rank }) {
-    const value = pumbility?.value ?? 0;
-    const tier = pumbilityTier(pumbility);
-    const progress = pumbilityProgress(value);
+// The Overview's headline: what's reached (a tier or title) and the rank large, the value larger,
+// over the whole ladder with `marker` riding the fill
+function LadderHero({ heading, rank, what, badge, value, progress, color, marker, markerSize, segments, ticks }) {
     return (
         <Box>
             <HStack justify="space-between" align="center" gap="4" mb="1">
-                <HStack gap="2.5" minW="0">
-                    {progress.current
-                        ? <TierName tier={progress.current.name} fontSize={{ base: 'lg', md: 'xl' }} lineHeight="1.3" />
-                        : <Text fontSize={{ base: 'lg', md: 'xl' }} fontWeight="bold" color="fg.muted">No tier yet</Text>}
-                    <RankTag rank={rank} fontSize={{ base: 'md', md: 'lg' }} />
-                    <UnfilledFifty counted={counted} what="charts" color={tier.color} />
+                {/* wraps rather than cut the heading short */}
+                <HStack gap="2.5" rowGap="0" minW="0" wrap="wrap">
+                    {heading}
+                    {badge}
                 </HStack>
                 <Text
                     fontFamily="'Oxanium', sans-serif" fontWeight="800" fontSize={{ base: '3xl', md: '4xl' }} lineHeight="1"
@@ -169,42 +166,110 @@ function PumbilityHero({ pumbility, counted, rank }) {
                 </Text>
             </HStack>
             <ExpBar
-                value={value} progress={progress} color={tier.color}
-                marker={tier.icon} markerRoom size="md"
+                value={value} progress={progress} color={color} marker={marker} markerSize={markerSize} size="md"
+                // the same room whatever the marker (tier icon or step ball), so switching views doesn't shift the page
+                markerRoom={HERO_MARKER_ROOM}
+                trackPercent={ladderPercent(segments, value)} track={(filled) => <Ladder segments={segments} filled={filled} ticks={ticks} />}
+                // the ladder shows the way along; under it, the player's rank (if ranked) and what's left to the
+                // next milestone
+                points={false} footer={<RankLine rank={rank} what={what} />}
             />
         </Box>
+    );
+}
+
+// "Rank #95", under a ladder; nothing for an unranked player
+function RankLine({ rank, what }) {
+    if (rank === null || rank === undefined || rank === '') {
+        return null;
+    }
+    return (
+        <Text flexShrink="0" title={`PUMBILITY ranking${what ? ` (${what})` : ''}`}>
+            Rank <Text as="span" color="fg" fontWeight="semibold">{typeof rank === 'number' ? `#${rank.toLocaleString()}` : rank}</Text>
+        </Text>
+    );
+}
+
+const HEADING_SIZE = { base: 'lg', md: 'xl' };
+// the tier icons' size, the largest marker
+const HERO_MARKER_ROOM = 44;
+
+// PUMBILITY along its tiers, each level a checkpoint, with the tier icon at the player's place
+function PumbilityHero({ pumbility, counted, rank }) {
+    const value = pumbility?.value ?? 0;
+    const tier = pumbilityTier(pumbility);
+    const progress = pumbilityProgress(value);
+    return (
+        <LadderHero
+            heading={progress.current
+                ? <TierName tier={progress.current.name} fontSize={HEADING_SIZE} lineHeight="1.3" />
+                : <Text fontSize={HEADING_SIZE} fontWeight="bold" color="fg.muted">No tier yet</Text>}
+            rank={rank}
+            badge={<UnfilledFifty counted={counted} what="charts" color={tier.color} />}
+            value={value} progress={progress} color={tier.color} marker={tier.icon} segments={PUMBILITY_LADDER}
+        />
     );
 }
 
 // the step balls fill their image edge to edge, so they read larger than a tier icon of the same size
 const STEPBALL_SIZE = 30;
 
-// PUMBILITY toward its next tier, then singles and doubles PUMBILITY (each its own best fifty)
-// toward their next piugame titles ([S] EXPERT LV.6, DOUBLE MASTER, ...)
-function Progression({ info, scores }) {
-    const all = useMemo(() => typePumbility(scores), [scores]);
-    const singles = useMemo(() => typePumbility(scores, 's'), [scores]);
-    const doubles = useMemo(() => typePumbility(scores, 'd'), [scores]);
+const TYPES = {
+    s: { label: 'Singles', color: 'red.500', milestones: SINGLE_MILESTONES, segments: titleLadder(SINGLE_MILESTONES) },
+    d: { label: 'Doubles', color: 'green.500', milestones: DOUBLE_MILESTONES, segments: titleLadder(DOUBLE_MILESTONES) },
+};
+const RANKINGS = { s: 'singles', d: 'doubles' };
+
+// singles or doubles PUMBILITY (its own best fifty) along piugame's titles, INTERMEDIATE to MASTER
+function TitleHero({ info, scores, type }) {
+    const { label, color, milestones, segments } = TYPES[type];
+    const { total, counted } = useMemo(() => typePumbility(scores, type), [scores, type]);
+    const progress = progressAlong(milestones, total);
     return (
-        // PUMBILITY above a divider, singles and doubles below
-        <VStack align="stretch" gap="5" separator={<Separator />}>
-            <PumbilityHero pumbility={info.pumbility} counted={all.counted} rank={info.ranking?.all} />
-            <SimpleGrid columns={{ base: 1, md: 2 }} columnGap="10" rowGap="6">
-                <ExpBar
-                    label="Singles" labelColor="red.500" value={singles.total} progress={progressAlong(SINGLE_MILESTONES, singles.total)}
-                    color="red.500" badge={<UnfilledFifty counted={singles.counted} what="singles" color="red.500" />}
-                    rank={<RankTag rank={info.ranking?.singles} what="singles" fontSize="sm" />}
-                    marker={stepballImg('phx2', 's')} markerSize={STEPBALL_SIZE}
-                />
-                <ExpBar
-                    label="Doubles" labelColor="green.500" value={doubles.total} progress={progressAlong(DOUBLE_MILESTONES, doubles.total)}
-                    color="green.500" badge={<UnfilledFifty counted={doubles.counted} what="doubles" color="green.500" />}
-                    rank={<RankTag rank={info.ranking?.doubles} what="doubles" fontSize="sm" />}
-                    marker={stepballImg('phx2', 'd')} markerSize={STEPBALL_SIZE}
-                />
-            </SimpleGrid>
-        </VStack>
+        <LadderHero
+            heading={progress.current
+                ? <TitleText title={progress.current.title} fontSize={HEADING_SIZE} lineHeight="1.3" />
+                : <Text fontSize={HEADING_SIZE} fontWeight="bold" color="fg.muted">No {label.toLowerCase()} title yet</Text>}
+            rank={info.ranking?.[RANKINGS[type]]} what={label.toLowerCase()}
+            badge={<UnfilledFifty counted={counted} what={label.toLowerCase()} color={color} />}
+            value={total} progress={progress} color={color} marker={stepballImg('phx2', type)} markerSize={STEPBALL_SIZE}
+            segments={segments} ticks
+        />
     );
+}
+
+// singles and doubles PUMBILITY toward their next piugame titles ([S] EXPERT LV.6, DOUBLE MASTER, ...),
+// side by side (the PUMBILITY tab)
+export function TypeProgress({ info, scores }) {
+    return (
+        // side by side only once each has room for its title, rank and value on one line or so
+        <SimpleGrid columns={{ base: 1, lg: 2 }} columnGap="10" rowGap="6">
+            {Object.entries(TYPES).map(([type, { label, color, milestones }]) => (
+                <TypeBar key={type} type={type} label={label} color={color} milestones={milestones} info={info} scores={scores} />
+            ))}
+        </SimpleGrid>
+    );
+}
+
+function TypeBar({ type, label, color, milestones, info, scores }) {
+    const { total, counted } = useMemo(() => typePumbility(scores, type), [scores, type]);
+    return (
+        <ExpBar
+            label={label} labelColor={color} value={total} progress={progressAlong(milestones, total)}
+            color={color} badge={<UnfilledFifty counted={counted} what={label.toLowerCase()} color={color} />}
+            rank={<RankTag rank={info.ranking?.[RANKINGS[type]]} what={label.toLowerCase()} fontSize="sm" />}
+            marker={stepballImg('phx2', type)} markerSize={STEPBALL_SIZE}
+        />
+    );
+}
+
+// for All, PUMBILITY along its tiers; for Singles or Doubles, that type along its titles
+function Progression({ info, scores, filter }) {
+    const all = useMemo(() => typePumbility(scores), [scores]);
+    if (filter === 'both') {
+        return <PumbilityHero pumbility={info.pumbility} counted={all.counted} rank={info.ranking?.all} />;
+    }
+    return <TitleHero info={info} scores={scores} type={filter} />;
 }
 
 function UserOverview({ info, scores, counts, summary }) {
@@ -218,20 +283,23 @@ function UserOverview({ info, scores, counts, summary }) {
 
     return (
         <VStack align="stretch" gap="6">
-            {/* one panel holds the progress bars and, below a divider, the chart and its controls */}
+            {/* All, Singles or Doubles: picks both the progress shown and the chart's charts */}
             <VStack align="stretch" gap="3">
+                <FilterButtons value={filter} onChange={setFilter} />
+                {/* one panel holds the progress bar and, below a divider, the chart and its level range */}
                 <VStack
                     align="stretch" gap="8" separator={<Separator borderColor="border.emphasized" borderTopWidth="2px" />}
                     bg="bg.subtle" borderWidth="1px" borderColor="border" borderRadius="lg" p={{ base: '4', md: '6' }}
                 >
-                    <Progression info={info} scores={scores} />
+                    <Progression info={info} scores={scores} filter={filter} />
                     <VStack align="stretch" gap="4">
                         <LevelChart rows={chartRows} filter={filter} info={info} />
-                        <HStack justify="space-between" wrap="wrap" gap="3">
-                            <FilterButtons value={filter} onChange={setFilter} />
+                        <HStack justify="space-between" wrap="wrap" gap="3" fontSize="sm" color="fg.muted">
+                            <Text fontSize="xs" fontStyle="italic">
+                                Synced: {new Date(info.timestamp * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                            </Text>
                             {rows.length > 0 && (
-                                <HStack gap="2" fontSize="sm" color="fg.muted">
-                                    <Text>Levels</Text>
+                                <HStack gap="2" ms="auto">
                                     <LevelSelect label="From level" value={range.from} levels={range.levels} onChange={range.setFrom} />
                                     <Text>to</Text>
                                     <LevelSelect label="To level" value={range.to} levels={range.levels} onChange={range.setTo} />

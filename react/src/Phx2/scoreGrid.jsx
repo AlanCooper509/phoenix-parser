@@ -14,12 +14,17 @@ import { FilterButtons } from './UserOverview';
 // in Phx2.css), the cells and sorting both share, and columns that fold away on narrow screens.
 
 // a score or play as a grid row: a level number to sort and filter by (co-op charts go by player
-// count, "n2" as synced, as their C2 badge shows), its grade as text, and whether it was cleared
+// count, "n2" as synced, as their C2 badge shows), its grade as text, and whether it was cleared.
+// A chart never played (`unplayed`, from Breakdown's chart list) has no grade or score.
 export function gridRow(score) {
+    let gradeText = score.stageBreak || !score.grade ? 'Stage break' : gradeLabel(score.grade);
+    if (score.unplayed) {
+        gradeText = 'Not played';
+    }
     return {
         ...score,
         levelNumber: Number(String(score.level).replace(/^n/, '')) || null,
-        gradeText: score.stageBreak || !score.grade ? 'Stage break' : gradeLabel(score.grade),
+        gradeText,
         cleared: isCleared(score),
     };
 }
@@ -52,6 +57,9 @@ function SongCell({ data }) {
 
 // piugame's grade art (a fail's is its cracked x_ version); a STAGE BREAK has none
 function GradeCell({ data }) {
+    if (data.unplayed) {
+        return <Text color="fg.subtle">Not played</Text>;
+    }
     if (data.stageBreak || !data.grade) {
         return <Text color="fg.muted">Stage break</Text>;
     }

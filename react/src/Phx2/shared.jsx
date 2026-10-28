@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import {
-    ChakraProvider, Theme, Badge, Box, Container, createToaster, Flex, Heading, HStack, Image, Link, Progress, ProgressCircle,
+    ChakraProvider, Theme, Badge, Box, Center, Container, createToaster, Flex, Heading, HStack, Image, Link, Progress, ProgressCircle,
     Stack, Text, Toast, Toaster,
 } from '@chakra-ui/react';
+import { LuCheck } from 'react-icons/lu';
 
 import { pumbilityImg, songImg } from '../Helpers/assets';
+import { TIER_STARTS } from './pumbility';
 import system from './theme';
 import './Phx2.css';
 
@@ -253,6 +255,111 @@ export function UnfilledFifty({ counted, what = 'charts', color = 'fg.muted' }) 
     );
 }
 
+// ---- ladders: a whole progression at once, as segments (PUMBILITY tiers, or title ranks) of equal
+// width, each marked at its levels and colored per level, filled up to the player's place.
+// A segment is { name, stops: [each level's start..., the segment's end], colors: one per level }.
+
+// the ladders share their teal and red: PLATINUM's teal for the titles' pale blue (col4), the titles'
+// red (col6) for RED BERYL
+const TITLE_LADDER_COLORS = { col4: 'teal.300' };
+const TIER_LADDER_COLORS = { 'RED BERYL': TITLE_GRADIENTS.col6[0] };
+
+// PUMBILITY: BRONZE to ALEXANDRITE, five levels each (ABYSS ABSOLUTE at the very end)
+export const PUMBILITY_LADDER = TIER_STARTS.slice(0, -1).map(([name, start], i) => {
+    const end = TIER_STARTS[i + 1][1];
+    const color = TIER_LADDER_COLORS[name] || PUMBILITY_TIERS.find(([tier]) => tier === name)?.[1] || 'fg.muted';
+    return { name, stops: [0, 1, 2, 3, 4, 5].map((l) => start + ((end - start) * l) / 5), colors: Array(5).fill(color) };
+});
+
+// singles or doubles titles: INTERMEDIATE, ADVANCED and EXPERT, ten levels each in piugame's title
+// colors (MASTER at the very end)
+export function titleLadder(milestones) {
+    const rankOf = (m) => /\] (\w+) LV/.exec(m?.name || '')?.[1];
+    const ranks = [];
+    milestones.forEach((m, i) => {
+        const rank = rankOf(m);
+        if (!rank) {
+            return;  // MASTER
+        }
+        if (ranks.at(-1)?.name !== rank) {
+            ranks.push({ name: rank, stops: [], colors: [] });
+        }
+        const segment = ranks.at(-1);
+        segment.stops.push(m.value);
+        segment.colors.push(TITLE_LADDER_COLORS[m.title.color] || TITLE_GRADIENTS[m.title.color][0]);
+        // a rank ends where the next one (or MASTER) begins
+        if (rankOf(milestones[i + 1]) !== rank) {
+            segment.stops.push(milestones[i + 1].value);
+        }
+    });
+    return ranks;
+}
+
+// where `value` sits along a ladder, 0 to 100: segments get equal widths and levels equal widths
+// within them, whatever points they span
+export function ladderPercent(segments, value) {
+    const i = segments.findIndex(({ stops }) => value < stops.at(-1));
+    if (i < 0) {
+        return 100;
+    }
+    const { stops } = segments[i];
+    if (value < stops[0]) {
+        return (100 * i) / segments.length;
+    }
+    const j = stops.findLastIndex((stop) => value >= stop);
+    return (100 * (i + (j + (value - stops[j]) / (stops[j + 1] - stops[j])) / (stops.length - 1))) / segments.length;
+}
+
+function LadderSegments({ segments, bright, filled = 0 }) {
+    return (
+        <HStack gap="2px" h="full" w="full">
+            {segments.map(({ name, stops, colors }, i) => {
+                // a segment passed entirely: darkened, with a check (once the fill has had time to pass it)
+                const done = bright && filled >= (100 * (i + 1)) / segments.length;
+                return (
+                    <HStack
+                        key={name} flex="1" h="full" gap="0" overflow="hidden" position="relative" opacity={bright ? 1 : 0.22}
+                        borderStartRadius={i === 0 ? 'full' : undefined} borderEndRadius={i === segments.length - 1 ? 'full' : undefined}
+                        title={bright ? undefined : `${name}: ${stops[0].toLocaleString()} to ${stops.at(-1).toLocaleString()}`}
+                    >
+                        {/* one block per level, a notch between levels marking each checkpoint */}
+                        {colors.map((color, l) => (
+                            <Box
+                                key={l} flex="1" h="full" bg={color} borderStartWidth={l ? '1.5px' : 0} borderColor="bg"
+                                filter={done ? 'brightness(0.45)' : undefined} transition="filter 0.4s ease 0.6s"
+                            />
+                        ))}
+                        {done && (
+                            <Center position="absolute" inset="0" color="white" pointerEvents="none">
+                                <Box as={LuCheck} h="85%" w="auto" strokeWidth="4" />
+                            </Center>
+                        )}
+                    </HStack>
+                );
+            })}
+        </HStack>
+    );
+}
+
+// A ladder as an ExpBar track: faint segments, the same in full color revealed up to `filled`.
+// `ticks` marks where each segment ends with a tick under the bar (title ranks, MASTER at the end).
+export function Ladder({ segments, filled, h = '12px', ticks }) {
+    return (
+        <Box position="relative" h={h}>
+            {ticks && segments.map(({ name }, i) => (
+                <Box
+                    key={name} position="absolute" top="100%" mt="3px" h="7px" w="2px" bg="fg.muted" borderRadius="full"
+                    left={`calc(${(100 * (i + 1)) / segments.length}% - ${i === segments.length - 1 ? 2 : 1}px)`}
+                />
+            ))}
+            <LadderSegments segments={segments} />
+            <Box position="absolute" inset="0" css={{ clipPath: `inset(0 ${100 - filled}% 0 0)`, transition: `clip-path ${EASE_OUT_QUART}` }}>
+                <LadderSegments segments={segments} bright filled={filled} />
+            </Box>
+        </Box>
+    );
+}
+
 // fills like chart.js's own animation (1s, easeOutQuart)
 const EASE_OUT_QUART = '1s cubic-bezier(0.25, 1, 0.5, 1)';
 const FILL_TRANSITION = `width ${EASE_OUT_QUART}`;
@@ -266,13 +373,17 @@ const BAR_HEIGHTS = { sm: 8, md: 12 };
 // (TitleText, TierName); otherwise `colorOf` colors its name (the bar's own color by
 // default). A `marker`
 // image (the PUMBILITY tier icon) rides the end of the fill, `markerSize` px across; `markerRoom`
-// leaves that room around a bar even without one, so bars side by side line up. `size` is the
-// bar's thickness (sm or md). `rank` and `badge` follow the milestone reached.
+// leaves that room around a bar even without one, so bars side by side line up (or, as a number, room
+// for a marker that many px across, so bars with different markers match). `size` is the
+// bar's thickness (sm or md). `rank` and `badge` follow the milestone reached. `track(filled)`, if
+// given, draws the bar instead (filling to `trackPercent`), as Ladder does. `points={false}` leaves out the
+// points toward the next milestone under it, keeping only what's left to go; `footer` takes their place.
 export function ExpBar({
     label, labelColor = 'fg.muted', value, progress, color, colorOf = () => color,
-    marker, markerSize = MARKER_SIZE, markerRoom = Boolean(marker), size = 'sm', badge, rank, ...props
+    marker, markerSize = MARKER_SIZE, markerRoom = Boolean(marker), size = 'sm', badge, rank, track, trackPercent, points = true, footer, ...props
 }) {
     const { current, next, percent, remaining } = progress;
+    const fillTo = trackPercent ?? percent;
     const name = (milestone, nameProps) => {
         if (milestone.title) {
             return <TitleText title={milestone.title} {...nameProps} />;
@@ -286,19 +397,20 @@ export function ExpBar({
     // two frames, so the empty bar is painted before it fills
     useEffect(() => {
         let frame = requestAnimationFrame(() => {
-            frame = requestAnimationFrame(() => setFilled(percent));
+            frame = requestAnimationFrame(() => setFilled(fillTo));
         });
         return () => cancelAnimationFrame(frame);
-    }, [percent]);
+    }, [fillTo]);
     return (
         <Box {...props}>
             {/* laid out like the PUMBILITY headline: label, milestone reached and badge, then the value */}
             {label && (
-                <HStack justify="space-between" align="center" gap="3" mb="1">
-                    <HStack gap="2" minW="0">
+                <HStack justify="space-between" align="start" gap="3" mb="1">
+                    {/* wraps rather than cut the title short: whatever doesn't fit moves to a second line */}
+                    <HStack gap="2" rowGap="0.5" minW="0" wrap="wrap">
                         <Text fontSize="sm" fontWeight="semibold" color={labelColor} flexShrink="0">{label}</Text>
                         {current
-                            ? name(current, { fontSize: 'sm', truncate: true })
+                            ? name(current, { fontSize: 'sm', truncate: true, maxW: 'full' })
                             : <Text fontSize="sm" color="fg.muted" flexShrink="0">None yet</Text>}
                         {rank}
                         {badge}
@@ -312,12 +424,14 @@ export function ExpBar({
                 </HStack>
             )}
             {/* room above and below the bar for the marker, which stays inside the bar's ends */}
-            <Box position="relative" my={markerRoom ? `${(markerSize - BAR_HEIGHTS[size]) / 2}px` : undefined}>
-                <Progress.Root value={filled} size={size} aria-label={next ? `${label || 'Progress'} to ${next.name}` : label}>
-                    <Progress.Track bg="bg.emphasized" borderRadius="full">
-                        <Progress.Range bg={color} borderRadius="full" transition={FILL_TRANSITION} />
-                    </Progress.Track>
-                </Progress.Root>
+            <Box position="relative" my={markerRoom ? `${((markerRoom === true ? markerSize : markerRoom) - BAR_HEIGHTS[size]) / 2}px` : undefined}>
+                {track ? track(filled) : (
+                    <Progress.Root value={filled} size={size} aria-label={next ? `${label || 'Progress'} to ${next.name}` : label}>
+                        <Progress.Track bg="bg.emphasized" borderRadius="full">
+                            <Progress.Range bg={color} borderRadius="full" transition={FILL_TRANSITION} />
+                        </Progress.Track>
+                    </Progress.Root>
+                )}
                 {marker && (
                     <Image
                         src={marker} alt="" position="absolute" top="50%" boxSize={`${markerSize}px`} pointerEvents="none"
@@ -328,16 +442,17 @@ export function ExpBar({
                 )}
             </Box>
             <HStack justify="space-between" columnGap="3" rowGap="0" wrap="wrap" mt="1" fontSize="xs" color="fg.muted" fontVariantNumeric="tabular-nums">
+                {footer}
                 {next ? (
                     <>
-                        <Text flexShrink="0">{formatPumbility(value)} / {next.value.toLocaleString()} ({Math.floor(percent)}%)</Text>
+                        {points && !footer && <Text flexShrink="0">{formatPumbility(value)} / {next.value.toLocaleString()} ({Math.floor(percent)}%)</Text>}
                         {/* wraps under the points on narrow screens, still right-aligned */}
                         <Text ms="auto">
                             {formatPumbility(remaining)} to{' '}
                             {name(next, { as: 'span', truncate: false })}
                         </Text>
                     </>
-                ) : <Text>{formatPumbility(value)}: top reached</Text>}
+                ) : <Text ms="auto">{formatPumbility(value)}: top reached</Text>}
             </HStack>
         </Box>
     );

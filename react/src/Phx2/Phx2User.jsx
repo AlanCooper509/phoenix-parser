@@ -12,13 +12,14 @@ import { pumbilitySummary } from './stats';
 import UserOverview from './UserOverview';
 import UserPumbility from './UserPumbility';
 import UserScores from './UserScores';
+import UserBreakdown from './UserBreakdown';
 import SyncPanel, { SyncForm } from './SyncForm';
 
 // PROTOTYPE: a player's Phoenix 2 page at /phx2/user/NAME/NUM(/tab), from their latest sync.
 // The URL holds the tab, so back/forward switch tabs as on the Phoenix (1) user page. Only the open
 // tab is rendered, so each mounts fresh when opened and its chart and bars animate in again.
 // [value, label, label on phones]
-const TABS = [['overview', 'Overview'], ['scores', 'Scores'], ['pumbility', 'PUMBILITY']];
+const TABS = [['overview', 'Overview'], ['scores', 'Scores'], ['breakdown', 'Breakdown'], ['pumbility', 'PUMBILITY']];
 
 function Profile({ info }) {
     const tier = pumbilityTier(info.pumbility);
@@ -124,8 +125,11 @@ function Phx2User() {
                     <Tabs.Content value="scores" pt="6">
                         {tab === 'scores' && <UserScores name={name} number={number} view={view} user={user} summary={summary} />}
                     </Tabs.Content>
+                    <Tabs.Content value="breakdown" pt="6">
+                        {tab === 'breakdown' && <UserBreakdown name={name} number={number} view={view} scores={user.scores} counts={counts} />}
+                    </Tabs.Content>
                     <Tabs.Content value="pumbility" pt="6">
-                        {tab === 'pumbility' && <UserPumbility scores={user.scores} counts={counts} summary={summary} pumbility={user.pumbility} />}
+                        {tab === 'pumbility' && <UserPumbility scores={user.scores} counts={counts} summary={summary} info={user.info} />}
                     </Tabs.Content>
                 </Tabs.Root>
             </VStack>
