@@ -121,12 +121,12 @@ function ChartTables({ rows, gridKey }) {
                     </Heading>
                 </TableHeading>
             </Box>
-            {shown.length > 0 ? (
-                // a fresh grid per level and view
-                <ScoreGrid key={`${gridKey}|${view}`} rowData={shown} columnDefs={COLUMNS} />
-            ) : (
-                <Text color="fg.muted">{EMPTY[view]}</Text>
-            )}
+            {/* a fresh grid per level, but the same one across Cleared / Remaining (its rows swapped), so
+                switching doesn't empty the page for a moment and scroll it back to the top */}
+            <Box display={shown.length > 0 ? undefined : 'none'}>
+                <ScoreGrid key={gridKey} rowData={shown} columnDefs={COLUMNS} />
+            </Box>
+            {shown.length === 0 && <Text color="fg.muted">{EMPTY[view]}</Text>}
         </Box>
     );
 }
