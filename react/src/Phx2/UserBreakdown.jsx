@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, Center, Heading, HStack, NativeSelect, Separator, Spinner, Text, VStack } from '@chakra-ui/react';
 import { Chart } from 'react-chartjs-2';
@@ -6,7 +6,7 @@ import 'chart.js/auto';
 
 import getChartsForLevel from '../API/chartlevel';
 import { userPath } from '../Helpers/paths';
-import { isCleared } from './pumbility';
+import { GRADES, gradeLabel, isCleared } from './pumbility';
 import { GRADE_COLORS } from './shared';
 import ScoreGrid, {
     GRADE_COLUMN, gridRow, JACKET_COLUMN, LEVEL_COLUMN, PLATE_COLUMN, SCORE_COLUMN, SONG_COLUMN, TableHeading, ViewLink,
@@ -41,16 +41,30 @@ function highestCleared(scores) {
         .reduce((best, s) => Math.max(best, Number(s.level)), 0) || null;
 }
 
-// Grade groups as on Phoenix 1's breakdown chart, highest first, colored like the grades themselves
+// Grade groups as on the Phoenix (1) breakdown chart: a pair of bars each, the grade and its "+"
+// side by side (the lowest pair is F / D / C, shown as "-", and B), under the scores the pair spans (Phoenix 2's
+// cutoffs, pumbility.js's GRADES), colored like the grades themselves
 const GRADE_GROUPS = [
-    ['SSS / SSS+', ['sss', 'sss_p'], GRADE_COLORS.sss],
-    ['SS / SS+', ['ss', 'ss_p'], GRADE_COLORS.s],
-    ['S / S+', ['s', 's_p'], GRADE_COLORS.s],
-    ['AAA / AAA+', ['aaa', 'aaa_p'], GRADE_COLORS.aaa],
-    ['AA / AA+', ['aa', 'aa_p'], GRADE_COLORS.a],
-    ['A / A+', ['a', 'a_p'], GRADE_COLORS.a],
-    ['B and below', ['b', 'c', 'd', 'f'], GRADE_COLORS.b],
-].reverse();
+    ['- | B', ['f', 'd', 'c'], ['b'], GRADE_COLORS.b],
+    ['A | +', ['a'], ['a_p'], GRADE_COLORS.a],
+    ['AA | +', ['aa'], ['aa_p'], GRADE_COLORS.a],
+    ['AAA | +', ['aaa'], ['aaa_p'], GRADE_COLORS.aaa],
+    ['S | +', ['s'], ['s_p'], GRADE_COLORS.s],
+    ['SS | +', ['ss'], ['ss_p'], GRADE_COLORS.s],
+    ['SSS | +', ['sss'], ['sss_p'], GRADE_COLORS.sss],
+];
+const CUTOFF = Object.fromEntries(GRADES.map(([key, , score]) => [key, score]));
+const thousands = (score) => (score >= 1000000 ? '1m' : `${Math.round(score / 1000)}k`);
+// "(920k ~ 949k)": from the group's lowest grade to just under the next group's
+const GROUP_RANGES = GRADE_GROUPS.map(([, grades], i) => {
+    const next = GRADE_GROUPS[i + 1];
+    const from = Math.min(...grades.map((grade) => CUTOFF[grade]));
+    return `(${thousands(from)} ~ ${next ? thousands(CUTOFF[next[1][0]] - 1000) : '1m'})`;
+});
+// what each bar of a pair holds, for the tooltip
+const BAR_NAMES = [GRADE_GROUPS.map(([, grades]) => grades.map(gradeLabel).join(' / ')), GRADE_GROUPS.map(([, , plus]) => plus.map(gradeLabel).join(' / '))];
+// below this chart width the ranges (about 90px each at 12px) would crowd each other: names only
+const RANGES_WIDTH = 760;
 const TEXT = '#a1a1aa';
 const GRID = 'rgba(255, 255, 255, 0.06)';
 
@@ -58,22 +72,44 @@ function GradeChart({ rows }) {
     // rebuilt only when the rows change, so re-renders don't redraw the chart
     const data = useMemo(() => {
         const clears = rows.filter((row) => row.cleared);
-        const counts = GRADE_GROUPS.map(([, grades]) => clears.filter((row) => grades.includes(row.grade)).length);
+        const count = (grades) => clears.filter((row) => grades.includes(row.grade)).length;
+        const colors = GRADE_GROUPS.map(([, , , color]) => color);
         return {
             labels: GRADE_GROUPS.map(([label]) => label),
-            datasets: [{ data: counts, backgroundColor: GRADE_GROUPS.map(([, , color]) => color), borderRadius: 3 }],
+            datasets: [
+                { data: GRADE_GROUPS.map(([, grades]) => count(grades)), backgroundColor: colors, borderRadius: 3 },
+                { data: GRADE_GROUPS.map(([, , plus]) => count(plus)), backgroundColor: colors, borderRadius: 3 },
+            ],
         };
     }, [rows]);
     const options = useMemo(() => ({
         maintainAspectRatio: false,
         plugins: {
             legend: { display: false },
-            tooltip: { callbacks: { label: (item) => ` ${item.formattedValue} ${item.raw === 1 ? 'clear' : 'clears'}` } },
+            tooltip: {
+                callbacks: {
+                    title: (items) => BAR_NAMES[items[0].datasetIndex][items[0].dataIndex],
+                    label: (item) => ` ${item.formattedValue} ${item.raw === 1 ? 'clear' : 'clears'}`,
+                },
+            },
         },
         scales: {
-            x: { ticks: { color: TEXT, autoSkip: false, maxRotation: 0, font: (c) => ({ size: c.chart.width < 500 ? 9 : 12 }) }, grid: { display: false } },
+            x: {
+                ticks: {
+                    color: TEXT, autoSkip: false, maxRotation: 0,
+                    font: (c) => ({ size: c.chart.width < 500 ? 9 : 12 }),
+                    // each pair's scores under its name, where there's room
+                    callback(value, i) {
+                        const label = this.getLabelForValue(value);
+                        return this.chart.width < RANGES_WIDTH ? label : [label, GROUP_RANGES[i]];
+                    },
+                },
+                grid: { display: false },
+            },
             y: { beginAtZero: true, ticks: { color: TEXT, precision: 0 }, grid: { color: GRID } },
         },
+        // the two bars of a pair close together, pairs apart
+        datasets: { bar: { categoryPercentage: 0.7, barPercentage: 0.92 } },
     }), []);
     return (
         <Box h={{ base: '220px', md: '280px' }}>
@@ -135,6 +171,11 @@ function UserBreakdown({ name, number, view, scores, counts }) {
     const navigate = useNavigate();
     const start = useMemo(() => highestCleared(scores), [scores]);
     const { type, level } = parseView(view) || { type: 'all', level: start || 20 };
+    // the level last shown for singles / doubles, to go back to from co-op (which picks players instead)
+    const lastLevel = useRef(start || 20);
+    if (type !== 'c') {
+        lastLevel.current = level;
+    }
     const show = (nextType, nextLevel) => navigate(userPath('phx2', name, number, `breakdown/${viewOf(nextType, nextLevel)}`));
 
     // levels with charts of the type picked (co-op: player counts)
@@ -183,7 +224,7 @@ function UserBreakdown({ name, number, view, scores, counts }) {
             <HStack justify="space-between" wrap="wrap" gap="3">
                 <FilterButtons
                     value={type} options={TYPES}
-                    onChange={(t) => show(t, t === 'c' ? COOP_PLAYERS[0] : (type === 'c' ? start || 20 : level))}
+                    onChange={(t) => show(t, t === 'c' ? COOP_PLAYERS[0] : (type === 'c' ? lastLevel.current : level))}
                 />
                 <LevelPicker type={type} level={level} levels={levels} onChange={(l) => show(type, l)} />
             </HStack>
