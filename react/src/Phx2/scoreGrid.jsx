@@ -1,4 +1,4 @@
-import { forwardRef, useCallback, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-quartz.css';
@@ -8,7 +8,7 @@ import { chartBallImg, gradeImg, plateImg } from '../Helpers/assets';
 
 import { GRADES, gradeLabel, gradeRank, isCleared, PLATE_NAMES } from './pumbility';
 import { ChartBadge, Jacket } from './shared';
-import { FilterButtons } from './UserOverview';
+import { FILTER_STYLE, FilterButtons } from './UserOverview';
 
 // The ag-grid behind Best Scores and Recently Played: its dark theme recolored to Phoenix 2 (.phx2-grid
 // in Phx2.css), the cells and sorting both share, and columns that fold away on narrow screens.
@@ -42,29 +42,38 @@ function LevelCell({ data }) {
         <HStack {...middle} justify="end">
             {missing
                 ? <ChartBadge type={data.type} level={data.level} />
-                : <Image src={chartBallImg('phx2', data.type, data.level)} alt={label} title={label} boxSize="40px" onError={() => setMissing(true)} />}
+                : <Image src={chartBallImg('phx2', data.type, data.level)} alt={label} title={label} boxSize="40px" className="phx2-grid-ball" onError={() => setMissing(true)} />}
         </HStack>
     );
 }
 
 function JacketCell({ data }) {
-    return <HStack {...middle}><Jacket jacket={data.jacket} w="80px" /></HStack>;
+    return <HStack {...middle}><Jacket jacket={data.jacket} w="80px" className="phx2-grid-jacket" /></HStack>;
 }
 
 function SongCell({ data }) {
     return <Text truncate title={data.name}>{data.name}</Text>;
 }
 
-// piugame's grade art (a fail's is its cracked x_ version); a STAGE BREAK has none
+// piugame's grade art (a fail's is its cracked x_ version); a STAGE BREAK has none. Right-aligned,
+// next to the plate. The words wrap to two lines where the column is narrow (compact).
+const GRADE_TEXT = { textAlign: 'end', whiteSpace: 'normal', lineHeight: '1.2' };
 function GradeCell({ data }) {
     if (data.unplayed) {
-        return <Text color="fg.subtle">Not played</Text>;
+        return <HStack {...middle} justify="end"><Text color="fg.subtle" {...GRADE_TEXT}>Not played</Text></HStack>;
     }
     if (data.stageBreak || !data.grade) {
-        return <Text color="fg.muted">Stage break</Text>;
+        // just "Break" in compact grids (Phx2.css), so it stays on one line
+        return (
+            <HStack {...middle} justify="end">
+                <Text color="fg.muted" {...GRADE_TEXT}>
+                    <span className="phx2-grid-full">Stage break</span><span className="phx2-grid-short">Break</span>
+                </Text>
+            </HStack>
+        );
     }
     const label = `${gradeLabel(data.grade)}${data.cleared ? '' : ' (failed)'}`;
-    return <HStack {...middle}><Image src={gradeImg('phx2', data.grade)} alt={label} title={label} h="28px" w="auto" /></HStack>;
+    return <HStack {...middle} justify="end"><Image src={gradeImg('phx2', data.grade)} alt={label} title={label} h="28px" w="auto" className="phx2-grid-grade" /></HStack>;
 }
 
 function PlateCell({ data }) {
@@ -73,7 +82,7 @@ function PlateCell({ data }) {
     }
     return (
         <HStack {...middle}>
-            <Image src={plateImg('phx2', data.plate)} alt={PLATE_NAMES[data.plate]} title={PLATE_NAMES[data.plate]} h="20px" w="auto" />
+            <Image src={plateImg('phx2', data.plate)} alt={PLATE_NAMES[data.plate]} title={PLATE_NAMES[data.plate]} h="20px" w="auto" className="phx2-grid-plate" />
         </HStack>
     );
 }
@@ -130,11 +139,14 @@ export const LEVEL_COLUMN = {
     floatingFilterComponentParams: { suppressFilterButton: true },
 };
 export const SONG_COLUMN = {
-    headerName: 'Song', field: 'name', flex: 1, minWidth: 180, cellRenderer: SongCell,
+    // takes the room left over: at least enough for a short title even on phones (compact)
+    headerName: 'Song', field: 'name', flex: 1, minWidth: 80, cellRenderer: SongCell,
     filter: 'agTextColumnFilter', floatingFilter: true, filterParams: TEXT_FILTER,
 };
 export const GRADE_COLUMN = {
     colId: 'grade', headerName: 'Grade', field: 'gradeText', width: 100, cellRenderer: GradeCell, comparator: comparing(byScore),
+    // right-aligned like its cells, so the grade sits by the plate
+    headerClass: 'ag-right-aligned-header phx2-grid-near-next', cellClass: 'phx2-grid-near-next',
     // by rank: a fail counts as the grade it reached; a STAGE BREAK (no grade) never matches
     filter: 'agNumberColumnFilter', floatingFilter: true, filterValueGetter: ({ data }) => gradeRank(data.grade),
     filterParams: rankFilter(GRADES.map(([, label]) => label)),
@@ -158,31 +170,146 @@ const DEFAULT_COLUMN = { sortable: true, suppressMovable: true, suppressMenu: tr
 // data columns need less sideways scrolling on phones
 const JACKET_FOLD = [480, ['jacket']];
 
-// The themed grid. `fold`: [[width, colIds], ...], more columns hidden while the grid is narrower than
-// that width. Other props go to AgGridReact.
-const ScoreGrid = forwardRef(function ScoreGrid({ fold: moreFold = [], ...props }, ref) {
+// Below this grid width (phones) the grid goes compact: smaller text, padding, images and rows
+// (.phx2-grid-compact in Phx2.css), and these columns narrower, so the song, level, grade, plate and
+// score fit without scrolling sideways. Columns not in a grid are skipped.
+const COMPACT_WIDTH = 600;
+const COMPACT_COLUMNS = { jacket: 72, levelNumber: 42, grade: 62, plate: 52, score: 70, scorePlayed: 74, pumbility: 70, rank: 28, points: 54 };
+// shorter headers where the full one won't fit beside its sort arrow
+const COMPACT_HEADERS = { levelNumber: 'Lv.' };
+
+const columnId = (colDef) => colDef.colId ?? colDef.field;
+
+// the columns as laid out for a grid `width` wide: compact widths and headers below COMPACT_WIDTH, and
+// the folded columns hidden (or their narrow stand-ins shown)
+function layoutColumns(columnDefs, width, fold) {
+    const compact = width < COMPACT_WIDTH;
+    const hidden = new Map();
+    fold.forEach(([foldWidth, colIds, narrowColIds = []]) => {
+        colIds.forEach((id) => hidden.set(id, width < foldWidth));
+        narrowColIds.forEach((id) => hidden.set(id, width >= foldWidth));
+    });
+    return columnDefs.map((colDef) => {
+        const id = columnId(colDef);
+        return {
+            ...colDef,
+            width: (compact && COMPACT_COLUMNS[id]) || colDef.width,
+            headerName: (compact && COMPACT_HEADERS[id]) || colDef.headerName,
+            hide: hidden.has(id) ? hidden.get(id) : colDef.hide,
+        };
+    });
+}
+
+// The themed grid. `fold`: [[width, colIds, narrowColIds], ...], more columns hidden while the grid is
+// narrower than that width (and `narrowColIds`, hidden otherwise, shown instead). Other props go to
+// AgGridReact.
+// one empty fold for every grid without its own: a new [] each render would rebuild the columns (and
+// ag-grid re-apply their definitions, undoing sorts and shown columns) on every render
+const NO_FOLD = [];
+
+const ScoreGrid = forwardRef(function ScoreGrid({ fold: moreFold = NO_FOLD, columnDefs, ...props }, ref) {
     const fold = useMemo(() => [JACKET_FOLD, ...moreFold], [moreFold]);
-    const fitColumns = useCallback(({ api, clientWidth }) => {
-        if (clientWidth) {
-            fold.forEach(([width, colIds]) => api.setColumnsVisible(colIds, clientWidth >= width));
+    // measured before the grid first draws, so it starts in the right layout (no flash of the wide one
+    // on phones); null until then
+    const box = useRef(null);
+    const [width, setWidth] = useState(null);
+    useLayoutEffect(() => {
+        setWidth(box.current.clientWidth);
+    }, []);
+    const [compact, setCompact] = useState(false);
+    // the layout the grid starts with; resizes after that go through fitColumns
+    const startWidth = useRef(null);
+    if (startWidth.current === null && width !== null) {
+        startWidth.current = width;
+    }
+    const startColumns = useMemo(
+        () => (startWidth.current === null ? null : layoutColumns(columnDefs, startWidth.current, fold)),
+        [columnDefs, fold, width === null], // eslint-disable-line react-hooks/exhaustive-deps
+    );
+    useLayoutEffect(() => {
+        if (width !== null) {
+            setCompact(width < COMPACT_WIDTH);
         }
-    }, [fold]);
+    }, [width]);
+
+    const api = useRef(null);
+    const fitColumns = useCallback(({ api: gridApi, clientWidth }) => {
+        api.current = gridApi;
+        if (!clientWidth) {
+            return;
+        }
+        const laidOut = layoutColumns(columnDefs, clientWidth, fold);
+        setCompact(clientWidth < COMPACT_WIDTH);
+        // headers aren't column state: set on the grid's own copies of the definitions
+        laidOut.forEach(({ headerName }, i) => {
+            const colDef = gridApi.getColumn(columnId(columnDefs[i]))?.getColDef();
+            if (colDef && colDef.headerName !== headerName) {
+                colDef.headerName = headerName;
+            }
+        });
+        gridApi.refreshHeader();
+        // only what the width decides: the compact-sized columns' widths and the folded columns'
+        // visibility (others, like Best Scores' Score / PUMBILITY, keep whatever they were set to)
+        const folded = new Set(fold.flatMap(([, colIds, narrowColIds = []]) => [...colIds, ...narrowColIds]));
+        gridApi.applyColumnState({
+            state: laidOut
+                .filter((colDef) => gridApi.getColumn(columnId(colDef)) && (COMPACT_COLUMNS[columnId(colDef)] || folded.has(columnId(colDef))))
+                .map((colDef) => ({
+                    colId: columnId(colDef),
+                    ...(COMPACT_COLUMNS[columnId(colDef)] && { width: colDef.width }),
+                    ...(folded.has(columnId(colDef)) && { hide: colDef.hide }),
+                })),
+        });
+    }, [columnDefs, fold]);
+    // rows already drawn take the new height
+    useEffect(() => {
+        api.current?.resetRowHeights();
+    }, [compact]);
     return (
-        <Box className="ag-theme-quartz-dark phx2-grid" w="full">
-            <AgGridReact
-                ref={ref}
-                defaultColDef={DEFAULT_COLUMN}
-                // room for the 45px-tall jackets
-                rowHeight={56}
-                domLayout="autoHeight"
-                onGridSizeChanged={fitColumns}
-                onFirstDataRendered={fitColumns}
-                suppressCellFocus
-                {...props}
-            />
+        <Box ref={box} className={`ag-theme-quartz-dark phx2-grid${compact ? ' phx2-grid-compact' : ''}`} w="full">
+            {startColumns && (
+                <AgGridReact
+                    ref={ref}
+                    columnDefs={startColumns}
+                    defaultColDef={DEFAULT_COLUMN}
+                    // room for the 45px-tall jackets (smaller when compact)
+                    rowHeight={compact ? 44 : 56}
+                    domLayout="autoHeight"
+                    onGridSizeChanged={fitColumns}
+                    onFirstDataRendered={fitColumns}
+                    suppressCellFocus
+                    {...props}
+                />
+            )}
         </Box>
     );
 });
+
+// another view's name beside a table's heading (smaller, muted), which switches to it
+export function ViewLink({ label, onClick }) {
+    return (
+        <Text
+            as="button" type="button" onClick={onClick} fontSize={{ base: 'xs', sm: 'sm' }} fontWeight="medium" color="fg.muted"
+            whiteSpace="nowrap" cursor="pointer" _hover={{ color: 'fg' }} transition="color 0.15s"
+        >
+            {label}
+        </Text>
+    );
+}
+
+// the heading, between `nav`'s links if any, bottoms lined up
+export function TableHeading({ nav, children }) {
+    if (!nav) {
+        return children;
+    }
+    return (
+        <HStack gap={{ base: '3', sm: '4' }} align="baseline">
+            {nav.before}
+            {children}
+            {nav.after}
+        </HStack>
+    );
+}
 
 // ---- the table around the grid, the same on Best Scores, Recently Played and the best 50
 
@@ -192,13 +319,16 @@ const TYPES = [['all', 'All'], ['s', 'Singles'], ['d', 'Doubles'], ['c', 'Co-op'
 // small checkbox for fails and STAGE BREAKs (rows that aren't clears; ticked to start with
 // `failedShown`), a divider, then
 // the type buttons (and `toolbar`, on the right) right over the grid. The buttons filter the rows by
-// type (`types` sets them); with `onTypeChange`, they call it instead, for the parent to swap the rows. `footer` goes under it; `ref`
-// reaches the grid's api. Other props go to ScoreGrid.
+// type (`types` sets them); with `onTypeChange`, they call it instead, for the parent to swap the rows.
+// `toolbar` can also be a function of the type picked. `nav` ({ before, after }) goes either side of the
+// heading (Scores' other views). `footer` goes under it; `ref` reaches the grid's api. Other props go to ScoreGrid.
 export const ScoreTable = forwardRef(function ScoreTable({
-    title, toolbar, failedToggle = false, failedShown = false, footer, rowData, types = TYPES, onTypeChange, ...props
+    title, nav, toolbar, failedToggle = false, failedShown = false, footer, rowData, types = TYPES, onTypeChange, ...props
 }, ref) {
     const grid = useRef(null);
-    useImperativeHandle(ref, () => grid.current, []);
+    // read through to the grid when used: it mounts a render after this table (once ScoreGrid has
+    // measured its width), so it isn't there yet when the handle is made
+    useImperativeHandle(ref, () => ({ get api() { return grid.current?.api; } }), []);
     const [type, setType] = useState('all');
     const [failed, setFailed] = useState(!failedToggle || failedShown);
     // starts as what the grid will show, so the heading doesn't flash the unfiltered count first
@@ -220,27 +350,37 @@ export const ScoreTable = forwardRef(function ScoreTable({
 
     return (
         <Box>
-            <HStack justify="space-between" align="end" gap="3" mb="3">
-                <Heading as="h4" size="lg" title={`${count.toLocaleString()} of ${rowData.length.toLocaleString()}`}>
-                    {title} <Text as="span" color="fg.muted" fontWeight="normal">({count.toLocaleString()})</Text>
-                </Heading>
-                {failedToggle && (
-                    <Checkbox.Root
-                        size="xs" colorPalette="phx2" checked={failed} onCheckedChange={(e) => refilter(setFailed)(!!e.checked)}
+            <HStack justify="space-between" align="end" gap="3" rowGap="2" mb="3" wrap="wrap">
+                <TableHeading nav={nav}>
+                    <Heading
+                        as="h4" fontSize={{ base: 'lg', sm: 'xl' }} lineHeight="1.2" whiteSpace="nowrap"
+                        title={`${count.toLocaleString()} of ${rowData.length.toLocaleString()}`}
                     >
-                        <Checkbox.HiddenInput />
-                        <Checkbox.Control />
-                        <Checkbox.Label fontSize="xs" color="fg.muted" fontWeight="normal" ms="1.5">Failed and stage breaks</Checkbox.Label>
-                    </Checkbox.Root>
-                )}
+                        {title} <Text as="span" color="fg.muted" fontWeight="normal">({count.toLocaleString()})</Text>
+                    </Heading>
+                </TableHeading>
             </HStack>
             <Separator borderColor="border" mb="4" />
-            <HStack justify="space-between" wrap="wrap" gap="3" mb="4">
+            {/* every filter in one row: the type toggle and any toolbar (Score / PUMBILITY) together, phones
+                included, then the stage-breaks box (on a line of its own under them if there's no room) */}
+            <HStack gap={{ base: '2', sm: '3' }} mb="4" align="start">
                 <FilterButtons
                     value={type} options={types}
                     onChange={onTypeChange ? (next) => { setType(next); onTypeChange(next); } : refilter(setType)}
                 />
-                {toolbar}
+                {/* on the right, together; the box goes under the toolbar when they don't fit side by side */}
+                <HStack flex="1" justify="end" gap="3" rowGap="2" wrap="wrap" minH={FILTER_STYLE.h}>
+                    {typeof toolbar === 'function' ? toolbar(type) : toolbar}
+                    {failedToggle && (
+                        <Checkbox.Root
+                            size="xs" colorPalette="phx2" checked={failed} onCheckedChange={(e) => refilter(setFailed)(!!e.checked)}
+                        >
+                            <Checkbox.HiddenInput />
+                            <Checkbox.Control />
+                            <Checkbox.Label fontSize="xs" color="fg.muted" fontWeight="normal" ms="1.5" whiteSpace="nowrap">Stage breaks</Checkbox.Label>
+                        </Checkbox.Root>
+                    )}
+                </HStack>
             </HStack>
             <ScoreGrid
                 ref={grid}

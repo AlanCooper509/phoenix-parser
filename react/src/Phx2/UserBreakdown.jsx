@@ -1,18 +1,20 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Center, Collapsible, Heading, HStack, NativeSelect, Separator, Spinner, Text, VStack } from '@chakra-ui/react';
-import { LuChevronDown } from 'react-icons/lu';
+import { Box, Center, Heading, HStack, NativeSelect, Separator, Spinner, Text, VStack } from '@chakra-ui/react';
 import { Chart } from 'react-chartjs-2';
 import 'chart.js/auto';
 
 import getChartsForLevel from '../API/chartlevel';
 import { userPath } from '../Helpers/paths';
 import { isCleared } from './pumbility';
-import ScoreGrid, { GRADE_COLUMN, gridRow, JACKET_COLUMN, LEVEL_COLUMN, PLATE_COLUMN, SCORE_COLUMN, SONG_COLUMN } from './scoreGrid';
-import { FilterButtons } from './UserOverview';
+import { GRADE_COLORS } from './shared';
+import ScoreGrid, {
+    GRADE_COLUMN, gridRow, JACKET_COLUMN, LEVEL_COLUMN, PLATE_COLUMN, SCORE_COLUMN, SONG_COLUMN, TableHeading, ViewLink,
+} from './scoreGrid';
+import { FILTER_STYLE, FilterButtons } from './UserOverview';
 
 // Breakdown: one level at a time (as on the Phoenix (1) Breakdown tab): how many of its charts are
-// cleared, how those clears spread across grades, and every chart at the level, remaining ones first.
+// cleared, how those clears spread across grades, and the level's charts, cleared or remaining.
 // The level is in the URL: /breakdown/25 (singles and doubles), /breakdown/s25, /breakdown/d25,
 // /breakdown/c2 (co-op for two).
 
@@ -41,13 +43,13 @@ function highestCleared(scores) {
 
 // Grade groups as on Phoenix 1's breakdown chart, highest first, colored like the grades themselves
 const GRADE_GROUPS = [
-    ['SSS / SSS+', ['sss', 'sss_p'], '#6bd8ff'],
-    ['SS / SS+', ['ss', 'ss_p'], '#efbf00'],
-    ['S / S+', ['s', 's_p'], '#efbf00'],
-    ['AAA / AAA+', ['aaa', 'aaa_p'], '#d9d7d4'],
-    ['AA / AA+', ['aa', 'aa_p'], '#c47a3c'],
-    ['A / A+', ['a', 'a_p'], '#c47a3c'],
-    ['B and below', ['b', 'c', 'd', 'f'], '#13aa7d'],
+    ['SSS / SSS+', ['sss', 'sss_p'], GRADE_COLORS.sss],
+    ['SS / SS+', ['ss', 'ss_p'], GRADE_COLORS.s],
+    ['S / S+', ['s', 's_p'], GRADE_COLORS.s],
+    ['AAA / AAA+', ['aaa', 'aaa_p'], GRADE_COLORS.aaa],
+    ['AA / AA+', ['aa', 'aa_p'], GRADE_COLORS.a],
+    ['A / A+', ['a', 'a_p'], GRADE_COLORS.a],
+    ['B and below', ['b', 'c', 'd', 'f'], GRADE_COLORS.b],
 ].reverse();
 const TEXT = '#a1a1aa';
 const GRID = 'rgba(255, 255, 255, 0.06)';
@@ -87,7 +89,7 @@ function LevelPicker({ type, level, levels, onChange }) {
             <NativeSelect.Root size="sm" w="auto">
                 <NativeSelect.Field
                     aria-label={type === 'c' ? 'Co-op players' : 'Level'} value={level} onChange={(e) => onChange(Number(e.target.value))}
-                    borderColor="phx2.emphasized" ps="2.5" pe="7"
+                    borderColor="phx2.emphasized" ps="2.5" pe="7" {...FILTER_STYLE}
                 >
                     {levels.map((l) => <option key={l} value={l}>{type === 'c' ? `x${l}` : `Lv.${l}`}</option>)}
                 </NativeSelect.Field>
@@ -100,25 +102,32 @@ function LevelPicker({ type, level, levels, onChange }) {
 const COLUMNS = [JACKET_COLUMN, LEVEL_COLUMN, SONG_COLUMN, GRADE_COLUMN, PLATE_COLUMN, { ...SCORE_COLUMN, sort: 'desc' }];
 
 // a collapsible table of charts under a heading with its count (the grid mounts once first opened)
-function ChartSection({ title, rows, defaultOpen, empty, gridKey }) {
+// Remaining or Cleared, one at a time: the open one's heading beside the other's name, which switches
+// to it (as on the Scores tab)
+const CHART_VIEWS = [['cleared', 'Cleared'], ['remaining', 'Remaining']];
+const EMPTY = { remaining: 'Every chart here is cleared.', cleared: 'No clears here yet.' };
+
+function ChartTables({ rows, gridKey }) {
+    const [view, setView] = useState('cleared');
+    const shown = { remaining: rows.filter((row) => !row.cleared), cleared: rows.filter((row) => row.cleared) }[view];
+    const at = CHART_VIEWS.findIndex(([value]) => value === view);
+    const links = (views) => views.map(([value, label]) => <ViewLink key={value} label={label} onClick={() => setView(value)} />);
     return (
-        <Collapsible.Root defaultOpen={defaultOpen} lazyMount>
-            <Collapsible.Trigger asChild>
-                <HStack as="button" gap="2" mb="3" cursor="pointer" textAlign="start" css={{ '&[data-state=open] svg': { transform: 'rotate(180deg)' } }}>
-                    <Heading as="h4" size="lg">
-                        {title} <Text as="span" color="fg.muted" fontWeight="normal">({rows.length})</Text>
+        <Box>
+            <Box mb="3">
+                <TableHeading nav={{ before: links(CHART_VIEWS.slice(0, at)), after: links(CHART_VIEWS.slice(at + 1)) }}>
+                    <Heading as="h4" fontSize={{ base: 'lg', sm: 'xl' }} lineHeight="1.2" whiteSpace="nowrap">
+                        {CHART_VIEWS[at][1]} <Text as="span" color="fg.muted" fontWeight="normal">({shown.length})</Text>
                     </Heading>
-                    <Box as={LuChevronDown} color="fg.muted" transition="transform 0.2s" />
-                </HStack>
-            </Collapsible.Trigger>
-            <Collapsible.Content>
-                {rows.length > 0 ? (
-                    <ScoreGrid key={gridKey} rowData={rows} columnDefs={COLUMNS} />
-                ) : (
-                    <Text color="fg.muted" mb="3">{empty}</Text>
-                )}
-            </Collapsible.Content>
-        </Collapsible.Root>
+                </TableHeading>
+            </Box>
+            {shown.length > 0 ? (
+                // a fresh grid per level and view
+                <ScoreGrid key={`${gridKey}|${view}`} rowData={shown} columnDefs={COLUMNS} />
+            ) : (
+                <Text color="fg.muted">{EMPTY[view]}</Text>
+            )}
+        </Box>
     );
 }
 
@@ -169,10 +178,8 @@ function UserBreakdown({ name, number, view, scores, counts }) {
     const average = cleared.length ? Math.round(cleared.reduce((sum, row) => sum + row.score, 0) / cleared.length) : null;
     const levelName = type === 'c' ? `Co-op x${level}` : `${{ all: 'Level', s: 'Single', d: 'Double' }[type]} ${level}`;
 
-    const remaining = rows.filter((row) => !row.cleared);
-
     return (
-        <VStack align="stretch" gap="6">
+        <VStack align="stretch" gap="2">
             <HStack justify="space-between" wrap="wrap" gap="3">
                 <FilterButtons
                     value={type} options={TYPES}
@@ -193,9 +200,7 @@ function UserBreakdown({ name, number, view, scores, counts }) {
                         <Text color="fg.muted" fontSize="sm" mt="1">{average ? `Average clear: ${average.toLocaleString()}` : 'No clears yet'}</Text>
                     </Box>
                     <GradeChart rows={rows} />
-                    {/* a fresh grid per level */}
-                    <ChartSection title="Remaining" rows={remaining} empty="Every chart here is cleared." gridKey={`${key}|${type}|${level}|remaining`} />
-                    <ChartSection title="Cleared" rows={cleared} defaultOpen empty="No clears here yet." gridKey={`${key}|${type}|${level}|cleared`} />
+                    <ChartTables rows={rows} gridKey={`${key}|${type}|${level}`} />
                 </>
             )}
         </VStack>

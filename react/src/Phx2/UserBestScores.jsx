@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Text } from '@chakra-ui/react';
 
 import { FilterButtons } from './UserOverview';
@@ -33,6 +33,18 @@ function PumbilityCell({ data }) {
     );
 }
 
+// Score / PUMBILITY, except for co-op charts, which have no PUMBILITY: there it's hidden and back
+// on Score
+function ValueToggle({ type, value, onChange }) {
+    const coop = type === 'c';
+    useEffect(() => {
+        if (coop && value !== 'score') {
+            onChange('score');
+        }
+    }, [coop, value, onChange]);
+    return coop ? null : <FilterButtons value={value} onChange={onChange} options={VALUES} />;
+}
+
 const COLUMNS = [
     JACKET_COLUMN,
     { ...LEVEL_COLUMN, ...VALUE_SORTS.score[0] },
@@ -41,12 +53,12 @@ const COLUMNS = [
     PLATE_COLUMN,
     { ...SCORE_COLUMN, ...VALUE_SORTS.score[1] },
     {
-        colId: 'pumbility', headerName: 'PUMBILITY', field: 'pumbility', width: 130, cellRenderer: PumbilityCell, hide: true,
+        colId: 'pumbility', headerName: 'PB', headerTooltip: 'PUMBILITY', field: 'pumbility', width: 120, cellRenderer: PumbilityCell, hide: true,
         ...NUMBER_FILTER_COLUMN,
     },
 ];
 
-function UserBestScores({ scores, summary }) {
+function UserBestScores({ scores, summary, nav }) {
     const grid = useRef(null);
     const [value, setValue] = useState('score');
 
@@ -57,20 +69,20 @@ function UserBestScores({ scores, summary }) {
     })), [scores, summary]);
 
     // Score or PUMBILITY: shows that column with its starting sort (so a hidden column never holds the sort)
-    function showValue(column) {
+    const showValue = useCallback((column) => {
         setValue(column);
         grid.current?.api?.applyColumnState({
             state: [...VALUES.map(([id]) => ({ colId: id, hide: id !== column })), ...VALUE_SORTS[column]],
             defaultState: { sort: null },
         });
-    }
+    }, []);
 
     return (
         <ScoreTable
             ref={grid}
-            title="Best Scores"
+            title="Best Scores" nav={nav}
             // the PUMBILITY cells' tooltips say what green means (one of the best 50)
-            toolbar={<FilterButtons value={value} onChange={showValue} options={VALUES} />}
+            toolbar={(type) => <ValueToggle type={type} value={value} onChange={showValue} />}
             failedToggle
             rowData={rows}
             columnDefs={COLUMNS}

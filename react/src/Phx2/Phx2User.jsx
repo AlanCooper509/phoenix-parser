@@ -24,28 +24,29 @@ const TABS = [['overview', 'Overview'], ['scores', 'Scores'], ['breakdown', 'Bre
 function Profile({ info }) {
     const tier = pumbilityTier(info.pumbility);
     return (
-        <HStack gap={{ base: '4', md: '6' }} align="center" flex="1" minW="0">
+        // sized down on phones (and kept compact on desktop) so the header stays short and nothing truncates
+        <HStack gap={{ base: '3', md: '5' }} align="center" flex="1" minW="0">
             {/* piugame avatars are 200x150: shown whole at 4:3 */}
             <Image
-                src={fromPiugameUrl(info.avatar)} alt="" w={{ base: '96px', sm: '112px', md: '160px' }} aspectRatio="4 / 3" flexShrink="0"
+                src={fromPiugameUrl(info.avatar)} alt="" w={{ base: '80px', sm: '104px', md: '136px' }} aspectRatio="4 / 3" flexShrink="0"
                 objectFit="contain" borderRadius="md" bg="bg.muted"
                 onError={(e) => { if (e.currentTarget.src !== info.avatar) e.currentTarget.src = info.avatar; }}
             />
-            <VStack align="start" gap="1" minW="0" flex="1">
-                <PlayerTitle title={info.title} fontSize={{ base: '16px', md: '20px' }} lineHeight="1.3" maxW="full" />
-                <Heading as="h1" fontFamily="'Oxanium', sans-serif" fontWeight="800" fontSize={{ base: '2xl', md: '4xl' }} lineHeight="1.1">
+            <VStack align="start" gap={{ base: '0.5', md: '1' }} minW="0" flex="1">
+                <PlayerTitle title={info.title} fontSize={{ base: '13px', sm: '15px', md: '18px' }} lineHeight="1.3" maxW="full" />
+                <Heading as="h1" fontFamily="'Oxanium', sans-serif" fontWeight="800" fontSize={{ base: 'xl', sm: '2xl', md: '3xl' }} lineHeight="1.1">
                     {info.player} <Text as="span" color="fg.muted">{info.number}</Text>
                 </Heading>
                 {/* pulled up past the empty space under the name's capitals, so it sits evenly between
                     the title and the PUMBILITY row */}
                 {info.pumbility && (
-                    <HStack gap="2" mt={{ base: '-1', md: '-1.5' }}>
-                        {tier.icon && <Image src={tier.icon} alt="" boxSize="36px" my="-1.5" ms="-1" />}
+                    <HStack gap={{ base: '1.5', md: '2' }} mt={{ base: '-0.5', md: '-1' }} minW="0" maxW="full">
+                        {tier.icon && <Image src={tier.icon} alt="" boxSize={{ base: '26px', md: '32px' }} my="-1" ms="-0.5" flexShrink="0" />}
                         {/* the total itself is in the PUMBILITY panel below (and on the PUMBILITY tab) */}
-                        {info.pumbility.tier && <TierName tier={info.pumbility.tier} />}
+                        {info.pumbility.tier && <TierName tier={info.pumbility.tier} fontSize={{ base: 'sm', md: 'md' }} />}
                     </HStack>
                 )}
-                <Text fontSize="sm" color="fg.muted" title={new Date(info.timestamp * 1000).toLocaleString()}>
+                <Text fontSize={{ base: 'xs', md: 'sm' }} color="fg.muted" title={new Date(info.timestamp * 1000).toLocaleString()}>
                     Last synced {timeAgo(info.timestamp)}
                 </Text>
             </VStack>
@@ -103,7 +104,7 @@ function Phx2User() {
         );
     } else {
         content = (
-            <VStack align="stretch" gap="8">
+            <VStack align="stretch" gap="2">
                 {/* syncing it again, in the top-right corner */}
                 <SyncPanel info={user.info} name={name} number={number} onSynced={setUser}>
                     <Profile info={user.info} />

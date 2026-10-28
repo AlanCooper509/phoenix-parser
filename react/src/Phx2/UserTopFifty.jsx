@@ -16,7 +16,8 @@ function PointsCell({ data }) {
     return <Text fontVariantNumeric="tabular-nums">{formatPumbility(data.points)}</Text>;
 }
 const TOP_FIFTY_COLUMNS = [
-    { headerName: '#', field: 'rank', width: 64, cellRenderer: RankCell, sort: 'asc', ...NUMBER_FILTER_COLUMN, floatingFilter: false },
+    // not sortable: the rows come in rank order, and clearing another column's sort returns to it
+    { headerName: '#', field: 'rank', width: 48, minWidth: 24, cellRenderer: RankCell, sortable: false },
     JACKET_COLUMN,
     LEVEL_COLUMN,
     SONG_COLUMN,
@@ -36,12 +37,12 @@ function topFifty(scores, values, type) {
         .map((score, i) => ({ ...gridRow(score), rank: i + 1, points: values.get(score) }));
 }
 
-function UserTopFifty({ scores, summary }) {
+function UserTopFifty({ scores, summary, nav }) {
     const [type, setType] = useState('all');
     const rows = useMemo(() => topFifty(scores, summary.valueOf, type), [scores, summary, type]);
     return (
         <ScoreTable
-            title={TITLES[type]} rowData={rows} columnDefs={TOP_FIFTY_COLUMNS}
+            title={TITLES[type]} nav={nav} rowData={rows} columnDefs={TOP_FIFTY_COLUMNS}
             types={TOP_FIFTY_TYPES} onTypeChange={setType}
             footer={rows.length < 50 && (
                 <Text fontSize="sm" color="fg.muted" mt="3">{rows.length} of 50 so far: clear more charts to fill the rest.</Text>

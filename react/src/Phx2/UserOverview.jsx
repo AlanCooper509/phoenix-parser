@@ -6,7 +6,8 @@ import 'chart.js/auto';
 import { stepballImg } from '../Helpers/assets';
 import { DOUBLE_MILESTONES, progressAlong, pumbilityProgress, SINGLE_MILESTONES, typePumbility } from './pumbility';
 import {
-    ExpBar, formatPumbility, Ladder, ladderPercent, PUMBILITY_LADDER, pumbilityTier, RankTag, TierName, TitleText, titleLadder, UnfilledFifty,
+    ExpBar, formatPumbility, GRADE_COLORS, Ladder, ladderPercent, PUMBILITY_LADDER, pumbilityTier, RankTag, TierName, TitleText,
+    titleLadder, UnfilledFifty,
 } from './shared';
 import { levelRows } from './stats';
 
@@ -19,13 +20,16 @@ const GREEN = 'rgb(4, 164, 35)';
 const TEXT = '#a1a1aa';
 const GRID = 'rgba(255, 255, 255, 0.06)';
 
+// one size for every toggle and select beside it (Overview, Scores, Breakdown): smaller on phones.
+// Set as styles: a responsive `size` doesn't take effect here.
+export const FILTER_STYLE = { h: { base: '8', sm: '9' }, fontSize: { base: 'xs', sm: 'sm' } };
+
 export function FilterButtons({ value, onChange, options = FILTERS }) {
     return (
-        // as tall as the level selects beside them
         <Group attached>
             {options.map(([key, label]) => (
                 <Button
-                    key={key} size="sm" colorPalette="phx2" variant={value === key ? 'solid' : 'outline'}
+                    key={key} size="sm" px={{ base: '1.5', sm: '3.5' }} {...FILTER_STYLE} colorPalette="phx2" variant={value === key ? 'solid' : 'outline'}
                     aria-pressed={value === key} onClick={() => onChange(key)}
                 >
                     {label}
@@ -50,6 +54,33 @@ const narrow = (context) => context.chart.width < 500;
 const tickFont = (context) => ({ size: narrow(context) ? 10 : 12 });
 
 const TYPE_NAMES = { both: 'Singles and Doubles', s: 'Singles', d: 'Doubles' };
+
+// faint lines across the chart where an average score reaches AAA (950k), S (970k) and SSS (990k),
+// in those grades' colors
+const GRADE_LINES = [[950000, GRADE_COLORS.aaa], [970000, GRADE_COLORS.s], [990000, GRADE_COLORS.sss]];
+const gradeLines = {
+    id: 'gradeLines',
+    beforeDatasetsDraw(chart) {
+        const { ctx, chartArea: { left, right }, scales: { score } } = chart;
+        ctx.save();
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 4]);
+        ctx.globalAlpha = 0.45;
+        for (const [value, color] of GRADE_LINES) {
+            if (value < score.min || value > score.max) {
+                continue;
+            }
+            const y = Math.round(score.getPixelForValue(value)) + 0.5;
+            ctx.strokeStyle = color;
+            ctx.beginPath();
+            ctx.moveTo(left, y);
+            ctx.lineTo(right, y);
+            ctx.stroke();
+        }
+        ctx.restore();
+    },
+};
+const CHART_PLUGINS = [gradeLines];
 
 // titled as on Phoenix (1): "NAME (Singles and Doubles)", so a screenshot of the chart stands on its
 // own (when it was synced sits under it, beside the level range)
@@ -114,7 +145,7 @@ function LevelChart({ rows, filter, info }) {
     };
     return (
         <Box h={{ base: '260px', md: '340px' }}>
-            <Chart type="bar" data={data} options={options} />
+            <Chart type="bar" data={data} options={options} plugins={CHART_PLUGINS} />
         </Box>
     );
 }
@@ -124,7 +155,7 @@ function LevelSelect({ label, value, levels, onChange }) {
         <NativeSelect.Root size="sm" w="auto">
             <NativeSelect.Field
                 aria-label={label} value={value} onChange={(e) => onChange(Number(e.target.value))}
-                borderColor="phx2.emphasized" ps="2.5" pe="7"
+                borderColor="phx2.emphasized" ps="2.5" pe="7" {...FILTER_STYLE}
             >
                 {levels.map((level) => <option key={level} value={level}>Lv.{level}</option>)}
             </NativeSelect.Field>
@@ -159,7 +190,7 @@ function LadderHero({ heading, rank, what, badge, value, progress, color, marker
                     {badge}
                 </HStack>
                 <Text
-                    fontFamily="'Oxanium', sans-serif" fontWeight="800" fontSize={{ base: '3xl', md: '4xl' }} lineHeight="1"
+                    fontFamily="'Oxanium', sans-serif" fontWeight="800" fontSize={{ base: '2xl', sm: '3xl', md: '4xl' }} lineHeight="1"
                     fontVariantNumeric="tabular-nums" flexShrink="0"
                 >
                     {formatPumbility(value)}
@@ -190,7 +221,8 @@ function RankLine({ rank, what }) {
     );
 }
 
-const HEADING_SIZE = { base: 'lg', md: 'xl' };
+// smaller on phones, where the heading shares a line with the value
+const HEADING_SIZE = { base: 'md', sm: 'lg', md: 'xl' };
 // the tier icons' size, the largest marker
 const HERO_MARKER_ROOM = 44;
 

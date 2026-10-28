@@ -47,10 +47,81 @@
     padding-right: 8px;
 }
 
+/* a right-aligned column drawn close to the next one (Grade, by Plate) */
+.phx2-root .phx2-grid .phx2-grid-near-next {
+    padding-right: 6px;
+}
+.phx2-root .phx2-grid-compact .phx2-grid-near-next {
+    padding-right: 2px;
+}
+
 /* sorting by level then score shows "1"/"2" order badges in the headers, which squeeze the narrow
    Level header to "L..."; the arrows alone are enough */
 .phx2-root .phx2-grid .ag-sort-order {
     display: none;
+}
+
+/* compact grids (phones; scoreGrid.jsx's COMPACT_WIDTH): smaller text, padding and images, so more
+   columns fit. !important where a column sets its own padding inline (Level, jacket). */
+.phx2-root .phx2-grid.phx2-grid-compact {
+    --ag-font-size: 12px;
+    --ag-cell-horizontal-padding: 6px;
+    --ag-header-height: 36px;
+}
+.phx2-root .phx2-grid-compact .ag-cell[col-id="levelNumber"],
+.phx2-root .phx2-grid-compact .phx2-grid-tight,
+.phx2-root .phx2-grid-compact .ag-floating-filter[aria-colindex="2"] {
+    padding-left: 4px !important;
+    padding-right: 4px !important;
+}
+/* text with a shorter form for compact grids (scoreGrid.jsx: "Stage break" / "Break") */
+.phx2-root .phx2-grid .phx2-grid-short,
+.phx2-root .phx2-grid-compact .phx2-grid-full {
+    display: none;
+}
+.phx2-root .phx2-grid-compact .phx2-grid-short {
+    display: inline;
+}
+
+/* the sort arrow's own spacing, tightened, so narrow headers ("#", "Lv.") keep their text */
+.phx2-root .phx2-grid-compact .ag-sort-indicator-icon {
+    padding-left: 2px;
+}
+.phx2-root .phx2-grid-compact .phx2-grid-jacket {
+    width: 56px;
+}
+.phx2-root .phx2-grid-compact .phx2-grid-ball {
+    width: 30px;
+    height: 30px;
+}
+.phx2-root .phx2-grid-compact .phx2-grid-grade {
+    height: 20px;
+}
+.phx2-root .phx2-grid-compact .phx2-grid-plate {
+    height: 15px;
+}
+
+/* compact paging: page size on the left, page controls on the right, one line. The "1 to 50 of 385"
+   range goes (the heading has the count), as does the "Page Size:" label beside its select. */
+.phx2-root .phx2-grid-compact .ag-paging-panel {
+    justify-content: space-between;
+    padding: 0 6px;
+    gap: 4px;
+}
+.phx2-root .phx2-grid-compact .ag-paging-row-summary-panel,
+.phx2-root .phx2-grid-compact .ag-paging-page-size .ag-label {
+    display: none;
+}
+.phx2-root .phx2-grid-compact .ag-paging-page-size,
+.phx2-root .phx2-grid-compact .ag-paging-page-summary-panel {
+    margin: 0;
+}
+.phx2-root .phx2-grid-compact .ag-paging-description {
+    white-space: nowrap;
+    margin: 0 2px;
+}
+.phx2-root .phx2-grid-compact .ag-paging-button {
+    margin: 0 2px;
 }
 
 /* a centered column header (Recently Played's Judgments) */

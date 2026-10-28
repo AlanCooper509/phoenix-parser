@@ -116,6 +116,10 @@ export function Phx2Layout({ children, width = PAGE_WIDTH, legacyLink = false })
     );
 }
 
+// grades' colors on charts, as on Phoenix 1's breakdown: SSS light blue, SS and S gold, AAA silver,
+// AA and A bronze, below that green
+export const GRADE_COLORS = { sss: '#6bd8ff', s: '#efbf00', aaa: '#d9d7d4', a: '#c47a3c', b: '#13aa7d' };
+
 // Player titles styled as on piugame.com's profile page: Oxanium, weight 900, a thin white outline
 // around a gradient fill (bright at the bottom, dark at the top) per color class col1..col9;
 // col0 is plain gray without the outline. Truncated to one line, with the full title on hover.
