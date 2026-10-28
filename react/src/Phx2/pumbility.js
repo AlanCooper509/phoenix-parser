@@ -31,6 +31,12 @@ function base(level) {
     return 130 + 5 * level + 5 * Math.max(0, level - 24);
 }
 
+// a grade's place from F (0) to SSS+ (15), a fail counting as the grade it reached; null if none
+export function gradeRank(grade) {
+    const passed = grade?.replace(/^x_/, '');
+    return passed in GRADE_INDEX ? GRADE_INDEX[passed] : null;
+}
+
 export function gradeLabel(grade) {
     const passed = grade?.replace(/^x_/, '');
     return GRADES[GRADE_INDEX[passed]]?.[1] || null;

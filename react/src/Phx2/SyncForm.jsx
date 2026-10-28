@@ -116,7 +116,7 @@ export function SyncForm({ name, number, onSynced }) {
         try {
             const result = await postSyncData('phx2', name.toUpperCase(), number, parsed);
             try {
-                localStorage.setItem('latestSync', JSON.stringify({ ...result.info, game: 'phx2' }));
+                localStorage.setItem('latestSyncPhx2', JSON.stringify({ ...result.info, game: 'phx2' }));
             } catch {
                 // no storage (private window): only the home page's "Welcome back" misses out
             }

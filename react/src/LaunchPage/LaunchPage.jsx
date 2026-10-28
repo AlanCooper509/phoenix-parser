@@ -1,5 +1,6 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useMemo} from 'react';
 import Snowfall from 'react-snowfall'
+import { Link } from 'react-router-dom';
 
 import SearchUser from "../SearchUser/SearchUser";
 import getUsers from "../API/users";
@@ -12,6 +13,7 @@ function LaunchPage() {
     const minWidth = 480;
     const game = useGame();
     const [users, setUsers] = useState([]);
+    const [filter, setFilter] = useState('');
     useEffect(() => {
         getUsers(game.id).then(setUsers).catch(() => setUsers([]));
     }, [game.id]);
@@ -37,9 +39,10 @@ function LaunchPage() {
         </>
     );
     
+    // Phoenix 2 syncs are saved under their own key now, but older ones were saved here too: skip those
     const latestSync = localStorage.getItem("latestSync");
-    if (latestSync) {
-        const latestInfo = JSON.parse(latestSync);
+    const latestInfo = latestSync ? JSON.parse(latestSync) : null;
+    if (latestInfo && latestInfo.game !== "phx2") {
         welcomeText = `Welcome back, ${latestInfo.player}!`
         starterText += " Your latest sync was:";
         latestSyncOutput = (
@@ -52,42 +55,15 @@ function LaunchPage() {
         newUserOutput = (<></>);
     }
 
-    let userlist_today = [];
-    let userlist_weekly = [];
-    let userlist_remaining = [];
-    for (const entry of users) {
-        if (entry.info.timestamp > Date.now()/1000 - 60*60*24) {
-            userlist_today.push(
-                <ProfileMini
-                    info={entry.info}
-                    key={entry.info.player + entry.info.number}
-                />
-            );
-        } else if (entry.info.timestamp > Date.now()/1000 - 60*60*24*7) {
-            userlist_weekly.push(
-                <ProfileMini
-                    info={entry.info}
-                    key={entry.info.player + entry.info.number}
-                />
-            );
-        } else {
-            userlist_remaining.push(
-                <ProfileMini
-                    info={entry.info}
-                    key={entry.info.player + entry.info.number}
-                />
-            );            
-        }
-    }
-
+    // Phoenix 1 is past end of life, so one list of every profile (most recently synced first)
+    // filtered by name, instead of separate columns by sync date
+    const shownUsers = useMemo(() => {
+        const query = filter.replace(/\s+/g, '').toUpperCase();
+        return users
+            .filter((entry) => !query || (entry.info.player + entry.info.number).includes(query))
+            .sort((a, b) => (b.info.timestamp || 0) - (a.info.timestamp || 0));
+    }, [users, filter]);
     const spinner = <div className="mb-4"><div className="spinner-border spinner-border-sm" role="status"><span className="sr-only"></span></div> Loading...</div>;
-    const dailyUsers = users.length > 0 ? userlist_today : spinner;
-    const weeklyUsers = users.length > 0 ? userlist_weekly : spinner;
-    const remainingUsers = users.length > 0 ? userlist_remaining : spinner;
-
-    const dailyUserCount = users.length > 0 ? `(${userlist_today.length})` : '';
-    const weeklyUserCount = users.length > 0 ? `(${userlist_weekly.length})` : '';
-    const remainingUserCount = users.length > 0 ? `(${userlist_remaining.length})` : '';
     const totalUserCount = users.length > 0 ? `(${users.length})` : '';
 
     let snow = <></>
@@ -116,6 +92,7 @@ function LaunchPage() {
                     </ul>
                     <li className="ms-4 mt-3"><b>Recent Updates</b></li>
                     <ul>
+                        <li>(10/27/26) <Link to="/" className="legacy-link">Phoenix 2</Link> is now the main site at piutracker.app. This Phoenix 1 tracker stays here as a legacy version.</li>
                         <li>(07/02/26) This will continue to sync with phoenix.piugame.com for now -- stay tuned for Phoenix 2 integration soon! </li>
                         <li>(04/05/24) Added support for 1948 Lv.?? as a Lv.29 chart, (but no clue on how it would get parsed yet!) </li>
                         <li>(12/01/24) Safari/iPhone users rejoice ~ text sizing issues have been tweaked, among some other formatting QoL changes</li>
@@ -126,28 +103,24 @@ function LaunchPage() {
                 </ul>
                 <hr className="mt-5"/>
             </div>
-            <h4 className="ms-2 mt-4">User Database {totalUserCount}</h4>
-            <div className="container">
-                <div className="row">
-                    <div className="col-xl-4 mt-3">
-                        <h5 className="ms-2">Last 24 Hours {dailyUserCount}</h5>
-                        <div className="container">
-                            {dailyUsers}
-                        </div>
+            <div className="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-4 mx-2">
+                <h4 className="mb-0">User Database {totalUserCount}</h4>
+                <input
+                    type="text" className="form-control" style={{maxWidth: "280px"}} placeholder="Filter by name"
+                    value={filter} onChange={(e) => setFilter(e.target.value)} aria-label="Filter users by name"
+                />
+            </div>
+            <div className="container mt-3">
+                {users.length === 0 ? spinner : (
+                    // columns sized to the cards themselves (350px, their narrowest), so the gaps between them
+                    // stay even at any width (Bootstrap columns left strips beside, or overflow under, them)
+                    <div className="user-grid">
+                        {shownUsers.map((entry) => (
+                            <ProfileMini info={entry.info} key={entry.info.player + entry.info.number}/>
+                        ))}
+                        {shownUsers.length === 0 && <p className="ms-2 mt-3 text-muted">No users match that name.</p>}
                     </div>
-                    <div className="col-xl-4 mt-3">
-                        <h5 className="ms-2">Last 7 Days {weeklyUserCount}</h5>
-                        <div className="container">
-                            {weeklyUsers}
-                        </div>
-                    </div>
-                    <div className="col-xl-4 mt-3">
-                        <h5 className="ms-2">Remaining Profiles {remainingUserCount}</h5>
-                        <div className="container">
-                            {remainingUsers}
-                        </div>
-                    </div>
-                </div>
+                )}
             </div>
             <hr className="mt-5"/>
         </div>

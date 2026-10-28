@@ -11,15 +11,14 @@ import { TAB_SIZES, WIDE_PAGE_WIDTH, Phx2Layout, PhoneShort, PlayerTitle, pumbil
 import { pumbilitySummary } from './stats';
 import UserOverview from './UserOverview';
 import UserPumbility from './UserPumbility';
-import UserBestScores from './UserBestScores';
-import UserRecent from './UserRecent';
+import UserScores from './UserScores';
 import SyncPanel, { SyncForm } from './SyncForm';
 
 // PROTOTYPE: a player's Phoenix 2 page at /phx2/user/NAME/NUM(/tab), from their latest sync.
 // The URL holds the tab, so back/forward switch tabs as on the Phoenix (1) user page. Only the open
 // tab is rendered, so each mounts fresh when opened and its chart and bars animate in again.
 // [value, label, label on phones]
-const TABS = [['overview', 'Overview'], ['scores', 'Best Scores', 'Scores'], ['recent', 'Recently Played', 'Recent'], ['pumbility', 'PUMBILITY']];
+const TABS = [['overview', 'Overview'], ['scores', 'Scores'], ['pumbility', 'PUMBILITY']];
 
 function Profile({ info }) {
     const tier = pumbilityTier(info.pumbility);
@@ -54,8 +53,14 @@ function Profile({ info }) {
 }
 
 function Phx2User() {
-    const { name, number, tab = 'overview' } = useParams();
+    const { name, number, tab = 'overview', view } = useParams();
     const navigate = useNavigate();
+    // Recently Played was its own tab before it moved under Scores
+    useEffect(() => {
+        if (tab === 'recent') {
+            navigate(userPath('phx2', name, number, 'scores/recent'), { replace: true });
+        }
+    }, [tab, name, number, navigate]);
     const [user, setUser] = useState(null);
     const [status, setStatus] = useState('loading');
     const [counts, setCounts] = useState(null);
@@ -117,10 +122,7 @@ function Phx2User() {
                         {tab === 'overview' && <UserOverview info={user.info} scores={user.scores} counts={counts} summary={summary} />}
                     </Tabs.Content>
                     <Tabs.Content value="scores" pt="6">
-                        {tab === 'scores' && <UserBestScores scores={user.scores} summary={summary} />}
-                    </Tabs.Content>
-                    <Tabs.Content value="recent" pt="6">
-                        {tab === 'recent' && <UserRecent recents={user.recents || []} />}
+                        {tab === 'scores' && <UserScores name={name} number={number} view={view} user={user} summary={summary} />}
                     </Tabs.Content>
                     <Tabs.Content value="pumbility" pt="6">
                         {tab === 'pumbility' && <UserPumbility scores={user.scores} counts={counts} summary={summary} pumbility={user.pumbility} />}

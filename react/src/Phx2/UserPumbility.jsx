@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { Box, Heading, HStack, Image, Table, Text, VStack } from '@chakra-ui/react';
 
 import { ChartBadge, ExpBar, formatPumbility, pumbilityTier, TierName } from './shared';
-import { gradeLabel, PLATE_NAMES, pumbilityProgress } from './pumbility';
+import { pumbilityProgress } from './pumbility';
 import { newChartTargets } from './stats';
 
 // PUMBILITY: where a player's total comes from and what it takes for a chart to count. Values use the Phoenix 2 formula (see pumbility.js).
@@ -115,45 +115,8 @@ function NewCharts({ targets }) {
     );
 }
 
-// piugame's own best-50 list from the sync (song "Name - Artist", its grade, plate and points)
-function BestFifty({ entries }) {
-    return (
-        <Table.ScrollArea>
-            <Table.Root size="sm" variant="line" interactive>
-                <Table.Header>
-                    <Table.Row>
-                        <Table.ColumnHeader w="3ch">#</Table.ColumnHeader>
-                        <Table.ColumnHeader>Chart</Table.ColumnHeader>
-                        <Table.ColumnHeader>Grade</Table.ColumnHeader>
-                        <Table.ColumnHeader textAlign="end">Points</Table.ColumnHeader>
-                    </Table.Row>
-                </Table.Header>
-                <Table.Body>
-                    {entries.map((entry, i) => (
-                        <Table.Row key={`${entry.jacket}${entry.type}${entry.level}`}>
-                            <Table.Cell color="fg.muted" fontVariantNumeric="tabular-nums">{i + 1}</Table.Cell>
-                            <Table.Cell maxW="0" w="60%">
-                                <HStack gap="2" minW="0">
-                                    <ChartBadge type={entry.type} level={entry.level} flexShrink="0" />
-                                    <Text truncate title={entry.song}>{entry.song}</Text>
-                                </HStack>
-                            </Table.Cell>
-                            <Table.Cell whiteSpace="nowrap" title={PLATE_NAMES[entry.plate]}>
-                                {gradeLabel(entry.grade)} <Text as="span" color="fg.muted" fontSize="xs">{entry.plate?.toUpperCase()}</Text>
-                            </Table.Cell>
-                            <Table.Cell textAlign="end" fontVariantNumeric="tabular-nums">{formatPumbility(entry.points)}</Table.Cell>
-                        </Table.Row>
-                    ))}
-                </Table.Body>
-            </Table.Root>
-        </Table.ScrollArea>
-    );
-}
-
 function UserPumbility({ scores, counts, summary, pumbility }) {
     const targets = useMemo(() => (counts ? newChartTargets(scores, counts, summary.floor) : []), [scores, counts, summary]);
-    // piugame pads its best-50 list with uncleared plays worth 0 when fewer than 50 charts count
-    const counting = useMemo(() => (pumbility?.entries || []).filter((entry) => entry.points > 0), [pumbility]);
 
     return (
         <VStack align="stretch" gap="10">
@@ -177,14 +140,6 @@ function UserPumbility({ scores, counts, summary, pumbility }) {
                 </Section>
             )}
 
-            {counting.length > 0 && (
-                <Section
-                    title="Your best 50"
-                    description={counting.length < 50 ? `${counting.length} of 50 so far: clear more charts to fill the rest.` : undefined}
-                >
-                    <BestFifty entries={counting} />
-                </Section>
-            )}
         </VStack>
     );
 }

@@ -117,7 +117,8 @@ function TabLabel({ long, short }) {
 // whoever last synced from this browser (Phoenix 1 or 2): { player, number: "#7085", ... } or null
 function latestSync() {
     try {
-        const latest = JSON.parse(localStorage.getItem('latestSync'));
+        // a Phoenix 2 sync, else the Phoenix (1) one (same player, so it still finds their Phoenix 2 page)
+        const latest = JSON.parse(localStorage.getItem('latestSyncPhx2') || localStorage.getItem('latestSync'));
         return latest?.player ? latest : null;
     } catch {
         // no storage (private window) or an unreadable entry
@@ -181,7 +182,7 @@ function Phx2Home() {
     }, [users, search, sortBy, now]);
 
     return (
-        <Phx2Layout>
+        <Phx2Layout legacyLink>
 
             <Container css={PAGE_WIDTH} px={{ base: '4', md: '6' }} py={{ base: '6', md: '10' }}>
                 <VStack align="stretch" gap="8">

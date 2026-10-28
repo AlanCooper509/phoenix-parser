@@ -38,3 +38,22 @@
     --ag-checkbox-checked-color: #04a423;
     --ag-wrapper-border-radius: 8px;
 }
+
+/* the Level column's header and filter, as tight as its cells (scoreGrid.jsx). The filter row's cell
+   doesn't take the column's headerClass or col-id, only its position: Level is 2nd in both grids. */
+.phx2-root .phx2-grid .phx2-grid-tight,
+.phx2-root .phx2-grid .ag-floating-filter[aria-colindex="2"] {
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
+/* sorting by level then score shows "1"/"2" order badges in the headers, which squeeze the narrow
+   Level header to "L..."; the arrows alone are enough */
+.phx2-root .phx2-grid .ag-sort-order {
+    display: none;
+}
+
+/* a centered column header (Recently Played's Judgments) */
+.phx2-root .phx2-grid .phx2-grid-center .ag-header-cell-label {
+    justify-content: center;
+}

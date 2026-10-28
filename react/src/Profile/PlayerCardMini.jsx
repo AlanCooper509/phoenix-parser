@@ -17,7 +17,7 @@ function PlayerCardMini({info}) {
             />
         </div>
         <div className="Game-info-mini">
-            <div className={titleClasses}>
+            <div className={titleClasses} title={info.title.text}>
                 {info.title.text}
             </div>
             <div className="Game-id-mini">

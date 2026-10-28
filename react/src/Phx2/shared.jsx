@@ -9,6 +9,9 @@ import { pumbilityImg, songImg } from '../Helpers/assets';
 import system from './theme';
 import './Phx2.css';
 
+// Phoenix 2's styles stay in the page once loaded: Phoenix (1) pages check this and reload (App.jsx)
+window.phx2StylesLoaded = true;
+
 // piugame.com's text font, loaded only once a Phoenix 2 page does (Oxanium loads in index.html)
 const PRETENDARD_CSS = 'https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css';
 if (!document.querySelector(`link[href="${PRETENDARD_CSS}"]`)) {
@@ -76,7 +79,8 @@ function Toasts() {
     );
 }
 
-export function Phx2Layout({ children, width = PAGE_WIDTH }) {
+// `legacyLink`: the header's link to the Phoenix 1 (legacy) site, shown on the home page only
+export function Phx2Layout({ children, width = PAGE_WIDTH, legacyLink = false }) {
     return (
         <ChakraProvider value={system}>
             <Theme appearance="dark" colorPalette="phx2">
@@ -92,9 +96,12 @@ export function Phx2Layout({ children, width = PAGE_WIDTH }) {
                                         <PhoneShort long="PHOENIX 2" short="PHX2" />
                                     </Heading>
                                 </HStack>
-                                <Link asChild fontSize="sm" color="fg.muted" whiteSpace="nowrap">
-                                    <RouterLink to="/phx1"><PhoneShort long="Phoenix 1 (Legacy)" short="PHX1" /></RouterLink>
-                                </Link>
+                                {/* a full page load, not an in-app link: see LegacyPage in App.jsx */}
+                                {legacyLink && (
+                                    <Link href="/phx1" fontSize="sm" color="fg.muted" whiteSpace="nowrap">
+                                        <PhoneShort long="Phoenix 1 (Legacy)" short="PHX1" />
+                                    </Link>
+                                )}
                             </Flex>
                         </Container>
                     </Box>
