@@ -2,7 +2,9 @@ import 'dotenv/config';
 
 import getObjectStorageClient from './os_client.js';
 
-async function readJsonFromObjectStorage(objectName) {
+// The parsed JSON, or { error }. With `withETag`, { json, eTag } instead: the object's version, for a
+// conditional upload (uploadObjectToObjectStorage's ifMatch) that fails if it changed since.
+async function readJsonFromObjectStorage(objectName, { withETag = false } = {}) {
     const client = getObjectStorageClient();
 
     try {
@@ -22,7 +24,7 @@ async function readJsonFromObjectStorage(objectName) {
             chunks.push(chunk);
         }
         const jsonObject = JSON.parse(Buffer.concat(chunks).toString("utf-8"));
-        return jsonObject;
+        return withETag ? { json: jsonObject, eTag: getObjectResponse.eTag } : jsonObject;
     } catch (error) {
         return {
             error: {
