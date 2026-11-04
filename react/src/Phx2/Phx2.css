@@ -40,11 +40,24 @@
 }
 
 /* the Level column's header and filter, as tight as its cells (scoreGrid.jsx). The filter row's cell
-   doesn't take the column's headerClass or col-id, only its position: Level is 2nd in both grids. */
+   doesn't take the column's headerClass or col-id, and columns can be moved: Level's is found as the
+   one with its filter button hidden (the other cell without a filter, the jacket's, is empty). */
 .phx2-root .phx2-grid .phx2-grid-tight,
-.phx2-root .phx2-grid .ag-floating-filter[aria-colindex="2"] {
+.phx2-root .phx2-grid .ag-floating-filter:has(.ag-floating-filter-button.ag-hidden) {
     padding-left: 8px;
     padding-right: 8px;
+}
+
+/* every cell's content centered in the row: the grid's own line height follows its default row height,
+   not ours, leaving plain text (song, score) above the images beside it. Full width, so long songs are
+   still cut short and centered text stays centered. */
+.phx2-root .phx2-grid .ag-cell {
+    display: flex;
+    align-items: center;
+}
+.phx2-root .phx2-grid .ag-cell > * {
+    width: 100%;
+    min-width: 0;
 }
 
 /* a right-aligned column drawn close to the next one (Grade, by Plate) */
@@ -70,10 +83,22 @@
 }
 .phx2-root .phx2-grid-compact .ag-cell[col-id="levelNumber"],
 .phx2-root .phx2-grid-compact .phx2-grid-tight,
-.phx2-root .phx2-grid-compact .ag-floating-filter[aria-colindex="2"] {
+.phx2-root .phx2-grid-compact .ag-floating-filter:has(.ag-floating-filter-button.ag-hidden) {
     padding-left: 4px !important;
     padding-right: 4px !important;
 }
+/* the narrowest grids (scoreGrid.jsx's TINY_WIDTH): headers keep their text beside the sort arrow, and the
+   thin number columns theirs */
+.phx2-root .phx2-grid-tiny .ag-header-cell {
+    padding-left: 2px !important;
+    padding-right: 2px !important;
+}
+.phx2-root .phx2-grid-tiny .ag-cell[col-id="rank"],
+.phx2-root .phx2-grid-tiny .ag-cell[col-id="points"] {
+    padding-left: 3px;
+    padding-right: 3px;
+}
+
 /* text with a shorter form for compact grids (scoreGrid.jsx: "Stage break" / "Break") */
 .phx2-root .phx2-grid .phx2-grid-short,
 .phx2-root .phx2-grid-compact .phx2-grid-full {

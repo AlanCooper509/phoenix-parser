@@ -135,11 +135,12 @@ function LevelPicker({ type, level, levels, onChange }) {
     );
 }
 
-const COLUMNS = [JACKET_COLUMN, LEVEL_COLUMN, SONG_COLUMN, GRADE_COLUMN, PLATE_COLUMN, { ...SCORE_COLUMN, sort: 'desc' }];
+// no sort to start: the rows come most recently attempted first
+const COLUMNS = [JACKET_COLUMN, LEVEL_COLUMN, SONG_COLUMN, GRADE_COLUMN, PLATE_COLUMN, SCORE_COLUMN];
 
 // a collapsible table of charts under a heading with its count (the grid mounts once first opened)
 // Remaining or Cleared, one at a time: the open one's heading beside the other's name, which switches
-// to it (as on the Scores tab)
+// to it (as with Overview's score tables)
 const CHART_VIEWS = [['cleared', 'Cleared'], ['remaining', 'Remaining']];
 const EMPTY = { remaining: 'Every chart here is cleared.', cleared: 'No clears here yet.' };
 
@@ -199,20 +200,21 @@ function UserBreakdown({ name, number, view, scores, counts }) {
     }, [key, lists]);
     const list = lists[key];
 
-    // every chart at the level with the player's best on it, if any
+    // every chart at the level with the player's best on it, if any, in the order of their scores (most
+    // recently attempted first), then the charts never played
     const rows = useMemo(() => {
         if (!list || list.error) {
             return [];
         }
-        const best = new Map(scores.map((s) => [chartKey(s.jacket, s.type, s.level), s]));
+        const best = new Map(scores.map((s, i) => [chartKey(s.jacket, s.type, s.level), { ...s, attemptOrder: i }]));
         const charts = type === 'c'
             ? (list[`n${level}`] || [])
             : [...(type !== 'd' ? list.s || [] : []), ...(type !== 's' ? list.d || [] : [])];
         return charts.map((chart) => {
             const jacket = chart.bg_img?.match(/([0-9a-f]{32})/)?.[1];
             const score = best.get(chartKey(jacket, chart.type, chart.level));
-            return gridRow(score || { name: chart.name, jacket, type: chart.type, level: chart.level, score: null, grade: null, plate: null, unplayed: true });
-        });
+            return gridRow(score || { name: chart.name, jacket, type: chart.type, level: chart.level, score: null, grade: null, plate: null, unplayed: true, attemptOrder: scores.length });
+        }).sort((a, b) => a.attemptOrder - b.attemptOrder);
     }, [list, scores, type, level]);
 
     const cleared = rows.filter((row) => row.cleared);

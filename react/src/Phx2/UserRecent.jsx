@@ -74,7 +74,7 @@ const COLUMNS = [
     { ...SCORE_COLUMN, colId: 'scorePlayed', cellRenderer: ScorePlayedCell, hide: true },
 ];
 
-function UserRecent({ recents, nav }) {
+function UserRecent({ recents, nav, type, onCountChange }) {
     const rows = useMemo(() => recents.map((play) => ({ ...gridRow(play), time: Date.parse(play.date) || null })), [recents]);
 
     if (!recents.length) {
@@ -94,7 +94,7 @@ function UserRecent({ recents, nav }) {
         );
     }
     // laid out like Best Scores, but showing fails and STAGE BREAKs to start: they're plays too
-    return <ScoreTable title="Recently Played" nav={nav} failedToggle failedShown rowData={rows} columnDefs={COLUMNS} fold={FOLD} />;
+    return <ScoreTable title="Recently Played" shortTitle="Recents" nav={nav} type={type} onCountChange={onCountChange} failedToggle failedShown rowData={rows} columnDefs={COLUMNS} fold={FOLD} />;
 }
 
 export default UserRecent;

@@ -37,6 +37,11 @@ export function gradeRank(grade) {
     return passed in GRADE_INDEX ? GRADE_INDEX[passed] : null;
 }
 
+// the grade a score (or an average of scores) falls in
+export function gradeForScore(score) {
+    return GRADES.findLast(([, , start]) => score >= start)[0];
+}
+
 export function gradeLabel(grade) {
     const passed = grade?.replace(/^x_/, '');
     return GRADES[GRADE_INDEX[passed]]?.[1] || null;
@@ -140,6 +145,33 @@ export const DOUBLE_MILESTONES = titleMilestones(
     },
     { name: 'DOUBLE MASTER', value: 19500 },
 );
+
+// CO-OP Rating: 80 x (grade + plate) for every co-op chart cleared, whatever its player count, with no
+// best-fifty limit. Not published: worked out from synced scores, and checked against piugame's own
+// number for one player (825.44 exactly) and every synced player's [CO-OP] titles.
+const COOP_BASE = 80;
+
+// what a co-op play adds to it: nothing unless cleared
+export function coopValue(score) {
+    return isCleared(score) ? Math.floor(COOP_BASE * (DOUBLE_GRADE[score.grade] + (DOUBLE_PLATE[score.plate] || 0)) * 100 + 1e-6) / 100 : 0;
+}
+
+export function coopRating(scores) {
+    const total = scores.filter((s) => s.type === 'c').reduce((sum, s) => sum + coopValue(s), 0);
+    return Math.round(total * 100) / 100;
+}
+
+// piugame's [CO-OP] titles (my_page/title.php), with the title color it shows each in. `rank` groups
+// them along the ladder, a pair per color.
+export const COOP_MILESTONES = [
+    ['LV.1', 1000, 1, 'LV.1 - 2'], ['LV.2', 2000, 1, 'LV.1 - 2'], ['LV.3', 3000, 2, 'LV.3 - 4'], ['LV.4', 4000, 2, 'LV.3 - 4'],
+    ['LV.5', 5000, 3, 'LV.5 - 6'], ['LV.6', 6000, 3, 'LV.5 - 6'], ['LV.7', 7000, 4, 'LV.7 - 8'], ['LV.8', 8000, 4, 'LV.7 - 8'],
+    ['LV.9', 9000, 5, 'LV.9 - 10'], ['LV.10', 10000, 5, 'LV.9 - 10'], ['ADVANCED', 12000, 6, 'ADVANCED - EXPERT'],
+    ['EXPERT', 14000, 6, 'ADVANCED - EXPERT'], ['MASTER', 16000, 7],
+].map(([level, value, color, rank]) => {
+    const name = `[CO-OP] ${level}`;
+    return { name, value, rank, title: { text: name, color: `col${color}` } };
+});
 
 // Where a value sits between the milestone reached (null below the first) and the next one (null
 // past the last), as a percentage of the way there.

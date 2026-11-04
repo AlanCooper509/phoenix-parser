@@ -1,13 +1,15 @@
-import { useMemo, useState } from 'react';
-import { Box, Button, Group, HStack, NativeSelect, Separator, SimpleGrid, Text, VStack } from '@chakra-ui/react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Box, Button, Flex, Group, HStack, Image, NativeSelect, Progress, Separator, SimpleGrid, Text, VStack } from '@chakra-ui/react';
 import { Chart } from 'react-chartjs-2';
-import 'chart.js/auto';
+import ChartJS from 'chart.js/auto';
 
-import { stepballImg } from '../Helpers/assets';
-import { DOUBLE_MILESTONES, progressAlong, pumbilityProgress, SINGLE_MILESTONES, typePumbility } from './pumbility';
+import { chartBallImg, gradeImg, stepballImg } from '../Helpers/assets';
 import {
-    ExpBar, formatPumbility, GRADE_COLORS, Ladder, ladderPercent, PUMBILITY_LADDER, pumbilityTier, RankTag, TierName, TitleText,
-    titleLadder, UnfilledFifty,
+    COOP_MILESTONES, coopRating, DOUBLE_MILESTONES, gradeForScore, gradeLabel, progressAlong, pumbilityProgress, SINGLE_MILESTONES, typePumbility,
+} from './pumbility';
+import {
+    ExpBar, FILL_TRANSITION, formatPumbility, GRADE_COLORS, Ladder, ladderPercent, PUMBILITY_LADDER, pumbilityTier, RankTag, TierName, TitleText,
+    TINY, titleLadder, UnfilledFifty,
 } from './shared';
 import { levelRows } from './stats';
 
@@ -16,11 +18,15 @@ import { levelRows } from './stats';
 // average score of those clears).
 
 const FILTERS = [['both', 'All'], ['s', 'Singles'], ['d', 'Doubles']];
+const OVERVIEW_FILTERS = [...FILTERS, ['c', 'Co-op']];
 const GREEN = 'rgb(4, 164, 35)';
+const GREEN_FILL = 'rgba(4, 164, 35, 0.55)';
+// stronger than the chart's bars: there's far less of a thin bar to show the color
+const COOP_BAR_FILL = 'rgba(4, 164, 35, 0.7)';
 const TEXT = '#a1a1aa';
 const GRID = 'rgba(255, 255, 255, 0.06)';
 
-// one size for every toggle and select beside it (Overview, Scores, Breakdown): smaller on phones.
+// one size for every toggle and select beside it (Overview, score tables, Breakdown): smaller on phones.
 // Set as styles: a responsive `size` doesn't take effect here.
 export const FILTER_STYLE = { h: { base: '8', sm: '9' }, fontSize: { base: 'xs', sm: 'sm' } };
 
@@ -53,6 +59,14 @@ const SCORE_AXIS_MIN = 900000;
 const narrow = (context) => context.chart.width < 500;
 const tickFont = (context) => ({ size: narrow(context) ? 10 : 12 });
 
+// the chart's title, and the one over Co-op's rows in its place
+const TITLE = { color: '#e4e4e7', size: 16, weight: '600', gap: 8 };
+// the chart's, and Co-op's rows in its place, so switching between them doesn't move the page
+const CHART_HEIGHT = { base: '260px', md: '340px' };
+// on phones there's nothing under Co-op's rows (no date, or level range), so they also take that line's
+// height and the gap above it
+const COOP_HEIGHT = { base: '308px', sm: CHART_HEIGHT.base, md: CHART_HEIGHT.md };
+const LEGEND_SHORT = { 'Average score': 'Avg', '% cleared': 'Clear %' };
 const TYPE_NAMES = { both: 'Singles and Doubles', s: 'Singles', d: 'Doubles' };
 
 // faint lines across the chart where an average score reaches AAA (950k), S (970k) and SSS (990k),
@@ -85,6 +99,21 @@ const CHART_PLUGINS = [gradeLines];
 // titled as on Phoenix (1): "NAME (Singles and Doubles)", so a screenshot of the chart stands on its
 // own (when it was synced sits under it, beside the level range)
 function LevelChart({ rows, filter, info }) {
+    // the tab's panel is still hidden as this mounts on opening the tab: created there, the chart would start
+    // at no size, and everything in it would animate out from its top-left corner once the panel shows
+    const box = useRef(null);
+    const [sized, setSized] = useState(false);
+    useEffect(() => {
+        const observer = new ResizeObserver(([{ contentRect }]) => {
+            if (contentRect.width > 0) {
+                setSized(true);
+                observer.disconnect();
+            }
+        });
+        observer.observe(box.current);
+        return () => observer.disconnect();
+    }, []);
+
     const averages = rows.map((r) => r.average).filter(Boolean);
     const low = Math.min(SCORE_AXIS_MIN, ...averages.map((a) => Math.floor(a / 50000) * 50000));
     const data = {
@@ -101,7 +130,7 @@ function LevelChart({ rows, filter, info }) {
             },
             {
                 type: 'bar', label: '% cleared', data: rows.map((r) => Math.round(r.percent * 10) / 10),
-                yAxisID: 'percent', backgroundColor: 'rgba(4, 164, 35, 0.55)', borderColor: GREEN, borderWidth: 1,
+                yAxisID: 'percent', backgroundColor: GREEN_FILL, borderColor: GREEN, borderWidth: 1,
                 borderRadius: 2, order: 1,
             },
         ],
@@ -112,9 +141,17 @@ function LevelChart({ rows, filter, info }) {
         plugins: {
             title: {
                 display: true, text: `${info.player} (${TYPE_NAMES[filter]})`,
-                color: '#e4e4e7', font: { size: 16, weight: '600' }, padding: { top: 0, bottom: 8 },
+                color: TITLE.color, font: { size: TITLE.size, weight: TITLE.weight }, padding: { top: 0, bottom: TITLE.gap },
             },
-            legend: { labels: { color: TEXT, boxWidth: 12 } },
+            legend: {
+                labels: {
+                    color: TEXT, boxWidth: 12,
+                    // shorter names on narrow charts
+                    generateLabels: (chart) => ChartJS.defaults.plugins.legend.labels.generateLabels(chart).map((item) => (
+                        chart.width < 500 ? { ...item, text: LEGEND_SHORT[item.text] } : item
+                    )),
+                },
+            },
             tooltip: {
                 callbacks: {
                     label: (item) => {
@@ -144,9 +181,93 @@ function LevelChart({ rows, filter, info }) {
         },
     };
     return (
-        <Box h={{ base: '260px', md: '340px' }}>
-            <Chart type="bar" data={data} options={options} plugins={CHART_PLUGINS} />
+        <Box ref={box} h={CHART_HEIGHT}>
+            {sized && <Chart type="bar" data={data} options={options} plugins={CHART_PLUGINS} />}
         </Box>
+    );
+}
+
+// on very small screens the rows keep just the count and average, the bar already showing the percentage
+const HIDE_WHEN_TINY = { [TINY]: { display: 'none' } };
+
+// a step ball and bar, with how much is cleared and the average of those clears. On phones the numbers
+// go under the bar.
+function CoopRow({ ball, name, size = 'sm', filled, cleared, total, percent, average }) {
+    const grade = average && gradeForScore(average);
+    return (
+        <HStack gap={{ base: '2.5', md: '3' }}>
+            <Image src={ball} alt={name} title={name} boxSize={{ base: '34px', md: '40px' }} flexShrink="0" />
+            <Flex flex="1" minW="0" direction={{ base: 'column', md: 'row' }} align={{ base: 'stretch', md: 'center' }} columnGap="4" rowGap="1.5">
+                <Progress.Root flex="1" minW="0" size={size} value={filled ? percent : 0} aria-label={`${name} cleared`}>
+                    <Progress.Track bg="bg.emphasized" borderRadius="full">
+                        {/* no border on an empty bar, where it would draw as a green dot */}
+                        <Progress.Range bg={COOP_BAR_FILL} borderWidth={filled && percent > 0 ? '1px' : '0'} borderColor={GREEN} borderRadius="full" transition={FILL_TRANSITION} />
+                    </Progress.Track>
+                </Progress.Root>
+                {/* under the bar on phones and small tablets: spread across it, the count at its start */}
+                {/* minH: the grade's height, so hiding it on very small screens doesn't change the row's */}
+                <HStack justify="space-between" gap={{ base: '2', md: '3' }} flexShrink="0" minH="22px" fontSize={{ base: 'xs', sm: 'sm' }} fontVariantNumeric="tabular-nums" whiteSpace="nowrap">
+                    <Text w={{ base: '8ch', md: '9ch' }} textAlign={{ base: 'start', md: 'end' }} title={`${cleared} of ${total} cleared`}>
+                        {cleared} <Text as="span" color="fg.muted">/ {total}</Text>
+                    </Text>
+                    <Text w="5ch" textAlign="end" color="fg.muted" css={HIDE_WHEN_TINY}>{Math.round(percent)}%</Text>
+                    <HStack w={{ base: '88px', sm: '104px', md: '118px' }} justify="end" gap={{ base: '1', md: '2' }} css={{ [TINY]: { width: 'auto' } }}>
+                        <Text color={average ? 'fg' : 'fg.subtle'} title="Average score of the clears">
+                            {average ? Math.round(average).toLocaleString() : '-'}
+                        </Text>
+                        <Box w={{ base: '30px', sm: '36px', md: '42px' }} flexShrink="0" css={HIDE_WHEN_TINY}>
+                            {grade && <Image src={gradeImg('phx2', grade)} alt={gradeLabel(grade)} title={gradeLabel(grade)} h={{ base: '18px', sm: '22px', md: '24px' }} w="auto" mx="auto" />}
+                        </Box>
+                    </HStack>
+                </HStack>
+            </Flex>
+        </HStack>
+    );
+}
+
+// every co-op chart together: its average is of all the clears, so each player count weighs by its clears
+function coopOverall(rows) {
+    const cleared = rows.reduce((sum, row) => sum + row.cleared, 0);
+    const total = rows.reduce((sum, row) => sum + row.total, 0);
+    return {
+        cleared, total,
+        percent: total ? (100 * cleared) / total : 0,
+        average: cleared ? rows.reduce((sum, row) => sum + row.cleared * (row.average || 0), 0) / cleared : null,
+    };
+}
+
+// Co-op in place of the chart: too few player counts (x2 to x5) for one to show anything, so each gets a
+// row, under one for all of them. Titled as the chart is, so a screenshot stands on its own.
+function CoopRows({ rows, info }) {
+    // fills from empty, as the chart's bars draw themselves in
+    const [filled, setFilled] = useState(false);
+    useEffect(() => {
+        const frame = requestAnimationFrame(() => setFilled(true));
+        return () => cancelAnimationFrame(frame);
+    }, []);
+    return (
+        <VStack align="stretch" h={COOP_HEIGHT} gap="0">
+            <Text
+                textAlign="center" color={TITLE.color} fontFamily={ChartJS.defaults.font.family} fontSize={`${TITLE.size}px`} fontWeight={TITLE.weight}
+                lineHeight="1.2" pb={`${TITLE.gap}px`} flexShrink="0"
+            >
+                {info.player} (Co-op)
+            </Text>
+            <VStack align="stretch" flex="1" minH="0" justify="space-evenly" gap="0">
+                {rows.length > 0 && (
+                    <>
+                        <CoopRow ball={stepballImg('phx2', 'c')} name="Co-op overall" size="md" filled={filled} {...coopOverall(rows)} />
+                        <Separator borderColor="border" />
+                    </>
+                )}
+                {rows.map(({ level, cleared, total, percent, average }) => (
+                    <CoopRow
+                        key={level} ball={chartBallImg('phx2', 'c', `n${level}`)} name={`Co-op x${level}`} filled={filled}
+                        cleared={cleared} total={total} percent={percent} average={average}
+                    />
+                ))}
+            </VStack>
+        </VStack>
     );
 }
 
@@ -183,14 +304,16 @@ function useLevelRange(rows) {
 function LadderHero({ heading, rank, what, badge, value, progress, color, marker, markerSize, segments, ticks }) {
     return (
         <Box>
-            <HStack justify="space-between" align="center" gap="4" mb="1">
-                {/* wraps rather than cut the heading short */}
-                <HStack gap="2.5" rowGap="0" minW="0" wrap="wrap">
+            <HStack justify="space-between" align="center" gap={{ base: '2', sm: '4' }} mb="1">
+                {/* wraps rather than cut the heading short, but stays on one line on phones so the page's
+                    height doesn't change with the screen's width: there the heading and value shrink with it,
+                    and the heading is cut short only if it still doesn't fit */}
+                <HStack gap="2.5" rowGap="0" minW="0" wrap={{ base: 'nowrap', sm: 'wrap' }}>
                     {heading}
                     {badge}
                 </HStack>
                 <Text
-                    fontFamily="'Oxanium', sans-serif" fontWeight="800" fontSize={{ base: '2xl', sm: '3xl', md: '4xl' }} lineHeight="1"
+                    fontFamily="'Oxanium', sans-serif" fontWeight="800" fontSize={{ base: 'clamp(18px, 6.4vw, 24px)', sm: '3xl', md: '4xl' }} lineHeight="1"
                     fontVariantNumeric="tabular-nums" flexShrink="0"
                 >
                     {formatPumbility(value)}
@@ -209,20 +332,20 @@ function LadderHero({ heading, rank, what, badge, value, progress, color, marker
     );
 }
 
-// "Rank #95", under a ladder; nothing for an unranked player
+// "Rank #95", under a ladder; nothing for an unranked player (piugame lists the top 1,000, and shows "-" past that)
 function RankLine({ rank, what }) {
-    if (rank === null || rank === undefined || rank === '') {
+    if (typeof rank !== 'number') {
         return null;
     }
     return (
         <Text flexShrink="0" title={`PUMBILITY ranking${what ? ` (${what})` : ''}`}>
-            Rank <Text as="span" color="fg" fontWeight="semibold">{typeof rank === 'number' ? `#${rank.toLocaleString()}` : rank}</Text>
+            Rank <Text as="span" color="fg" fontWeight="semibold">#{rank.toLocaleString()}</Text>
         </Text>
     );
 }
 
 // smaller on phones, where the heading shares a line with the value
-const HEADING_SIZE = { base: 'md', sm: 'lg', md: 'xl' };
+const HEADING_SIZE = { base: 'clamp(13px, 4.3vw, 16px)', sm: 'lg', md: 'xl' };
 // the tier icons' size, the largest marker
 const HERO_MARKER_ROOM = 44;
 
@@ -295,29 +418,51 @@ function TypeBar({ type, label, color, milestones, info, scores }) {
     );
 }
 
-// for All, PUMBILITY along its tiers; for Singles or Doubles, that type along its titles
+const COOP_SEGMENTS = titleLadder(COOP_MILESTONES);
+// the titles that stand out, the first (LV.1) then ADVANCED, EXPERT and MASTER, whatever colors they share
+const COOP_TICKS = [1000, 12000, 14000, 16000];
+
+// CO-OP Rating along piugame's [CO-OP] titles, LV.1 to MASTER: unlike PUMBILITY, every clear counts
+function CoopHero({ scores }) {
+    const rating = useMemo(() => coopRating(scores), [scores]);
+    const progress = progressAlong(COOP_MILESTONES, rating);
+    return (
+        <LadderHero
+            heading={progress.current
+                ? <TitleText title={progress.current.title} fontSize={HEADING_SIZE} lineHeight="1.3" />
+                : <Text fontSize={HEADING_SIZE} fontWeight="bold" color="fg.muted">No co-op title yet</Text>}
+            value={rating} progress={progress} color="yellow.400" marker={stepballImg('phx2', 'c')} markerSize={STEPBALL_SIZE}
+            segments={COOP_SEGMENTS} ticks={COOP_TICKS}
+        />
+    );
+}
+
+// for All, PUMBILITY along its tiers; for Singles or Doubles, that type along its titles; for Co-op, its rating
 function Progression({ info, scores, filter }) {
     const all = useMemo(() => typePumbility(scores), [scores]);
+    if (filter === 'c') {
+        return <CoopHero scores={scores} />;
+    }
     if (filter === 'both') {
         return <PumbilityHero pumbility={info.pumbility} counted={all.counted} rank={info.ranking?.all} />;
     }
     return <TitleHero info={info} scores={scores} type={filter} />;
 }
 
-function UserOverview({ info, scores, counts, summary }) {
-    const [filter, setFilter] = useState('both');
+function UserOverview({ info, scores, counts, summary, filter, onFilterChange }) {
     const rows = useMemo(
         () => (counts ? levelRows(scores, counts, filter, summary.topFifty) : []),
         [scores, counts, filter, summary],
     );
     const range = useLevelRange(rows);
+    const coop = filter === 'c';
     const chartRows = rows.filter((r) => r.level >= range.from && r.level <= range.to);
 
     return (
         <VStack align="stretch" gap="6">
-            {/* All, Singles or Doubles: picks both the progress shown and the chart's charts */}
+            {/* All, Singles, Doubles or Co-op: picks the progress shown, the chart's charts and the score tables' */}
             <VStack align="stretch" gap="3">
-                <FilterButtons value={filter} onChange={setFilter} />
+                <FilterButtons value={filter} onChange={onFilterChange} options={OVERVIEW_FILTERS} />
                 {/* one panel holds the progress bar and, below a divider, the chart and its level range */}
                 <VStack
                     align="stretch" gap="8" separator={<Separator borderColor="border.emphasized" borderTopWidth="2px" />}
@@ -325,15 +470,17 @@ function UserOverview({ info, scores, counts, summary }) {
                 >
                     <Progression info={info} scores={scores} filter={filter} />
                     <VStack align="stretch" gap="4">
-                        <LevelChart rows={chartRows} filter={filter} info={info} />
-                        <HStack justify="space-between" wrap="wrap" gap="3" fontSize="sm" color="fg.muted">
-                            <Text fontSize="xs" fontStyle="italic">
+                        {coop ? <CoopRows rows={rows} info={info} /> : <LevelChart rows={chartRows} filter={filter} info={info} />}
+                        {/* one line, as tall as the selects even on Co-op, which has none. No date on phones, where
+                            it wouldn't fit beside them: the header says when it was synced */}
+                        <HStack display={{ base: coop ? 'none' : 'flex', sm: 'flex' }} justify="space-between" gap="3" minH={FILTER_STYLE.h} fontSize="sm" color="fg.muted">
+                            <Text display={{ base: 'none', sm: 'block' }} fontSize="xs" fontStyle="italic" minW="0" truncate>
                                 Synced: {new Date(info.timestamp * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                             </Text>
-                            {rows.length > 0 && (
-                                <HStack gap="2" ms="auto">
+                            {rows.length > 0 && !coop && (
+                                <HStack gap="2" ms="auto" flexShrink="0" css={{ [TINY]: { gap: '4px' } }}>
                                     <LevelSelect label="From level" value={range.from} levels={range.levels} onChange={range.setFrom} />
-                                    <Text>to</Text>
+                                    <Text css={HIDE_WHEN_TINY}>to</Text>
                                     <LevelSelect label="To level" value={range.to} levels={range.levels} onChange={range.setTo} />
                                 </HStack>
                             )}

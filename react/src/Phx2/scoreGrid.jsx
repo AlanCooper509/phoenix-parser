@@ -7,7 +7,7 @@ import { Box, Checkbox, Heading, HStack, Image, Separator, Text } from '@chakra-
 import { chartBallImg, gradeImg, plateImg } from '../Helpers/assets';
 
 import { GRADES, gradeLabel, gradeRank, isCleared, PLATE_NAMES } from './pumbility';
-import { ChartBadge, Jacket } from './shared';
+import { ChartBadge, Jacket, SMALL_PHONE } from './shared';
 import { FILTER_STYLE, FilterButtons } from './UserOverview';
 
 // The ag-grid behind Best Scores and Recently Played: its dark theme recolored to Phoenix 2 (.phx2-grid
@@ -164,7 +164,7 @@ export const SCORE_COLUMN = {
     ...NUMBER_FILTER_COLUMN,
 };
 
-const DEFAULT_COLUMN = { sortable: true, suppressMovable: true, suppressMenu: true, resizable: false };
+const DEFAULT_COLUMN = { sortable: true, suppressMenu: true, resizable: false };
 
 // below this grid width the jacket (decoration: the song's name is beside it) folds away, so the
 // data columns need less sideways scrolling on phones
@@ -175,6 +175,10 @@ const JACKET_FOLD = [480, ['jacket']];
 // score fit without scrolling sideways. Columns not in a grid are skipped.
 const COMPACT_WIDTH = 600;
 const COMPACT_COLUMNS = { jacket: 72, levelNumber: 42, grade: 62, plate: 52, score: 70, scorePlayed: 74, pumbility: 70, rank: 28, points: 54 };
+// narrower still below this grid width (320px phones), just fitting what's in them, as the columns above
+// and the song's minimum come to more than that
+const TINY_WIDTH = 310;
+const TINY_COLUMNS = { levelNumber: 38, grade: 48, plate: 44, score: 60, scorePlayed: 62, pumbility: 60, rank: 24, points: 50 };
 // shorter headers where the full one won't fit beside its sort arrow
 const COMPACT_HEADERS = { levelNumber: 'Lv.' };
 
@@ -193,7 +197,7 @@ function layoutColumns(columnDefs, width, fold) {
         const id = columnId(colDef);
         return {
             ...colDef,
-            width: (compact && COMPACT_COLUMNS[id]) || colDef.width,
+            width: (width < TINY_WIDTH && TINY_COLUMNS[id]) || (compact && COMPACT_COLUMNS[id]) || colDef.width,
             headerName: (compact && COMPACT_HEADERS[id]) || colDef.headerName,
             hide: hidden.has(id) ? hidden.get(id) : colDef.hide,
         };
@@ -217,6 +221,7 @@ const ScoreGrid = forwardRef(function ScoreGrid({ fold: moreFold = NO_FOLD, colu
         setWidth(box.current.clientWidth);
     }, []);
     const [compact, setCompact] = useState(false);
+    const [tiny, setTiny] = useState(false);
     // the layout the grid starts with; resizes after that go through fitColumns
     const startWidth = useRef(null);
     if (startWidth.current === null && width !== null) {
@@ -229,6 +234,7 @@ const ScoreGrid = forwardRef(function ScoreGrid({ fold: moreFold = NO_FOLD, colu
     useLayoutEffect(() => {
         if (width !== null) {
             setCompact(width < COMPACT_WIDTH);
+            setTiny(width < TINY_WIDTH);
         }
     }, [width]);
 
@@ -240,6 +246,7 @@ const ScoreGrid = forwardRef(function ScoreGrid({ fold: moreFold = NO_FOLD, colu
         }
         const laidOut = layoutColumns(columnDefs, clientWidth, fold);
         setCompact(clientWidth < COMPACT_WIDTH);
+        setTiny(clientWidth < TINY_WIDTH);
         // headers aren't column state: set on the grid's own copies of the definitions
         laidOut.forEach(({ headerName }, i) => {
             const colDef = gridApi.getColumn(columnId(columnDefs[i]))?.getColDef();
@@ -266,7 +273,7 @@ const ScoreGrid = forwardRef(function ScoreGrid({ fold: moreFold = NO_FOLD, colu
         api.current?.resetRowHeights();
     }, [compact]);
     return (
-        <Box ref={box} className={`ag-theme-quartz-dark phx2-grid${compact ? ' phx2-grid-compact' : ''}`} w="full">
+        <Box ref={box} className={`ag-theme-quartz-dark phx2-grid${compact ? ' phx2-grid-compact' : ''}${tiny ? ' phx2-grid-tiny' : ''}`} w="full">
             {startColumns && (
                 <AgGridReact
                     ref={ref}
@@ -277,6 +284,8 @@ const ScoreGrid = forwardRef(function ScoreGrid({ fold: moreFold = NO_FOLD, colu
                     domLayout="autoHeight"
                     onGridSizeChanged={fitColumns}
                     onFirstDataRendered={fitColumns}
+                    // columns can be dragged into another order (as on Phoenix 1), but not off the grid
+                    suppressDragLeaveHidesColumns
                     suppressCellFocus
                     {...props}
                 />
@@ -303,7 +312,7 @@ export function TableHeading({ nav, children }) {
         return children;
     }
     return (
-        <HStack gap={{ base: '3', sm: '4' }} align="baseline">
+        <HStack gap={{ base: '2', sm: '4' }} align="baseline">
             {nav.before}
             {children}
             {nav.after}
@@ -315,24 +324,46 @@ export function TableHeading({ nav, children }) {
 
 const TYPES = [['all', 'All'], ['s', 'Singles'], ['d', 'Doubles'], ['c', 'Co-op']];
 
-// `title` with the count of rows passing every filter (as on Phoenix 1) and, with `failedToggle`, a
+// 'all' is every row, otherwise the one type
+export function isOfType(row, type) {
+    return type === 'all' || row.type === type;
+}
+
+// narrower than any phone: too narrow for a table's heading and its controls to share a line
+const BELOW_PHONES = '@media screen and (max-width: 319.98px)';
+
+// `long`, or `short` below md, where the row the two share a line with has less room
+function ShortBelowMd({ long, short }) {
+    return (
+        <>
+            <Box as="span" display={{ base: 'none', md: 'inline' }}>{long}</Box>
+            <Box as="span" display={{ base: 'inline', md: 'none' }}>{short}</Box>
+        </>
+    );
+}
+
+// `title` (`shortTitle` on smaller screens) with the count of rows passing every filter (as on Phoenix 1) and, with `failedToggle`, a
 // small checkbox for fails and STAGE BREAKs (rows that aren't clears; ticked to start with
 // `failedShown`), a divider, then
 // the type buttons (and `toolbar`, on the right) right over the grid. The buttons filter the rows by
 // type (`types` sets them); with `onTypeChange`, they call it instead, for the parent to swap the rows.
-// `toolbar` can also be a function of the type picked. `nav` ({ before, after }) goes either side of the
-// heading (Scores' other views). `footer` goes under it; `ref` reaches the grid's api. Other props go to ScoreGrid.
+// With `type`, a control of the parent's picks the type and there are no buttons here (Overview's score
+// tables). `toolbar` can also be a function of the type picked. `nav` ({ before, after }) goes either side of the
+// heading (Overview's other score view). `onCountChange` hears the rows' count. `footer` goes under it; `ref` reaches the grid's api. Other props go to ScoreGrid.
 export const ScoreTable = forwardRef(function ScoreTable({
-    title, nav, toolbar, failedToggle = false, failedShown = false, footer, rowData, types = TYPES, onTypeChange, ...props
+    title, shortTitle, nav, toolbar, failedToggle = false, failedShown = false, footer, rowData, types = TYPES, onTypeChange, type: parentType, onCountChange, ...props
 }, ref) {
     const grid = useRef(null);
     // read through to the grid when used: it mounts a render after this table (once ScoreGrid has
     // measured its width), so it isn't there yet when the handle is made
     useImperativeHandle(ref, () => ({ get api() { return grid.current?.api; } }), []);
-    const [type, setType] = useState('all');
+    const [ownType, setType] = useState('all');
+    const type = parentType ?? ownType;
     const [failed, setFailed] = useState(!failedToggle || failedShown);
     // starts as what the grid will show, so the heading doesn't flash the unfiltered count first
-    const [count, setCount] = useState(() => rowData.filter((row) => failed || row.cleared).length);
+    const [count, setCount] = useState(() => rowData.filter((row) => (
+        (failed || row.cleared) && (onTypeChange || isOfType(row, type))
+    )).length);
 
     const filters = useRef({ type, failed });
     filters.current = { type, failed };
@@ -340,48 +371,81 @@ export const ScoreTable = forwardRef(function ScoreTable({
     const filtersType = !onTypeChange;
     const isExternalFilterPresent = useCallback(() => (filtersType && filters.current.type !== 'all') || !filters.current.failed, [filtersType]);
     const doesExternalFilterPass = useCallback(({ data }) => (
-        (!filtersType || filters.current.type === 'all' || data.type === filters.current.type) && (filters.current.failed || data.cleared)
+        (!filtersType || isOfType(data, filters.current.type)) && (filters.current.failed || data.cleared)
     ), [filtersType]);
     const refilter = (set) => (next) => {
         set(next);
         // after React has applied the new value to filters.current
         setTimeout(() => grid.current?.api?.onFilterChanged());
     };
+    useEffect(() => {
+        grid.current?.api?.onFilterChanged();
+    }, [parentType]);
+    useEffect(() => {
+        onCountChange?.(count);
+    }, [count]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    const inline = parentType !== undefined;
+    // on the right, together
+    const controls = (
+        <HStack
+            justify="end" gap={{ base: '2', sm: '3' }} wrap="nowrap" minH={FILTER_STYLE.h}
+            css={inline ? { [SMALL_PHONE]: { '& button': { paddingInline: '4px' } } } : undefined}
+        >
+            {failedToggle && (
+                // the label on the box's left, so the box sits by the toolbar, or the row's end; on the smallest
+                // phones just the box, with its name on hover and for screen readers
+                <Checkbox.Root
+                    size="xs" colorPalette="phx2" title="Stage breaks" checked={failed} onCheckedChange={(e) => refilter(setFailed)(!!e.checked)}
+                >
+                    <Checkbox.HiddenInput aria-label="Stage breaks" />
+                    <Checkbox.Label
+                        fontSize="xs" color="fg.muted" fontWeight="normal" me="1.5" whiteSpace="nowrap"
+                        css={inline ? { [SMALL_PHONE]: { display: 'none' } } : undefined}
+                    >
+                        <ShortBelowMd long="Stage breaks" short="Breaks" />
+                    </Checkbox.Label>
+                    <Checkbox.Control />
+                </Checkbox.Root>
+            )}
+            {typeof toolbar === 'function' ? toolbar(type) : toolbar}
+        </HStack>
+    );
 
     return (
         <Box>
-            <HStack justify="space-between" align="end" gap="3" rowGap="2" mb="3" wrap="wrap">
-                <TableHeading nav={nav}>
-                    <Heading
-                        as="h4" fontSize={{ base: 'lg', sm: 'xl' }} lineHeight="1.2" whiteSpace="nowrap"
-                        title={`${count.toLocaleString()} of ${rowData.length.toLocaleString()}`}
-                    >
-                        {title} <Text as="span" color="fg.muted" fontWeight="normal">({count.toLocaleString()})</Text>
-                    </Heading>
-                </TableHeading>
+            {/* with the type picked elsewhere (Overview's tables), the heading's row also holds the controls, on
+                the right: on one line on any phone, whatever the counts, so its height never changes, with
+                shorter names below md and a smaller heading on phones; only narrower than those do the
+                controls take a line of their own */}
+            <HStack
+                justify="space-between" align={inline ? 'center' : 'end'} gap={inline ? { base: '2', sm: '3' } : '3'} rowGap="2" mb="3" wrap={inline ? 'nowrap' : 'wrap'}
+                css={inline ? { [BELOW_PHONES]: { flexWrap: 'wrap' } } : undefined}
+            >
+                <Box display={inline ? 'block' : 'contents'} minW="0" overflow={inline ? 'hidden' : undefined}>
+                    <TableHeading nav={nav}>
+                        <Heading
+                            as="h4" fontSize={inline ? { base: 'md', sm: 'lg', md: 'xl' } : { base: 'lg', sm: 'xl' }} lineHeight="1.2" whiteSpace="nowrap"
+                            title={`${count.toLocaleString()} of ${rowData.length.toLocaleString()}`}
+                        >
+                            {shortTitle ? <ShortBelowMd long={title} short={shortTitle} /> : title}{' '}
+                            <Text as="span" color="fg.muted" fontWeight="normal">({count.toLocaleString()})</Text>
+                        </Heading>
+                    </TableHeading>
+                </Box>
+                {inline && <Box flexShrink="0" ms="auto" css={{ [BELOW_PHONES]: { width: '100%' } }}>{controls}</Box>}
             </HStack>
             <Separator borderColor="border" mb="4" />
-            {/* every filter in one row: the type toggle and any toolbar (Score / PUMBILITY) together, phones
-                included, then the stage-breaks box (on a line of its own under them if there's no room) */}
-            <HStack gap={{ base: '2', sm: '3' }} mb="4" align="start">
-                <FilterButtons
-                    value={type} options={types}
-                    onChange={onTypeChange ? (next) => { setType(next); onTypeChange(next); } : refilter(setType)}
-                />
-                {/* on the right, together; the box goes under the toolbar when they don't fit side by side */}
-                <HStack flex="1" justify="end" gap="3" rowGap="2" wrap="wrap" minH={FILTER_STYLE.h}>
-                    {typeof toolbar === 'function' ? toolbar(type) : toolbar}
-                    {failedToggle && (
-                        <Checkbox.Root
-                            size="xs" colorPalette="phx2" checked={failed} onCheckedChange={(e) => refilter(setFailed)(!!e.checked)}
-                        >
-                            <Checkbox.HiddenInput />
-                            <Checkbox.Control />
-                            <Checkbox.Label fontSize="xs" color="fg.muted" fontWeight="normal" ms="1.5" whiteSpace="nowrap">Stage breaks</Checkbox.Label>
-                        </Checkbox.Root>
-                    )}
+            {!inline && (
+                // every filter in one row: the type toggle and any toolbar together, phones included
+                <HStack gap={{ base: '2', sm: '3' }} mb="4" align="start">
+                    <FilterButtons
+                        value={type} options={types}
+                        onChange={onTypeChange ? (next) => { setType(next); onTypeChange(next); } : refilter(setType)}
+                    />
+                    <Box flex="1">{controls}</Box>
                 </HStack>
-            </HStack>
+            )}
             <ScoreGrid
                 ref={grid}
                 rowData={rowData}

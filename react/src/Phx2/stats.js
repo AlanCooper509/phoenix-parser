@@ -3,23 +3,24 @@ import { bestFifty, gradeNeeded, isCleared, scoreValue } from './pumbility';
 // Per-player numbers behind the Phoenix 2 user page, from the synced best scores and the chart
 // counts per level (GET /api/phx2/charts/stats: { "01": { total, singles, doubles }, ... }).
 
-export const TYPES = { both: ['s', 'd'], s: ['s'], d: ['d'] };
+export const TYPES = { both: ['s', 'd'], s: ['s'], d: ['d'], c: ['c'] };
 const COUNT_KEY = { both: 'total', s: 'singles', d: 'doubles' };
 
 const levelKey = (level) => String(level).padStart(2, '0');
 
-// Clears, averages and best-fifty membership per level, for singles, doubles or both. Averages and
+// Clears, averages and best-fifty membership per level (co-op: per player count, 2 to 5, synced as
+// "n2"), for singles, doubles, both or co-op. Averages and
 // best scores count clears only (as on Phoenix (1), whose best scores only ever listed passes);
 // Phoenix 2 also lists fails and STAGE BREAKs, which only count as played.
 // Returns a row for every level that has charts (or plays).
 export function levelRows(scores, counts, typeFilter, topFifty) {
     const types = TYPES[typeFilter];
+    const coop = typeFilter === 'c';
     const played = scores.filter((s) => types.includes(s.type));
     const rows = [];
-    for (let level = 1; level <= 29; level++) {
-        const key = levelKey(level);
-        const total = counts?.[key]?.[COUNT_KEY[typeFilter]] || 0;
-        const atLevel = played.filter((s) => Number(s.level) === level);
+    for (let level = coop ? 2 : 1; level <= (coop ? 5 : 29); level++) {
+        const total = (coop ? counts?.coop?.[`n${level}`] : counts?.[levelKey(level)]?.[COUNT_KEY[typeFilter]]) || 0;
+        const atLevel = played.filter((s) => Number(String(s.level).replace(/^n/, '')) === level);
         const cleared = atLevel.filter(isCleared);
         if (!total && !atLevel.length) {
             continue;

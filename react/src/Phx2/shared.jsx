@@ -116,9 +116,12 @@ export function Phx2Layout({ children, width = PAGE_WIDTH, legacyLink = false })
     );
 }
 
+// very small screens: Chakra's breakpoints start at 480px, too wide to tell these from other phones
+export const TINY = '@media (max-width: 304px)';
+
 // grades' colors on charts, as on Phoenix 1's breakdown: SSS light blue, SS and S gold, AAA silver,
 // AA and A bronze, below that green
-export const GRADE_COLORS = { sss: '#6bd8ff', s: '#efbf00', aaa: '#d9d7d4', a: '#c47a3c', b: '#13aa7d' };
+export const GRADE_COLORS = { sss: '#6bd8ff', s: '#efbf00', aaa: '#d9d7d4', a: '#c55a2b', b: '#13aa7d' };
 
 // Player titles styled as on piugame.com's profile page: Oxanium, weight 900, a thin white outline
 // around a gradient fill (bright at the bottom, dark at the top) per color class col1..col9;
@@ -219,12 +222,12 @@ export function formatPumbility(value) {
 
 
 // A player's place in piugame's PUMBILITY ranking (overall, or `what`: "singles", "doubles"), as
-// "(#95)": a number within the top 1,000 it lists, otherwise whatever the ranking page showed instead.
+// "(#95)"; nothing for an unranked player (it lists the top 1,000, and shows "-" past that).
 export function RankTag({ rank, what, ...props }) {
-    if (rank === null || rank === undefined || rank === '') {
+    if (typeof rank !== 'number') {
         return null;
     }
-    const shown = typeof rank === 'number' ? `#${rank.toLocaleString()}` : rank;
+    const shown = `#${rank.toLocaleString()}`;
     return (
         <Text
             as="span" color="fg.muted" fontWeight="normal" fontVariantNumeric="tabular-nums" whiteSpace="nowrap" flexShrink="0"
@@ -261,24 +264,32 @@ export function UnfilledFifty({ counted, what = 'charts', color = 'fg.muted' }) 
 
 // ---- ladders: a whole progression at once, as segments (PUMBILITY tiers, or title ranks) of equal
 // width, each marked at its levels and colored per level, filled up to the player's place.
-// A segment is { name, stops: [each level's start..., the segment's end], colors: one per level }.
+// A segment is { name, stops: [each level's start..., the segment's end], colors: one per level, weight:
+// its width against the others' (1 by default) }.
 
-// the ladders share their teal and red: PLATINUM's teal for the titles' pale blue (col4), the titles'
-// red (col6) for RED BERYL
-const TITLE_LADDER_COLORS = { col4: 'teal.300' };
-const TIER_LADDER_COLORS = { 'RED BERYL': TITLE_GRADIENTS.col6[0] };
+// before the first checkpoint: from nothing up to it, so a player who's yet to reach it still sees progress
+const withStart = (segments) => [{ name: 'Start', stops: [0, segments[0].stops[0]], colors: ['gray.500'], weight: 0.5 }, ...segments];
+const weightOf = ({ weight = 1 }) => weight;
+const totalWeight = (segments) => segments.reduce((sum, segment) => sum + weightOf(segment), 0);
+// where segment `i` ends, 0 to 100 along the ladder
+const segmentEnd = (segments, i) => (100 * totalWeight(segments.slice(0, i + 1))) / totalWeight(segments);
+
+// the ladders share their gold, teal and red: the charts' gold for GOLD and the titles' yellow (col3),
+// PLATINUM's teal for the titles' pale blue (col4), the titles' red (col6) for RED BERYL
+const TITLE_LADDER_COLORS = { col3: GRADE_COLORS.s, col4: 'teal.300' };
+const TIER_LADDER_COLORS = { GOLD: GRADE_COLORS.s, 'RED BERYL': TITLE_GRADIENTS.col6[0] };
 
 // PUMBILITY: BRONZE to ALEXANDRITE, five levels each (ABYSS ABSOLUTE at the very end)
-export const PUMBILITY_LADDER = TIER_STARTS.slice(0, -1).map(([name, start], i) => {
+export const PUMBILITY_LADDER = withStart(TIER_STARTS.slice(0, -1).map(([name, start], i) => {
     const end = TIER_STARTS[i + 1][1];
     const color = TIER_LADDER_COLORS[name] || PUMBILITY_TIERS.find(([tier]) => tier === name)?.[1] || 'fg.muted';
     return { name, stops: [0, 1, 2, 3, 4, 5].map((l) => start + ((end - start) * l) / 5), colors: Array(5).fill(color) };
-});
+}));
 
 // singles or doubles titles: INTERMEDIATE, ADVANCED and EXPERT, ten levels each in piugame's title
-// colors (MASTER at the very end)
+// colors (MASTER at the very end). Co-op titles name their groups themselves (`rank`).
 export function titleLadder(milestones) {
-    const rankOf = (m) => /\] (\w+) LV/.exec(m?.name || '')?.[1];
+    const rankOf = (m) => m?.rank || /\] (\w+) LV/.exec(m?.name || '')?.[1];
     const ranks = [];
     milestones.forEach((m, i) => {
         const rank = rankOf(m);
@@ -296,33 +307,32 @@ export function titleLadder(milestones) {
             segment.stops.push(milestones[i + 1].value);
         }
     });
-    return ranks;
+    return withStart(ranks);
 }
 
-// where `value` sits along a ladder, 0 to 100: segments get equal widths and levels equal widths
-// within them, whatever points they span
+// where `value` sits along a ladder, 0 to 100: segments get their weights' widths and levels equal
+// widths within them, whatever points they span
 export function ladderPercent(segments, value) {
     const i = segments.findIndex(({ stops }) => value < stops.at(-1));
     if (i < 0) {
         return 100;
     }
     const { stops } = segments[i];
-    if (value < stops[0]) {
-        return (100 * i) / segments.length;
-    }
     const j = stops.findLastIndex((stop) => value >= stop);
-    return (100 * (i + (j + (value - stops[j]) / (stops[j + 1] - stops[j])) / (stops.length - 1))) / segments.length;
+    const along = (j + (value - stops[j]) / (stops[j + 1] - stops[j])) / (stops.length - 1);
+    return (100 * (totalWeight(segments.slice(0, i)) + weightOf(segments[i]) * along)) / totalWeight(segments);
 }
 
 function LadderSegments({ segments, bright, filled = 0 }) {
     return (
         <HStack gap="2px" h="full" w="full">
-            {segments.map(({ name, stops, colors }, i) => {
+            {segments.map(({ name, stops, colors, weight = 1 }, i) => {
                 // a segment passed entirely: darkened, with a check (once the fill has had time to pass it)
-                const done = bright && filled >= (100 * (i + 1)) / segments.length;
+                const done = bright && filled >= segmentEnd(segments, i);
                 return (
                     <HStack
-                        key={name} flex="1" h="full" gap="0" overflow="hidden" position="relative" opacity={bright ? 1 : 0.22}
+                        // basis 0, so the widths follow the weights alone
+                        key={name} flex={`${weight} 1 0`} minW="0" h="full" gap="0" overflow="hidden" position="relative" opacity={bright ? 1 : 0.22}
                         borderStartRadius={i === 0 ? 'full' : undefined} borderEndRadius={i === segments.length - 1 ? 'full' : undefined}
                         title={bright ? undefined : `${name}: ${stops[0].toLocaleString()} to ${stops.at(-1).toLocaleString()}`}
                     >
@@ -346,14 +356,16 @@ function LadderSegments({ segments, bright, filled = 0 }) {
 }
 
 // A ladder as an ExpBar track: faint segments, the same in full color revealed up to `filled`.
-// `ticks` marks where each segment ends with a tick under the bar (title ranks, MASTER at the end).
+// `ticks` marks places with a tick under the bar: where each segment ends (the first title, title ranks,
+// MASTER at the end), or with a list, those values.
 export function Ladder({ segments, filled, h = '12px', ticks }) {
+    const marks = Array.isArray(ticks) ? ticks.map((value) => ladderPercent(segments, value)) : (ticks ? segments.map((_, i) => segmentEnd(segments, i)) : []);
     return (
         <Box position="relative" h={h}>
-            {ticks && segments.map(({ name }, i) => (
+            {marks.map((percent) => (
                 <Box
-                    key={name} position="absolute" top="100%" mt="3px" h="7px" w="2px" bg="fg.muted" borderRadius="full"
-                    left={`calc(${(100 * (i + 1)) / segments.length}% - ${i === segments.length - 1 ? 2 : 1}px)`}
+                    key={percent} position="absolute" top="100%" mt="3px" h="7px" w="2px" bg="fg.muted" borderRadius="full"
+                    left={`calc(${percent}% - ${percent === 100 ? 2 : 1}px)`}
                 />
             ))}
             <LadderSegments segments={segments} />
@@ -366,7 +378,7 @@ export function Ladder({ segments, filled, h = '12px', ticks }) {
 
 // fills like chart.js's own animation (1s, easeOutQuart)
 const EASE_OUT_QUART = '1s cubic-bezier(0.25, 1, 0.5, 1)';
-const FILL_TRANSITION = `width ${EASE_OUT_QUART}`;
+export const FILL_TRANSITION = `width ${EASE_OUT_QUART}`;
 const MARKER_SIZE = 44;
 const BAR_HEIGHTS = { sm: 8, md: 12 };
 
@@ -445,13 +457,15 @@ export function ExpBar({
                     />
                 )}
             </Box>
-            <HStack justify="space-between" columnGap="3" rowGap="0" wrap="wrap" mt="1" fontSize="xs" color="fg.muted" fontVariantNumeric="tabular-nums">
+            {/* with a `footer`, always one line, so the bar's height doesn't change with the screen's width or
+                the next milestone's name: that name is cut short if it must be */}
+            <HStack justify="space-between" columnGap="3" rowGap="0" wrap={footer ? 'nowrap' : 'wrap'} mt="1" fontSize="xs" color="fg.muted" fontVariantNumeric="tabular-nums">
                 {footer}
                 {next ? (
                     <>
                         {points && !footer && <Text flexShrink="0">{formatPumbility(value)} / {next.value.toLocaleString()} ({Math.floor(percent)}%)</Text>}
                         {/* wraps under the points on narrow screens, still right-aligned */}
-                        <Text ms="auto">
+                        <Text ms="auto" minW="0" truncate={Boolean(footer)} title={footer ? `${formatPumbility(remaining)} to ${next.name}` : undefined}>
                             {formatPumbility(remaining)} to{' '}
                             {name(next, { as: 'span', truncate: false })}
                         </Text>

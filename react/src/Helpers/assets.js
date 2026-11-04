@@ -1,6 +1,6 @@
 // Public piu-assets bucket, laid out as <game>/{songs,avatars,charts}/<hash>.png
-// (plus phx2/pumbility/pumbility_NN.png, piugame's PUMBILITY tier icons; phx2/stepball/{s,d}_bg.png,
-// its blank red singles and green doubles step balls, and s01..s28, d01..d29, c2..c5, the step balls
+// (plus phx2/pumbility/pumbility_NN.png, piugame's PUMBILITY tier icons; phx2/stepball/{s,d,c}_bg.png,
+// its blank red singles, green doubles and yellow co-op step balls, and s01..s28, d01..d29, c2..c5, the step balls
 // with each level (or co-op player count) on; phx2/grade/<grade>.png, x_<grade>.png for fails; and
 // phx2/plate/<plate>.png, s_<plate>.png for the small ones)
 // (the same hash can be a different image in each game, so always pass the game)
@@ -29,7 +29,7 @@ export function pumbilityImg(game, icon) {
     return `${ASSETS_BASE_URL}/${game}/pumbility/pumbility_${String(icon).padStart(2, '0')}.png`;
 }
 
-// piugame's step ball for singles ('s') or doubles ('d')
+// piugame's step ball for singles ('s'), doubles ('d') or co-op ('c')
 export function stepballImg(game, type) {
     return `${ASSETS_BASE_URL}/${game}/stepball/${type}_bg.png`;
 }
