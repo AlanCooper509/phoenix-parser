@@ -29,6 +29,15 @@ const GRID = 'rgba(255, 255, 255, 0.06)';
 // one size for every toggle and select beside it (Overview, score tables, Breakdown): smaller on phones.
 // Set as styles: a responsive `size` doesn't take effect here.
 export const FILTER_STYLE = { h: { base: '8', sm: '9' }, fontSize: { base: 'xs', sm: 'sm' } };
+// the large number at the top right of that card
+export const HERO_VALUE_STYLE = {
+    fontFamily: "'Oxanium', sans-serif", fontWeight: '800', fontSize: { base: 'clamp(18px, 6.4vw, 24px)', sm: '3xl', md: '4xl' }, lineHeight: '1',
+    fontVariantNumeric: 'tabular-nums', flexShrink: '0',
+};
+// the room above and below a card's progress bar, for the marker riding it: (the marker's 44px - the bar's 12px) / 2
+export const HERO_BAR_MARGIN = '16px';
+// the darker card a tab's progress and chart sit in (Overview, Breakdown)
+export const PANEL_STYLE = { bg: 'bg.subtle', borderWidth: '1px', borderColor: 'border', borderRadius: 'lg', p: { base: '4', md: '6' } };
 
 export function FilterButtons({ value, onChange, options = FILTERS }) {
     return (
@@ -61,11 +70,11 @@ const tickFont = (context) => ({ size: narrow(context) ? 10 : 12 });
 
 // the chart's title, and the one over Co-op's rows in its place
 const TITLE = { color: '#e4e4e7', size: 16, weight: '600', gap: 8 };
-// the chart's, and Co-op's rows in its place, so switching between them doesn't move the page
-const CHART_HEIGHT = { base: '260px', md: '340px' };
+// the chart's (Breakdown's too), and Co-op's rows in its place, so switching between them doesn't move the page
+export const CHART_HEIGHT = { base: '260px', md: '340px' };
 // on phones there's nothing under Co-op's rows (no date, or level range), so they also take that line's
-// height and the gap above it
-const COOP_HEIGHT = { base: '308px', sm: CHART_HEIGHT.base, md: CHART_HEIGHT.md };
+// height and the gap above it; the same for Breakdown's chart, with nothing under it either
+export const COOP_HEIGHT = { base: '308px', sm: CHART_HEIGHT.base, md: CHART_HEIGHT.md };
 const LEGEND_SHORT = { 'Average score': 'Avg', '% cleared': 'Clear %' };
 const TYPE_NAMES = { both: 'Singles and Doubles', s: 'Singles', d: 'Doubles' };
 
@@ -313,8 +322,7 @@ function LadderHero({ heading, rank, what, badge, value, progress, color, marker
                     {badge}
                 </HStack>
                 <Text
-                    fontFamily="'Oxanium', sans-serif" fontWeight="800" fontSize={{ base: 'clamp(18px, 6.4vw, 24px)', sm: '3xl', md: '4xl' }} lineHeight="1"
-                    fontVariantNumeric="tabular-nums" flexShrink="0"
+                    {...HERO_VALUE_STYLE}
                 >
                     {formatPumbility(value)}
                 </Text>
@@ -345,7 +353,7 @@ function RankLine({ rank, what }) {
 }
 
 // smaller on phones, where the heading shares a line with the value
-const HEADING_SIZE = { base: 'clamp(13px, 4.3vw, 16px)', sm: 'lg', md: 'xl' };
+export const HEADING_SIZE = { base: 'clamp(13px, 4.3vw, 16px)', sm: 'lg', md: 'xl' };
 // the tier icons' size, the largest marker
 const HERO_MARKER_ROOM = 44;
 
@@ -465,8 +473,7 @@ function UserOverview({ info, scores, counts, summary, filter, onFilterChange })
                 <FilterButtons value={filter} onChange={onFilterChange} options={OVERVIEW_FILTERS} />
                 {/* one panel holds the progress bar and, below a divider, the chart and its level range */}
                 <VStack
-                    align="stretch" gap="8" separator={<Separator borderColor="border.emphasized" borderTopWidth="2px" />}
-                    bg="bg.subtle" borderWidth="1px" borderColor="border" borderRadius="lg" p={{ base: '4', md: '6' }}
+                    align="stretch" gap="8" separator={<Separator borderColor="border.emphasized" borderTopWidth="2px" />} {...PANEL_STYLE}
                 >
                     <Progression info={info} scores={scores} filter={filter} />
                     <VStack align="stretch" gap="4">

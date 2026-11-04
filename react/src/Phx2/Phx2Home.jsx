@@ -10,7 +10,7 @@ import getUsers from '../API/users';
 import { fromPiugameUrl } from '../Helpers/assets';
 import { userPath } from '../Helpers/paths';
 import {
-    DAY, PAGE_WIDTH, SMALL_PHONE, TAB_SIZES, Phx2Layout, PlayerTitle, formatPumbility, pumbilityTier, timeAgo,
+    DAY, PAGE_WIDTH, SMALL_PHONE, TAB_SIZES, WinterSnow, Phx2Layout, PlayerTitle, formatPumbility, pumbilityTier, timeAgo,
 } from './shared';
 
 // PROTOTYPE: Phoenix 2 home page at /phx2 (Chakra UI, dark; see shared.jsx).
@@ -184,7 +184,8 @@ function Phx2Home() {
     return (
         <Phx2Layout legacyLink>
 
-            <Container css={PAGE_WIDTH} px={{ base: '4', md: '6' }} py={{ base: '6', md: '10' }}>
+            <Container css={PAGE_WIDTH} px={{ base: '4', md: '6' }} py={{ base: '6', md: '10' }} position="relative">
+                <WinterSnow snowflakeCount={75} wind={[-0.3, 0.7]} speed={[0.8, 1.3]} />
                 <VStack align="stretch" gap="8">
                     <Box textAlign="center">
                         <Heading size={{ base: 'xl', md: '2xl' }}>{latest ? `Welcome back, ${latest.player}!` : 'Welcome!'}</Heading>

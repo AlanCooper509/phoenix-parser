@@ -5,8 +5,10 @@ import {
     Stack, Text, Toast, Toaster,
 } from '@chakra-ui/react';
 import { LuCheck } from 'react-icons/lu';
+import Snowfall from 'react-snowfall';
 
 import { pumbilityImg, songImg } from '../Helpers/assets';
+import isWinterTheme from '../Helpers/isWinter';
 import { TIER_STARTS } from './pumbility';
 import system from './theme';
 import './Phx2.css';
@@ -114,6 +116,11 @@ export function Phx2Layout({ children, width = PAGE_WIDTH, legacyLink = false })
             </Theme>
         </ChakraProvider>
     );
+}
+
+// Snow falling over its parent (position: relative), in winter, as on Phoenix 1's pages
+export function WinterSnow(props) {
+    return isWinterTheme() ? <Snowfall radius={[1.0, 2.0]} {...props} /> : null;
 }
 
 // very small screens: Chakra's breakpoints start at 480px, too wide to tell these from other phones
@@ -377,7 +384,7 @@ export function Ladder({ segments, filled, h = '12px', ticks }) {
 }
 
 // fills like chart.js's own animation (1s, easeOutQuart)
-const EASE_OUT_QUART = '1s cubic-bezier(0.25, 1, 0.5, 1)';
+export const EASE_OUT_QUART = '1s cubic-bezier(0.25, 1, 0.5, 1)';
 export const FILL_TRANSITION = `width ${EASE_OUT_QUART}`;
 const MARKER_SIZE = 44;
 const BAR_HEIGHTS = { sm: 8, md: 12 };

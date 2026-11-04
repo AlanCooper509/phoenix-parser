@@ -7,7 +7,7 @@ import getUser from '../API/user';
 import getChartStats from '../API/chartstats';
 import { fromPiugameUrl } from '../Helpers/assets';
 import { userPath } from '../Helpers/paths';
-import { TAB_SIZES, WIDE_PAGE_WIDTH, Phx2Layout, PhoneShort, PlayerTitle, pumbilityTier, TierName, timeAgo } from './shared';
+import { TAB_SIZES, WIDE_PAGE_WIDTH, WinterSnow, Phx2Layout, PhoneShort, PlayerTitle, pumbilityTier, TierName, timeAgo } from './shared';
 import { pumbilitySummary } from './stats';
 import UserOverview from './UserOverview';
 import UserPumbility from './UserPumbility';
@@ -145,9 +145,12 @@ function Phx2User() {
         content = (
             <VStack align="stretch" gap="2">
                 {/* syncing it again, in the top-right corner */}
-                <SyncPanel info={user.info} name={name} number={number} onSynced={setUser}>
-                    <Profile info={user.info} />
-                </SyncPanel>
+                <Box position="relative">
+                    <WinterSnow snowflakeCount={25} wind={[-0.3, 0.6]} speed={[0.5, 0.8]} />
+                    <SyncPanel info={user.info} name={name} number={number} onSynced={setUser}>
+                        <Profile info={user.info} />
+                    </SyncPanel>
+                </Box>
                 <Tabs.Root
                     value={tab} onValueChange={(e) => navigate(userPath('phx2', name, number, e.value))}
                     variant="line" colorPalette="phx2"
@@ -163,7 +166,7 @@ function Phx2User() {
                         {tab === 'overview' && <OverviewTab user={user} counts={counts} summary={summary} />}
                     </Tabs.Content>
                     <Tabs.Content value="breakdown" pt="6">
-                        {tab === 'breakdown' && <UserBreakdown name={name} number={number} view={view} scores={user.scores} counts={counts} />}
+                        {tab === 'breakdown' && <UserBreakdown name={name} number={number} view={view} scores={user.scores} counts={counts} info={user.info} />}
                     </Tabs.Content>
                     <Tabs.Content value="pumbility" pt="6">
                         {tab === 'pumbility' && (
