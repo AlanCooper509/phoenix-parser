@@ -16,7 +16,7 @@ import UserRecent from './UserRecent';
 export const SCORE_VIEWS = [['best', 'Best'], ['recent', 'Recents']];
 
 // how long the area keeps the old table's height while a table opened for the first time draws its rows
-const HOLD_MS = 500;
+export const HOLD_MS = 500;
 
 function UserScores({ user, summary, filter }) {
     // Overview's All is singles and doubles for its progress and chart, but every play here

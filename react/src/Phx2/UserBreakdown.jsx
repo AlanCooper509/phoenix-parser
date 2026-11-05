@@ -72,27 +72,53 @@ const RANGES_WIDTH = 760;
 const TEXT = '#a1a1aa';
 const GRID = 'rgba(255, 255, 255, 0.06)';
 const SMALL_TITLE = 14;
+// how much of a bar's color is left when it's under the goal, as a hex alpha
+const BELOW_GOAL_ALPHA = '33';
 const SMALL_TITLE_WIDTH = 340;
 
 // the middle of the chart's subtitle line: under the title (its lines 1.2 x its size), the gap and the subtitle's padding
 const SUBTITLE_MIDDLE = 1.2 * TITLE.size + TITLE.gap + 9 + (1.2 * 12) / 2;
 
 // titled as on Phoenix (1), so a screenshot of the chart stands on its own
-function GradeChart({ rows, title, average, clearPercent }) {
+function GradeChart({ rows, title, average, clearPercent, goal }) {
     const [box, sized] = useSizedBox();
     // rebuilt only when the rows change, so re-renders don't redraw the chart
     const data = useMemo(() => {
         const clears = rows.filter((row) => row.cleared);
         const count = (grades) => clears.filter((row) => grades.includes(row.grade)).length;
-        const colors = GRADE_GROUPS.map(([, , , color]) => color);
+        // on the PG goal, SSS+'s bar splits into its Perfect Games, under the rest of its clears, faded
+        const pgGoal = goal.key === 'pg';
+        const isTop = (i) => i === GRADE_GROUPS.length - 1;
+        const pgs = pgGoal ? clears.filter((row) => row.plate === 'pg' && row.grade === 'sss_p').length : 0;
+        const faded = (color) => `${color}${BELOW_GOAL_ALPHA}`;
+        // a bar's color, faded if all it holds is under the goal's grade (a Perfect Game being SSS+)
+        const colors = (grades) => GRADE_GROUPS.map((group) => {
+            const held = grades(group);
+            const under = goal.grade && Math.max(...held.map((grade) => CUTOFF[grade])) < CUTOFF[goal.grade];
+            return under ? faded(group[3]) : group[3];
+        });
         return {
             labels: GRADE_GROUPS.map(([label]) => label),
             datasets: [
-                { data: GRADE_GROUPS.map(([, grades]) => count(grades)), backgroundColor: colors, borderRadius: 3 },
-                { data: GRADE_GROUPS.map(([, , plus]) => count(plus)), backgroundColor: colors, borderRadius: 3 },
+                // labelled, which is how a redraw matches each to its bars: without, all but the first would regrow
+                // from nothing. `stack` puts the last two in one bar, the first dataset of a stack at the bottom.
+                {
+                    label: 'grade', stack: 'grade', names: BAR_NAMES[0], borderRadius: 3,
+                    data: GRADE_GROUPS.map(([, grades]) => count(grades)), backgroundColor: colors(([, grades]) => grades),
+                },
+                {
+                    label: 'pg', stack: 'plus', names: GRADE_GROUPS.map(() => 'PG'), borderRadius: 3,
+                    data: GRADE_GROUPS.map((group, i) => (isTop(i) ? pgs : 0)), backgroundColor: GRADE_GROUPS.map((group) => group[3]),
+                },
+                {
+                    label: 'plus', stack: 'plus', borderRadius: 3,
+                    names: BAR_NAMES[1].map((name, i) => (pgGoal && isTop(i) ? `${name} (no PG)` : name)),
+                    data: GRADE_GROUPS.map(([, , plus], i) => count(plus) - (isTop(i) ? pgs : 0)),
+                    backgroundColor: colors(([, , plus]) => plus).map((color, i) => (pgGoal && isTop(i) ? faded(GRADE_GROUPS[i][3]) : color)),
+                },
             ],
         };
-    }, [rows]);
+    }, [rows, goal]);
     const options = useMemo(() => ({
         maintainAspectRatio: false,
         plugins: {
@@ -111,13 +137,14 @@ function GradeChart({ rows, title, average, clearPercent }) {
             },
             tooltip: {
                 callbacks: {
-                    title: (items) => BAR_NAMES[items[0].datasetIndex][items[0].dataIndex],
+                    title: (items) => items[0].dataset.names[items[0].dataIndex],
                     label: (item) => ` ${item.formattedValue} ${item.raw === 1 ? 'clear' : 'clears'}`,
                 },
             },
         },
         scales: {
             x: {
+                stacked: true,
                 ticks: {
                     color: TEXT, autoSkip: false, maxRotation: 0,
                     font: (c) => ({ size: c.chart.width < 500 ? 9 : 12 }),
@@ -129,7 +156,7 @@ function GradeChart({ rows, title, average, clearPercent }) {
                 },
                 grid: { display: false },
             },
-            y: { beginAtZero: true, ticks: { color: TEXT, precision: 0 }, grid: { color: GRID } },
+            y: { stacked: true, beginAtZero: true, ticks: { color: TEXT, precision: 0 }, grid: { color: GRID } },
         },
         // the two bars of a pair close together, pairs apart
         datasets: { bar: { categoryPercentage: 0.7, barPercentage: 0.92 } },
@@ -211,7 +238,7 @@ function LevelPicker({ type, level, levels, onChange }) {
 // `label` follows the count: "16 / 190 ≥ S"; the select shows `option`, the table `heading`.
 const atLeast = (grade) => (row) => row.score >= CUTOFF[grade];
 const grading = (grade) => ({
-    label: `≥ ${gradeLabel(grade)}`, option: `≥ ${gradeLabel(grade)}`, heading: `Scores ≥ ${gradeLabel(grade)}`,
+    label: `≥ ${gradeLabel(grade)}`, option: `≥ ${gradeLabel(grade)}`, heading: `Scores ≥ ${gradeLabel(grade)}`, grade,
     icon: gradeImg('phx2', grade), meets: atLeast(grade),
 });
 const GOALS = [
@@ -221,7 +248,7 @@ const GOALS = [
     { key: 'ss', ...grading('ss') },
     { key: 'sss', ...grading('sss') },
     { key: 'sss_p', ...grading('sss_p') },
-    { key: 'pg', label: 'PG', option: 'PG', heading: 'PG', icon: plateImg('phx2', 'pg'), meets: (row) => row.plate === 'pg' },
+    { key: 'pg', label: 'PG', option: 'PG', heading: 'PG', grade: 'sss_p', icon: plateImg('phx2', 'pg'), meets: (row) => row.plate === 'pg' },
 ];
 const MARKER_WIDTH = 44;
 // the goal with no art of its own has piugame's top-right step arrow: blank around it, so larger than it looks
@@ -391,6 +418,31 @@ const COLUMNS = [JACKET_COLUMN, LEVEL_COLUMN, SONG_COLUMN, GRADE_COLUMN, PLATE_C
 // (?view=remaining, or nothing): its heading beside the other's name and count, which switches to it (as
 // with Overview's score tables). "Cleared", or the goal's name.
 
+const HEADING_ICON = 28;
+const LINK_ICON = 22;
+const PLATE_SCALE = 0.7;
+
+// The goal in the table's heading, with its art for the grade or plate: taller than the text, without making the
+// line any taller, and for a grade with the blank either side of it trimmed (see GRADE_ART_INSET)
+function GoalName({ goal, size }) {
+    if (!goal.icon) {
+        return goal.heading;
+    }
+    const pg = goal.key === 'pg';
+    // the plate's art fills its image, where a grade's has blank all around it
+    const height = pg ? Math.round(size * PLATE_SCALE) : size;
+    const inset = pg ? 0 : (GRADE_ART_INSET[goal.grade] * size) / GRADE_ART_HEIGHT;
+    return (
+        <>
+            {!pg && 'Scores ≥ '}
+            <Image
+                src={goal.icon} alt={pg ? 'PG' : gradeLabel(goal.grade)} title={pg ? 'PG' : gradeLabel(goal.grade)} display="inline-block" verticalAlign="middle"
+                h={`${height}px`} w="auto" maxW="none" my={`${(14 - height) / 2}px`} mx={`${-inset}px`}
+            />
+        </>
+    );
+}
+
 // `listStatus` is the chart list's, which adds the charts never played to Remaining: 'loading' or 'error'
 // until it's there, when `total` still gives how many there are.
 function ChartTables({ rows, total, listStatus, gridKey, goal }) {
@@ -415,10 +467,10 @@ function ChartTables({ rows, total, listStatus, gridKey, goal }) {
     const [filtered, setFiltered] = useState(null);
     const count = partial ? remainingTotal : (filtered ?? shown.length);
 
-    const title = view === 'met' ? goal.heading : 'Remaining';
+    const title = view === 'met' ? <GoalName goal={goal} size={HEADING_ICON} /> : 'Remaining';
     const other = view === 'met'
         ? <ViewLink label={`Remaining (${remainingTotal.toLocaleString()})`} onClick={() => setView('remaining')} />
-        : <ViewLink label={`${goal.heading} (${met.length.toLocaleString()})`} onClick={() => setView('met')} />;
+        : <ViewLink label={<><GoalName goal={goal} size={LINK_ICON} /> ({met.length.toLocaleString()})</>} onClick={() => setView('met')} />;
     let empty = 'Every chart here is cleared.';
     if (partial) {
         empty = '';
@@ -570,7 +622,7 @@ function UserBreakdown({ name, number, view, scores, counts, info }) {
                 <VStack align="stretch" gap="8" separator={<Separator borderColor="border.emphasized" borderTopWidth="2px" />} {...PANEL_STYLE}>
                     <GoalProgress name={levelName} phoneName={{ all: `LEVEL ${level}`, s: `SINGLE ${level}`, d: `DOUBLE ${level}`, c: `CO-OP x${level}` }[type]} shortName={{ all: `Lv. ${level}`, s: `S${level}`, d: `D${level}`, c: `C${level}` }[type]} rows={rows} total={total} typeTotals={typeTotals} goal={goal} onGoalChange={setGoal} type={type} level={level} />
                     <VStack align="stretch" gap="4">
-                        <GradeChart rows={rows} title={`${info.player}: ${chartName} Best Scores`} average={average} clearPercent={total ? (100 * cleared.length) / total : 0} />
+                        <GradeChart rows={rows} title={`${info.player}: ${chartName} Best Scores`} average={average} clearPercent={total ? (100 * cleared.length) / total : 0} goal={goal} />
                         <HStack display={{ base: 'none', sm: 'flex' }} minH={FILTER_STYLE.h} color="fg.muted">
                             <Text fontSize="xs" fontStyle="italic" minW="0" truncate>
                                 Synced: {new Date(info.timestamp * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}

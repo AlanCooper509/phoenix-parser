@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Box, Center, Container, EmptyState, Heading, HStack, Image, Spinner, Tabs, Text, VStack } from '@chakra-ui/react';
 import { LuUserX } from 'react-icons/lu';
@@ -11,7 +11,7 @@ import { TAB_SIZES, WIDE_PAGE_WIDTH, WinterSnow, Phx2Layout, PhoneShort, PlayerT
 import { pumbilitySummary } from './stats';
 import UserOverview from './UserOverview';
 import UserPumbility from './UserPumbility';
-import UserScores from './UserScores';
+import UserScores, { HOLD_MS } from './UserScores';
 import UserTopFifty from './UserTopFifty';
 import UserBreakdown from './UserBreakdown';
 import SyncPanel, { SyncForm } from './SyncForm';
@@ -119,6 +119,28 @@ function Phx2User() {
 
     const summary = useMemo(() => (user ? pumbilitySummary(user.scores) : null), [user]);
 
+    // a tab's tables have no height until their rows draw: the page keeps the old tab's height meanwhile, so it
+    // doesn't shrink and scroll back to the top
+    const tabs = useRef(null);
+    const [hold, setHold] = useState({ tab, height: null });
+    if (hold.tab !== tab) {
+        setHold({ tab, height: tabs.current?.offsetHeight ?? null });
+    }
+    useEffect(() => {
+        if (hold.height === null) {
+            return undefined;
+        }
+        const timer = setTimeout(() => setHold((current) => ({ ...current, height: null })), HOLD_MS);
+        return () => clearTimeout(timer);
+    }, [hold]);
+    // the browser's own holding on to what's on screen as the page changes would follow whatever's left of it,
+    // throwing the page to the bottom when a new tab's taller
+    useEffect(() => {
+        const { style } = document.documentElement;
+        style.overflowAnchor = 'none';
+        return () => { style.overflowAnchor = ''; };
+    }, []);
+
     let content;
     if (status === 'loading') {
         content = <Center py="20"><Spinner size="lg" color="phx2.fg" /></Center>;
@@ -151,6 +173,7 @@ function Phx2User() {
                         <Profile info={user.info} />
                     </SyncPanel>
                 </Box>
+                <Box ref={tabs} minH={hold.height ? `${hold.height}px` : undefined}>
                 <Tabs.Root
                     value={tab} onValueChange={(e) => navigate(userPath('phx2', name, number, e.value))}
                     variant="line" colorPalette="phx2"
@@ -177,6 +200,7 @@ function Phx2User() {
                         )}
                     </Tabs.Content>
                 </Tabs.Root>
+                </Box>
             </VStack>
         );
     }
