@@ -1,20 +1,20 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { Box, Center, Heading, HStack, Image, NativeSelect, Separator, Spinner, Text, VStack } from '@chakra-ui/react';
+import { Box, Center, Grid, Heading, HStack, Image, NativeSelect, Separator, Spinner, Text, VStack } from '@chakra-ui/react';
 import { LuChevronDown, LuChevronUp } from 'react-icons/lu';
 import { Chart } from 'react-chartjs-2';
 import 'chart.js/auto';
 
 import getChartsForLevel from '../API/chartlevel';
 import { userPath } from '../Helpers/paths';
-import { GRADES, gradeLabel, isCleared } from './pumbility';
-import { chartBallImg, gradeImg, plateImg } from '../Helpers/assets';
-import { EASE_OUT_QUART, FILL_TRANSITION, GRADE_COLORS, SMALL_PHONE } from './shared';
+import { GRADES, gradeForScore, gradeLabel, isCleared } from './pumbility';
+import { arrowImg, chartBallImg, gradeImg, plateImg } from '../Helpers/assets';
+import { EASE_OUT_QUART, FILL_TRANSITION, GRADE_COLORS, PHONE, SMALL_PHONE } from './shared';
 import ScoreGrid, {
     GRADE_COLUMN, gridRow, JACKET_COLUMN, LEVEL_COLUMN, PLATE_COLUMN, SCORE_COLUMN, SONG_COLUMN, TableHeading, ViewLink,
 } from './scoreGrid';
 import {
-    COOP_HEIGHT, FILTER_STYLE, FilterButtons, HEADING_SIZE, HERO_BAR_MARGIN, HERO_VALUE_STYLE, PANEL_STYLE,
+    COOP_HEIGHT, FILTER_STYLE, FilterButtons, HEADING_SIZE, HERO_BAR_MARGIN, HERO_VALUE_STYLE, PANEL_STYLE, TITLE, useSizedBox,
 } from './UserOverview';
 
 // Breakdown: one level at a time (as on the Phoenix (1) Breakdown tab): how many of its charts are
@@ -71,8 +71,15 @@ const BAR_NAMES = [GRADE_GROUPS.map(([, grades]) => grades.map(gradeLabel).join(
 const RANGES_WIDTH = 760;
 const TEXT = '#a1a1aa';
 const GRID = 'rgba(255, 255, 255, 0.06)';
+const SMALL_TITLE = 14;
+const SMALL_TITLE_WIDTH = 340;
 
-function GradeChart({ rows }) {
+// the middle of the chart's subtitle line: under the title (its lines 1.2 x its size), the gap and the subtitle's padding
+const SUBTITLE_MIDDLE = 1.2 * TITLE.size + TITLE.gap + 9 + (1.2 * 12) / 2;
+
+// titled as on Phoenix (1), so a screenshot of the chart stands on its own
+function GradeChart({ rows, title, average, clearPercent }) {
+    const [box, sized] = useSizedBox();
     // rebuilt only when the rows change, so re-renders don't redraw the chart
     const data = useMemo(() => {
         const clears = rows.filter((row) => row.cleared);
@@ -90,6 +97,18 @@ function GradeChart({ rows }) {
         maintainAspectRatio: false,
         plugins: {
             legend: { display: false },
+            title: {
+                display: true, text: title, color: TITLE.color,
+                // smaller on phones, where long names would otherwise be cut off, with the height that takes off
+                // (its lines' 1.2 x the difference) back under it, so what follows stays put
+                font: (c) => ({ size: c.chart.width < SMALL_TITLE_WIDTH ? SMALL_TITLE : TITLE.size, weight: TITLE.weight }),
+                padding: (c) => ({ top: 0, bottom: TITLE.gap + (c.chart.width < SMALL_TITLE_WIDTH ? 1.2 * (TITLE.size - SMALL_TITLE) : 0) }),
+            },
+            // where the Overview chart's legend is, so the graph is at the same height: empty, for ClearStats to sit in
+            subtitle: {
+                display: true, text: ' ', color: TEXT, font: { size: 12 },
+                padding: { top: 9, bottom: 8.6 },
+            },
             tooltip: {
                 callbacks: {
                     title: (items) => BAR_NAMES[items[0].datasetIndex][items[0].dataIndex],
@@ -114,10 +133,13 @@ function GradeChart({ rows }) {
         },
         // the two bars of a pair close together, pairs apart
         datasets: { bar: { categoryPercentage: 0.7, barPercentage: 0.92 } },
-    }), []);
+    }), [title]);
     return (
-        <Box h={COOP_HEIGHT}>
-            <Chart type="bar" data={data} options={options} />
+        <Box ref={box} h={COOP_HEIGHT} position="relative">
+            {sized && <Chart type="bar" data={data} options={options} />}
+            <HStack position="absolute" top={`${SUBTITLE_MIDDLE}px`} left="50%" transform="translate(-50%, -50%)" w="max-content">
+                <ClearStats average={average} clearPercent={clearPercent} />
+            </HStack>
         </Box>
     );
 }
@@ -185,20 +207,25 @@ function LevelPicker({ type, level, levels, onChange }) {
 }
 
 // What the level's progress bar counts: its charts cleared, cleared at a grade or better, or with a
-// Perfect Game. That grade's or plate's art rides the bar (for any clear, the level's step ball: see
-// levelBall). `label` follows the count: "16 / 190 S or better".
+// Perfect Game. That grade's or plate's art (`icon`) goes ahead of the bar; any clear has a step arrow there instead.
+// `label` follows the count: "16 / 190 ≥ S"; the select shows `option`, the table `heading`.
 const atLeast = (grade) => (row) => row.score >= CUTOFF[grade];
-const grading = (grade) => ({ label: `${gradeLabel(grade)} or better`, marker: gradeImg('phx2', grade), meets: atLeast(grade) });
+const grading = (grade) => ({
+    label: `≥ ${gradeLabel(grade)}`, option: `≥ ${gradeLabel(grade)}`, heading: `Scores ≥ ${gradeLabel(grade)}`,
+    icon: gradeImg('phx2', grade), meets: atLeast(grade),
+});
 const GOALS = [
-    { key: 'pass', label: 'cleared', meets: () => true },
+    { key: 'pass', label: 'cleared', option: 'Cleared', heading: 'Cleared', meets: () => true },
     { key: 'aaa', ...grading('aaa') },
     { key: 's', ...grading('s') },
     { key: 'ss', ...grading('ss') },
     { key: 'sss', ...grading('sss') },
-    { key: 'sssplus', ...grading('sss_p') },
-    { key: 'pg', label: 'PG', marker: plateImg('phx2', 'pg'), meets: (row) => row.plate === 'pg' },
+    { key: 'sss_p', ...grading('sss_p') },
+    { key: 'pg', label: 'PG', option: 'PG', heading: 'PG', icon: plateImg('phx2', 'pg'), meets: (row) => row.plate === 'pg' },
 ];
 const MARKER_WIDTH = 44;
+// the goal with no art of its own has piugame's top-right step arrow: blank around it, so larger than it looks
+const STEP_ARROW_SIZE = 40;
 
 // a level's step ball (co-op's goes by players, "n2")
 const levelBall = (type, level) => chartBallImg('phx2', type, type === 'c' ? `n${level}` : level);
@@ -207,49 +234,88 @@ const TYPE_COLORS = { s: 'red.500', d: 'green.500', c: 'yellow.400' };
 // All's bar, stacked: how much of the goal's met charts is singles', then doubles'
 const ALL_PARTS = [['s', 'Singles'], ['d', 'Doubles']];
 
-// the goal, inline after its count: taking up only that line of text's height (its extra height pulled out
-// by the margin), so the headline stays the Overview's height
+// the goal, for the whole tab (the bar and the tables below), between the level's title and percentage:
+// taking up only 18px of that line (its extra height pulled out by the margin), so the headline stays the
+// Overview's height
 function GoalPicker({ goal, onChange }) {
     return (
-        <NativeSelect.Root w="auto" flexShrink="0" h="18px">
-            <NativeSelect.Field
-                aria-label="Progress toward" value={goal.key} onChange={(e) => onChange(e.target.value)}
-                h="24px" minH="0" mt="-3px" ps="2" pe="6" borderWidth="1px" borderColor="phx2.emphasized" borderRadius="l2" bg="transparent"
-                fontSize="xs" lineHeight="22px" color="phx2.fg" fontWeight="semibold" cursor="pointer"
-                css={{ fieldSizing: 'content' }}
-            >
-                {GOALS.map(({ key, label }) => <option key={key} value={key}>{label}</option>)}
-            </NativeSelect.Field>
-            <NativeSelect.Indicator boxSize="3" right="1.5" color="phx2.fg" />
-        </NativeSelect.Root>
+        <HStack gap="1.5" h="18px" flexShrink="0">
+            {/* not on phones, where the title and percentage leave no room for it */}
+            <Text fontSize={{ base: 'xs', md: 'sm' }} color="fg.muted" whiteSpace="nowrap" css={{ [PHONE]: { display: 'none' } }}>Goal:</Text>
+            <NativeSelect.Root w="auto" flexShrink="0" h="18px">
+                <NativeSelect.Field
+                    aria-label="Goal" value={goal.key} onChange={(e) => onChange(e.target.value)}
+                    h={{ base: '26px', md: '32px' }} minH="0" mt={{ base: '-4px', md: '-7px' }} ps="2.5" pe="7" borderWidth="1px" borderColor="phx2.emphasized" borderRadius="l2" bg="transparent"
+                    fontSize={{ base: 'xs', md: 'sm' }} color="phx2.fg" fontWeight="semibold" cursor="pointer"
+                    css={{ fieldSizing: 'content' }}
+                >
+                    {/* the spaces: room after the text in the open list, as wide as its longest and ignoring padding on options */}
+                    {GOALS.map(({ key, option }) => <option key={key} value={key}>{option}&nbsp;&nbsp;</option>)}
+                </NativeSelect.Field>
+                <NativeSelect.Indicator boxSize="3.5" right="2" color="phx2.fg" />
+            </NativeSelect.Root>
+        </HStack>
     );
 }
 
+// The grade images are all one size (178px tall here) with the art centered, so the narrower the grade the more
+// blank there is either side of it (px of the image): trimmed so the space beside the icon is the same for any grade.
+const GRADE_ART_HEIGHT = 178;
+const GRADE_ART_INSET = {
+    f: 76, d: 77, c: 81, b: 77, a: 80, a_p: 55, aa: 57, aa_p: 31, aaa: 34, aaa_p: 8, s: 73, s_p: 53, ss: 50, ss_p: 30, sss: 27, sss_p: 7,
+};
+const AVERAGE_ICON = 24;
+
+// How much of the level is cleared, the average clear and the grade it falls in, as on the Overview's co-op rows: the icon's taller than
+// the line, its extra height pulled out by the margin. Always a line here, so the card doesn't shift between
+// levels with and without clears.
+function ClearStats({ average, clearPercent }) {
+    const grade = average && gradeForScore(average);
+    return (
+        <HStack gap="5px" flexShrink="0" fontSize="xs" color="fg.muted" fontVariantNumeric="tabular-nums">
+            {/* its own element each, for the same space between them, a bit more between the two stats */}
+            {average && <Text>Clear</Text>}
+            {average && <Text color="fg" fontWeight="semibold" me="7px" title="Share of this level's charts cleared">{clearPercent.toLocaleString(undefined, { maximumFractionDigits: 1 })}%</Text>}
+            <Text>{average ? 'Average' : 'No clears yet'}</Text>
+            {average && <Text color="fg" fontWeight="semibold" title="Average clear">{average.toLocaleString()}</Text>}
+            {average && <Image src={gradeImg('phx2', grade)} alt={gradeLabel(grade)} title={gradeLabel(grade)} h={`${AVERAGE_ICON}px`} my="-3px" w="auto" mx={`${(-GRADE_ART_INSET[grade] * AVERAGE_ICON) / GRADE_ART_HEIGHT}px`} />}
+        </HStack>
+    );
+}
+
+// the count's a little smaller than the Overview's percentage below md, being longer; its line stays that
+// percentage's height, so the card stays the Overview's
+const COUNT_SIZE = { base: 'clamp(18px, 6vw, 24px)', sm: '26px', md: HERO_VALUE_STYLE.fontSize.md };
+const COUNT_LINE = { base: HERO_VALUE_STYLE.fontSize.base, sm: '30px', md: '36px' };
+
 // The level's headline, laid out as the Overview's progress: the name, the large number and a bar in the
 // same room as its marker takes there, on one line each so it's the same height
-function GoalProgress({ name, rows, goal, average, onGoalChange, type, level }) {
+function GoalProgress({ name, phoneName, shortName, rows, total, typeTotals, goal, onGoalChange, type, level }) {
     const metRows = rows.filter((row) => row.cleared && goal.meets(row));
     const met = metRows.length;
-    const share = (count) => (rows.length ? (100 * count) / rows.length : 0);
+    const share = (count) => (total ? (100 * count) / total : 0);
     const percent = share(met);
-    // the bar's parts and the art on it, centered where it's at. On All, singles' then doubles', each with
-    // its step ball in its middle for a label (none on a part with nothing in it). Otherwise the type's
-    // color, with the goal's art (or the step ball) at the end of the fill, on the value.
+    // the bar's parts and the art on it, centered where it's at. Otherwise the type's color, with the step
+    // ball at the end of the fill, on the value. On All the colors say which is which, with no art: what's
+    // met, singles' then doubles', then what's left of each in the same order, faded. Each is as wide as its
+    // share of the whole level; its tooltip counts out of its own type's charts.
     let parts = [{ key: 'met', color: TYPE_COLORS[type], percent }];
-    let markers = [{ src: goal.marker ?? levelBall(type, level), at: percent }];
+    let markers = [{ src: levelBall(type, level), at: percent }];
     if (type === 'all') {
-        let start = 0;
-        parts = [];
+        const counted = ALL_PARTS.map(([partType, partName]) => ({
+            partType, partName,
+            count: metRows.filter((row) => row.type === partType).length,
+            ofType: typeTotals[partType],
+        }));
+        parts = [
+            ...counted.map(({ partType, partName, count, ofType }) => ({
+                key: partType, color: TYPE_COLORS[partType], percent: share(count), title: `${partName}: ${count} / ${ofType}`,
+            })),
+            ...counted.map(({ partType, partName, count, ofType }) => ({
+                key: `${partType}-left`, color: `${TYPE_COLORS[partType]}/25`, percent: share(ofType - count), title: `${partName} left: ${ofType - count} / ${ofType}`,
+            })),
+        ];
         markers = [];
-        ALL_PARTS.forEach(([partType, partName]) => {
-            const count = metRows.filter((row) => row.type === partType).length;
-            const width = share(count);
-            parts.push({ key: partType, color: TYPE_COLORS[partType], percent: width, title: `${partName}: ${count} / ${rows.length}` });
-            if (count > 0) {
-                markers.push({ src: levelBall(partType, level), at: start + width / 2 });
-            }
-            start += width;
-        });
     }
     // fills from empty, as the chart's bars draw themselves in
     const [entered, setEntered] = useState(false);
@@ -261,45 +327,58 @@ function GoalProgress({ name, rows, goal, average, onGoalChange, type, level }) 
     }, []);
     return (
         <Box>
-            <HStack justify="space-between" align="center" gap={{ base: '2', sm: '4' }} mb="1">
-                <Heading as="h4" fontSize={HEADING_SIZE} lineHeight="1.3" minW="0" truncate textTransform="uppercase">{name}</Heading>
-                <Text {...HERO_VALUE_STYLE}>{percent.toLocaleString(undefined, { maximumFractionDigits: 1 })}%</Text>
-            </HStack>
-            <Box position="relative" my={HERO_BAR_MARGIN}>
-                {/* as thick as the Overview's ladder */}
-                <HStack
-                    gap="0" h="12px" bg="bg.emphasized" borderRadius="full" overflow="hidden"
-                    role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(percent)} aria-label={`${name}: ${met} / ${rows.length} ${goal.label}`}
-                >
-                    {parts.map((part) => (
-                        <Box key={part.key} h="full" bg={part.color} w={`${entered ? part.percent : 0}%`} transition={FILL_TRANSITION} title={part.title} />
-                    ))}
-                </HStack>
-                {/* a level without a ball of its type just goes without */}
-                {markers.map(({ src, at }) => (
-                    <Image
-                        key={src} src={src} alt="" position="absolute" top="50%" w={`${MARKER_WIDTH}px`} h="28px" objectFit="contain" pointerEvents="none"
-                        left={`${entered ? at : 0}%`} transform="translate(-50%, -50%)" transition={`left ${EASE_OUT_QUART}`}
-                        filter="drop-shadow(0 1px 2px rgba(0, 0, 0, 0.6))" onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                    />
-                ))}
-            </Box>
-            {/* minH: the Overview's line, its title's text being taller than plain text */}
-            <HStack justify="space-between" columnGap="3" mt="1" minH="18px" fontSize="xs" color="fg.muted" fontVariantNumeric="tabular-nums">
-                {/* always a line here, so the page doesn't shift between levels with and without clears */}
-                <Text flexShrink="0">
-                    {average ? (
-                        <>
-                            {/* the word goes on the smallest phones, to leave the goal its room */}
-                            <Box as="span" css={{ [SMALL_PHONE]: { display: 'none' } }}>Average </Box>
-                            <Text as="span" color="fg" fontWeight="semibold" title="Average clear">{average.toLocaleString()}</Text>
-                        </>
-                    ) : 'No clears yet'}
-                </Text>
-                <HStack ms="auto" minW="0" gap="1.5">
-                    <Text flexShrink="0">{met} / {rows.length}</Text>
-                    <GoalPicker goal={goal} onChange={onGoalChange} />
-                </HStack>
+            {/* the select in the middle wherever there's room for it: the two sides as wide as each other, each at
+                least as wide as what's in it */}
+            <Grid templateColumns="minmax(max-content, 1fr) auto minmax(max-content, 1fr)" alignItems="center" columnGap={{ base: '2', sm: '4' }} mb="1">
+                <Heading as="h4" fontSize={HEADING_SIZE} lineHeight="1.3" whiteSpace="nowrap" color={TYPE_COLORS[type]}>
+                    {/* shorter on phones, where the count takes the room; shortest where nothing longer fits beside it */}
+                    <Box as="span" display={{ base: 'none', sm: 'inline' }}>{name}</Box>
+                    <Box as="span" display={{ base: 'inline', sm: 'none' }} css={{ [SMALL_PHONE]: { display: 'none' } }}>{phoneName}</Box>
+                    <Box as="span" display="none" css={{ [SMALL_PHONE]: { display: 'inline' } }}>{shortName}</Box>
+                </Heading>
+                <GoalPicker goal={goal} onChange={onGoalChange} />
+                <Text justifySelf="end" whiteSpace="nowrap" {...HERO_VALUE_STYLE} lineHeight={COUNT_LINE} fontSize={COUNT_SIZE}>{met.toLocaleString()} / {total.toLocaleString()}</Text>
+            </Grid>
+            {/* two columns: the goal's art with the percentage centered under it, and the bar with what's left under
+                its end. The art's column is the same whichever it is so the bar stays put, and clears the step ball at 0% */}
+            <HStack align="start" gap="4" mt={HERO_BAR_MARGIN} fontSize="xs" color="fg.muted" fontVariantNumeric="tabular-nums">
+                <VStack gap="0" w={`${MARKER_WIDTH}px`} flexShrink="0">
+                    {/* the art's taller than the bar, without adding to the card's height */}
+                    <Center h="12px" w="full" mb={HERO_BAR_MARGIN}>
+                        {goal.icon ? (
+                            <Image
+                                src={goal.icon} alt={goal.option} title={goal.option} w="full" h="28px" maxW="none" flexShrink="0" objectFit="contain"
+                                filter="drop-shadow(0 1px 2px rgba(0, 0, 0, 0.6))"
+                            />
+                        ) : (
+                            <Image src={arrowImg('phx2', 'ur')} alt={goal.option} title={goal.option} boxSize={`${STEP_ARROW_SIZE}px`} maxW="none" flexShrink="0" />
+                        )}
+                    </Center>
+                    {/* lineHeight: the Overview's line, its title's text being taller than plain text */}
+                    <Text lineHeight="18px" color="fg" fontWeight="semibold" whiteSpace="nowrap">{percent.toLocaleString(undefined, { maximumFractionDigits: 1 })}%</Text>
+                </VStack>
+                <VStack align="stretch" gap="0" flex="1" minW="0">
+                    <Box position="relative" mb={HERO_BAR_MARGIN}>
+                        {/* as thick as the Overview's ladder */}
+                        <HStack
+                            gap="0" h="12px" bg="bg.emphasized" borderRadius="full" overflow="hidden"
+                            role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(percent)} aria-label={`${name}: ${met} / ${total} ${goal.label}`}
+                        >
+                            {parts.map((part) => (
+                                <Box key={part.key} h="full" bg={part.color} w={`${entered ? part.percent : 0}%`} transition={FILL_TRANSITION} title={part.title} />
+                            ))}
+                        </HStack>
+                        {/* a level without a ball of its type just goes without */}
+                        {markers.map(({ src, at }) => (
+                            <Image
+                                key={src} src={src} alt="" position="absolute" top="50%" w={`${MARKER_WIDTH}px`} h="28px" objectFit="contain" pointerEvents="none"
+                                left={`${entered ? at : 0}%`} transform="translate(-50%, -50%)" transition={`left ${EASE_OUT_QUART}`}
+                                filter="drop-shadow(0 1px 2px rgba(0, 0, 0, 0.6))" onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                            />
+                        ))}
+                    </Box>
+                    <Text lineHeight="18px" textAlign="right" truncate>{(total - met).toLocaleString()} remaining</Text>
+                </VStack>
             </HStack>
         </Box>
     );
@@ -311,9 +390,10 @@ const COLUMNS = [JACKET_COLUMN, LEVEL_COLUMN, SONG_COLUMN, GRADE_COLUMN, PLATE_C
 // The level's charts that meet the goal, or those remaining, one at a time, the open one in the URL
 // (?view=remaining, or nothing): its heading beside the other's name and count, which switches to it (as
 // with Overview's score tables). "Cleared", or the goal's name.
-const goalTitle = ({ key, label }) => (key === 'pass' ? 'Cleared' : label);
 
-function ChartTables({ rows, gridKey, goal }) {
+// `listStatus` is the chart list's, which adds the charts never played to Remaining: 'loading' or 'error'
+// until it's there, when `total` still gives how many there are.
+function ChartTables({ rows, total, listStatus, gridKey, goal }) {
     const [params, setParams] = useSearchParams();
     const view = params.get('view') === 'remaining' ? 'remaining' : 'met';
     const setView = (next) => setParams((current) => {
@@ -328,19 +408,24 @@ function ChartTables({ rows, gridKey, goal }) {
     const met = useMemo(() => rows.filter((row) => row.cleared && goal.meets(row)), [rows, goal]);
     const remaining = useMemo(() => rows.filter((row) => !(row.cleared && goal.meets(row))), [rows, goal]);
     const shown = view === 'met' ? met : remaining;
+    const remainingTotal = total - met.length;
+    // the Remaining rows are still coming: the heading says how many there'll be
+    const partial = view === 'remaining' && listStatus !== 'ready';
     // the rows passing the grid's filters (as in the Overview's heading); until it says, all of them
     const [filtered, setFiltered] = useState(null);
-    const count = filtered ?? shown.length;
+    const count = partial ? remainingTotal : (filtered ?? shown.length);
 
-    const title = view === 'met' ? goalTitle(goal) : 'Remaining';
+    const title = view === 'met' ? goal.heading : 'Remaining';
     const other = view === 'met'
-        ? <ViewLink label={`Remaining (${remaining.length.toLocaleString()})`} onClick={() => setView('remaining')} />
-        : <ViewLink label={`${goalTitle(goal)} (${met.length.toLocaleString()})`} onClick={() => setView('met')} />;
+        ? <ViewLink label={`Remaining (${remainingTotal.toLocaleString()})`} onClick={() => setView('remaining')} />
+        : <ViewLink label={`${goal.heading} (${met.length.toLocaleString()})`} onClick={() => setView('met')} />;
     let empty = 'Every chart here is cleared.';
-    if (view === 'met') {
-        empty = goal.key === 'pass' ? 'No clears here yet.' : `None at ${goal.label} here yet.`;
+    if (partial) {
+        empty = '';
+    } else if (view === 'met') {
+        empty = goal.key === 'pass' ? 'No clears here yet.' : `No ${goal.heading} here yet.`;
     } else if (goal.key !== 'pass') {
-        empty = `Every chart here is at ${goal.label}.`;
+        empty = `Every chart here is ${goal.label}.`;
     }
     return (
         <Box>
@@ -354,8 +439,10 @@ function ChartTables({ rows, gridKey, goal }) {
                         {title} <Text as="span" color="fg.muted" fontWeight="normal">({count.toLocaleString()})</Text>
                     </Heading>
                 </TableHeading>
+                {partial && listStatus === 'loading' && <Spinner size="xs" color="phx2.fg" aria-label="Loading the charts never played" />}
             </HStack>
             <Separator borderColor="border" mb="4" />
+            {partial && listStatus === 'error' && <Text color="fg.muted" fontSize="sm" mb="3">Couldn't load the charts never played right now.</Text>}
             {/* a fresh grid per level, but the same one across the two lists (its rows swapped), so
                 switching keeps its sort and columns, and doesn't empty the page and scroll it to the top */}
             <Box display={shown.length > 0 ? undefined : 'none'}>
@@ -364,7 +451,7 @@ function ChartTables({ rows, gridKey, goal }) {
                     onModelUpdated={({ api }) => setFiltered(api.getDisplayedRowCount())}
                 />
             </Box>
-            {shown.length === 0 && <Text color="fg.muted">{empty}</Text>}
+            {shown.length === 0 && empty && <Text color="fg.muted">{empty}</Text>}
         </Box>
     );
 }
@@ -415,10 +502,14 @@ function UserBreakdown({ name, number, view, scores, counts, info }) {
     const list = lists[key];
 
     // every chart at the level with the player's best on it, if any, in the order of their scores (most
-    // recently attempted first), then the charts never played
+    // recently attempted first), then the charts never played. Those are all the chart list adds, so nothing
+    // waits on it: until it's here, the rows are the player's scores at the level.
     const rows = useMemo(() => {
         if (!list || list.error) {
-            return [];
+            const atLevel = (s) => (type === 'c'
+                ? s.type === 'c' && s.level === `n${level}`
+                : (type === 'all' ? s.type === 's' || s.type === 'd' : s.type === type) && Number(s.level) === level);
+            return scores.filter(atLevel).map((s, i) => gridRow({ ...s, attemptOrder: i }));
         }
         const best = new Map(scores.map((s, i) => [chartKey(s.jacket, s.type, s.level), { ...s, attemptOrder: i }]));
         const charts = type === 'c'
@@ -431,39 +522,64 @@ function UserBreakdown({ name, number, view, scores, counts, info }) {
         }).sort((a, b) => a.attemptOrder - b.attemptOrder);
     }, [list, scores, type, level]);
 
+    // how many charts the level has: the list's when it's here, otherwise the chart counts'
+    const listReady = list && !list.error;
+    const levelTotals = counts?.[String(level).padStart(2, '0')];
+    const typeCount = (t) => rows.filter((row) => row.type === t).length;
+    const typeTotals = listReady
+        ? { s: typeCount('s'), d: typeCount('d') }
+        : { s: levelTotals?.singles ?? typeCount('s'), d: levelTotals?.doubles ?? typeCount('d') };
+    let total = rows.length;
+    if (!listReady) {
+        total = type === 'c'
+            ? counts?.coop?.[`n${level}`] ?? rows.length
+            : { all: typeTotals.s + typeTotals.d, s: typeTotals.s, d: typeTotals.d }[type];
+    }
+    let listStatus = 'loading';
+    if (list) {
+        listStatus = list.error ? 'error' : 'ready';
+    }
+
     const cleared = rows.filter((row) => row.cleared);
-    const average = cleared.length ? Math.round(cleared.reduce((sum, row) => sum + row.score, 0) / cleared.length) : null;
-    const levelName = type === 'c' ? `Co-op x${level}` : `${{ all: 'Level', s: 'Single', d: 'Double' }[type]} ${level}`;
+    const average =cleared.length ? Math.round(cleared.reduce((sum, row) => sum + row.score, 0) / cleared.length) : null;
+    const levelName = { all: `LEVEL ${level}`, s: `SINGLE Lv. ${level}`, d: `DOUBLE Lv. ${level}`, c: `CO-OP x${level}` }[type];
+    // as on Phoenix (1)
+    const chartName = { all: `Level ${level}`, s: `S${level}`, d: `D${level}`, c: `Co-op x${level}` }[type];
+
+    // a type with no charts at the level (singles' Lv.27, doubles' Lv.1) can't be picked. Co-op has its own
+    // levels, and coming from it goes back to the level last shown.
+    const typeLevel = type === 'c' ? lastLevel.current : level;
+    const levelCounts = counts?.[String(typeLevel).padStart(2, '0')];
+    const unavailable = (field, typeName) => (counts && !(levelCounts?.[field] > 0) ? `No ${typeName} charts at Lv.${typeLevel}` : undefined);
+    const typeOptions = TYPES.map(([key, label]) => [key, label, {
+        all: unavailable('total', 'singles or doubles'), s: unavailable('singles', 'singles'), d: unavailable('doubles', 'doubles'),
+    }[key]]);
 
     return (
         <VStack align="stretch" gap="10">
             <VStack align="stretch" gap="3">
                 <HStack justify="space-between" wrap="wrap" gap="3">
                     <FilterButtons
-                        value={type} options={TYPES}
+                        value={type} options={typeOptions}
                         onChange={(t) => show(t, t === 'c' ? COOP_PLAYERS[0] : (type === 'c' ? lastLevel.current : level))}
                     />
                     <LevelPicker type={type} level={level} levels={levels} onChange={(l) => show(type, l)} />
                 </HStack>
-                {!list ? <Center py="10"><Spinner color="phx2.fg" /></Center> : list.error ? (
-                    <Text color="fg.muted">Couldn't load this level's charts right now.</Text>
-                ) : (
-                    // one card, laid out as the Overview's so it's the same height: progress, a divider, the chart
-                    // and, but on phones, a row under it for the date
-                    <VStack align="stretch" gap="8" separator={<Separator borderColor="border.emphasized" borderTopWidth="2px" />} {...PANEL_STYLE}>
-                        <GoalProgress name={levelName} rows={rows} goal={goal} average={average} onGoalChange={setGoal} type={type} level={level} />
-                        <VStack align="stretch" gap="4">
-                            <GradeChart rows={rows} />
-                            <HStack display={{ base: 'none', sm: 'flex' }} minH={FILTER_STYLE.h} color="fg.muted">
-                                <Text fontSize="xs" fontStyle="italic" minW="0" truncate>
-                                    Synced: {new Date(info.timestamp * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                                </Text>
-                            </HStack>
-                        </VStack>
+                {/* one card, laid out as the Overview's so it's the same height: progress, a divider, the chart
+                    and, but on phones, a row under it for the date */}
+                <VStack align="stretch" gap="8" separator={<Separator borderColor="border.emphasized" borderTopWidth="2px" />} {...PANEL_STYLE}>
+                    <GoalProgress name={levelName} phoneName={{ all: `LEVEL ${level}`, s: `SINGLE ${level}`, d: `DOUBLE ${level}`, c: `CO-OP x${level}` }[type]} shortName={{ all: `Lv. ${level}`, s: `S${level}`, d: `D${level}`, c: `C${level}` }[type]} rows={rows} total={total} typeTotals={typeTotals} goal={goal} onGoalChange={setGoal} type={type} level={level} />
+                    <VStack align="stretch" gap="4">
+                        <GradeChart rows={rows} title={`${info.player}: ${chartName} Best Scores`} average={average} clearPercent={total ? (100 * cleared.length) / total : 0} />
+                        <HStack display={{ base: 'none', sm: 'flex' }} minH={FILTER_STYLE.h} color="fg.muted">
+                            <Text fontSize="xs" fontStyle="italic" minW="0" truncate>
+                                Synced: {new Date(info.timestamp * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                            </Text>
+                        </HStack>
                     </VStack>
-                )}
+                </VStack>
             </VStack>
-            {list && !list.error && <ChartTables rows={rows} goal={goal} gridKey={`${key}|${type}|${level}`} />}
+            <ChartTables rows={rows} total={total} listStatus={listStatus} goal={goal} gridKey={`${type}|${level}`} />
         </VStack>
     );
 }

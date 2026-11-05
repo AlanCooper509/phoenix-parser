@@ -42,10 +42,11 @@ export const PANEL_STYLE = { bg: 'bg.subtle', borderWidth: '1px', borderColor: '
 export function FilterButtons({ value, onChange, options = FILTERS }) {
     return (
         <Group attached>
-            {options.map(([key, label]) => (
+            {/* [key, label, why it's unavailable, if it is] */}
+            {options.map(([key, label, unavailable]) => (
                 <Button
                     key={key} size="sm" px={{ base: '1.5', sm: '3.5' }} {...FILTER_STYLE} colorPalette="phx2" variant={value === key ? 'solid' : 'outline'}
-                    aria-pressed={value === key} onClick={() => onChange(key)}
+                    aria-pressed={value === key} onClick={() => onChange(key)} disabled={Boolean(unavailable)} title={unavailable || undefined}
                 >
                     {label}
                 </Button>
@@ -69,7 +70,7 @@ const narrow = (context) => context.chart.width < 500;
 const tickFont = (context) => ({ size: narrow(context) ? 10 : 12 });
 
 // the chart's title, and the one over Co-op's rows in its place
-const TITLE = { color: '#e4e4e7', size: 16, weight: '600', gap: 8 };
+export const TITLE = { color: '#e4e4e7', size: 16, weight: '600', gap: 8 };
 // the chart's (Breakdown's too), and Co-op's rows in its place, so switching between them doesn't move the page
 export const CHART_HEIGHT = { base: '260px', md: '340px' };
 // on phones there's nothing under Co-op's rows (no date, or level range), so they also take that line's
@@ -105,11 +106,10 @@ const gradeLines = {
 };
 const CHART_PLUGINS = [gradeLines];
 
-// titled as on Phoenix (1): "NAME (Singles and Doubles)", so a screenshot of the chart stands on its
-// own (when it was synced sits under it, beside the level range)
-function LevelChart({ rows, filter, info }) {
-    // the tab's panel is still hidden as this mounts on opening the tab: created there, the chart would start
-    // at no size, and everything in it would animate out from its top-left corner once the panel shows
+// A tab's chart waits on this: the tab's panel is still hidden as it mounts on opening the tab, and created
+// there, the chart would start at no size, with everything in it animating out from its top-left corner once
+// the panel shows. Give `box` to the chart's container, and create the chart once `sized`.
+export function useSizedBox() {
     const box = useRef(null);
     const [sized, setSized] = useState(false);
     useEffect(() => {
@@ -122,6 +122,13 @@ function LevelChart({ rows, filter, info }) {
         observer.observe(box.current);
         return () => observer.disconnect();
     }, []);
+    return [box, sized];
+}
+
+// titled as on Phoenix (1): "NAME (Singles and Doubles)", so a screenshot of the chart stands on its
+// own (when it was synced sits under it, beside the level range)
+function LevelChart({ rows, filter, info }) {
+    const [box, sized] = useSizedBox();
 
     const averages = rows.map((r) => r.average).filter(Boolean);
     const low = Math.min(SCORE_AXIS_MIN, ...averages.map((a) => Math.floor(a / 50000) * 50000));

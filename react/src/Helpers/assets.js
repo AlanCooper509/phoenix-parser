@@ -2,7 +2,7 @@
 // (plus phx2/pumbility/pumbility_NN.png, piugame's PUMBILITY tier icons; phx2/stepball/{s,d,c}_bg.png,
 // its blank red singles, green doubles and yellow co-op step balls, and s01..s28, d01..d29, c2..c5, the step balls
 // with each level (or co-op player count) on; phx2/grade/<grade>.png, x_<grade>.png for fails; and
-// phx2/plate/<plate>.png, s_<plate>.png for the small ones)
+// phx2/plate/<plate>.png, s_<plate>.png for the small ones; and phx2/arrow/{dl,ul,c,ur,dr}.png, its step panels)
 // (the same hash can be a different image in each game, so always pass the game)
 const ASSETS_BASE_URL = "https://objectstorage.ca-toronto-1.oraclecloud.com/n/yz1xhpsymsqz/b/piu-assets/o";
 
@@ -43,6 +43,11 @@ export function chartBallImg(game, type, level) {
 // a grade as piugame draws it ("s_p", or "x_aa_p" for a fail)
 export function gradeImg(game, grade) {
     return `${ASSETS_BASE_URL}/${game}/grade/${grade}.png`;
+}
+
+// a step panel, as piugame draws it: 'dl', 'ul', 'c', 'ur' or 'dr'
+export function arrowImg(game, panel) {
+    return `${ASSETS_BASE_URL}/${game}/arrow/${panel}.png`;
 }
 
 // a plate ("tg"), the small version unless `large`
