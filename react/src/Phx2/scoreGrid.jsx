@@ -101,22 +101,108 @@ export const comparing = (compare) => (valueA, valueB, nodeA, nodeB) => compare(
 // ---- filters, without the Blank / Not blank options (every score has a level, song and value)
 
 const NUMBER_FILTER = {
-    filterOptions: ['equals', 'notEqual', 'greaterThan', 'greaterThanOrEqual', 'lessThan', 'lessThanOrEqual', 'inRange'],
+    filterOptions: ['equals', 'notEqual', 'greaterThan', 'greaterThanOrEqual', 'lessThan', 'lessThanOrEqual'],
 };
+const SCORE_FILTER = { ...NUMBER_FILTER, defaultOption: 'greaterThanOrEqual' };
+const FILTER_OPERATORS = [
+    ['equals', '='], ['notEqual', '≠'], ['greaterThan', '>'], ['greaterThanOrEqual', '≥'],
+    ['lessThan', '<'], ['lessThanOrEqual', '≤'],
+];
+const OPERATOR_NAMES = {
+    equals: 'Equal to', notEqual: 'Not equal to', greaterThan: 'Greater than',
+    greaterThanOrEqual: 'Greater than or equal to', lessThan: 'Less than', lessThanOrEqual: 'Less than or equal to',
+};
+
+function ScoreFloatingFilter(props, ref) {
+    const [operator, setOperator] = useState('greaterThanOrEqual');
+    const [value, setValue] = useState('');
+
+    useImperativeHandle(ref, () => ({
+        onParentModelChanged(model) {
+            setOperator(model?.type || 'greaterThanOrEqual');
+            setValue(model?.filter == null ? '' : String(model.filter));
+        },
+    }));
+
+    const update = (nextOperator, nextValue) => {
+        setOperator(nextOperator);
+        setValue(nextValue);
+        const parsed = nextValue.trim().replace(/,/g, '');
+        const filterValue = parsed === '' || !Number.isFinite(Number(parsed)) ? null : Number(parsed);
+        props.parentFilterInstance((filter) => filter.onFloatingFilterChanged(nextOperator, filterValue));
+    };
+
+    return (
+        <div className="phx2-grid-floating-filter">
+            <select
+                className="phx2-grid-filter-operator" aria-label="Score filter operator" title={OPERATOR_NAMES[operator]}
+                value={operator} onChange={(event) => (value === '' ? setOperator(event.target.value) : update(event.target.value, value))}
+            >
+                {FILTER_OPERATORS.map(([type, symbol]) => <option key={type} value={type}>{symbol}</option>)}
+            </select>
+            <input
+                className="phx2-grid-filter-value" type="text" inputMode="numeric" aria-label="Filter score"
+                placeholder="Score" value={value} onChange={(event) => update(operator, event.target.value)}
+            />
+        </div>
+    );
+}
+const ScoreFloatingFilterComponent = forwardRef(ScoreFloatingFilter);
+
+const RankFloatingFilter = forwardRef(function RankFloatingFilter({ labels, label, ...props }, ref) {
+    const [operator, setOperator] = useState('greaterThanOrEqual');
+    const [value, setValue] = useState('');
+
+    useImperativeHandle(ref, () => ({
+        onParentModelChanged(model) {
+            setOperator(model?.type || 'greaterThanOrEqual');
+            setValue(model?.filter == null ? '' : String(model.filter));
+        },
+    }), [labels]);
+
+    const update = (nextOperator, nextValue) => {
+        setOperator(nextOperator);
+        setValue(nextValue);
+        const rank = nextValue === '' ? null : Number(nextValue);
+        const filterValue = Number.isInteger(rank) ? labels[rank] : null;
+        props.parentFilterInstance((filter) => filter.onFloatingFilterChanged(nextOperator, filterValue));
+    };
+
+    return (
+        <div className={`phx2-grid-floating-filter phx2-grid-rank-filter phx2-grid-rank-filter-${label.toLowerCase()}`}>
+            <select
+                className="phx2-grid-filter-operator" aria-label={`${label} filter operator`} title={OPERATOR_NAMES[operator]}
+                value={operator} onChange={(event) => (value === '' ? setOperator(event.target.value) : update(event.target.value, value))}
+            >
+                {FILTER_OPERATORS.map(([type, symbol]) => <option key={type} value={type}>{symbol}</option>)}
+            </select>
+            <select
+                className="phx2-grid-filter-value" aria-label={`Filter ${label.toLowerCase()}`} title={`Choose a ${label.toLowerCase()}`}
+                value={value} onChange={(event) => update(operator, event.target.value)}
+            >
+                <option value="">Any</option>
+                {labels.map((option, rank) => ({ option, rank })).reverse().map(({ option, rank }) => (
+                    <option key={option} value={rank}>{option}</option>
+                ))}
+            </select>
+        </div>
+    );
+});
+
 export const NUMBER_FILTER_COLUMN = { filter: 'agNumberColumnFilter', floatingFilter: true, filterParams: NUMBER_FILTER };
 const TEXT_FILTER = {
     filterOptions: ['contains', 'notContains', 'equals', 'notEqual', 'startsWith', 'endsWith'],
 };
 
-// Grades and plates filter by rank, as players think of them ("below AA", "PG or better"): typed as
-// their names (AA+, PG), compared in order, at least the one typed by default.
+// Grades and plates filter by rank, as players think of them ("below AA", "PG or better"): compared in
+// order, using their names in the full filter and the finite dropdown values in the floating filter.
 function rankFilter(labels) {
     const ranks = Object.fromEntries(labels.map((label, i) => [label.toUpperCase(), i]));
     return {
-        filterOptions: ['greaterThanOrEqual', 'lessThanOrEqual', 'greaterThan', 'lessThan', 'equals', 'notEqual', 'inRange'],
+        filterOptions: FILTER_OPERATORS.map(([type]) => type),
         defaultOption: 'greaterThanOrEqual',
         allowedCharPattern: 'A-Za-z\\+',
-        numberParser: (text) => ranks[text?.trim().toUpperCase()] ?? null,
+        numberParser: (text) => (Number.isInteger(text) ? text : ranks[text?.trim().toUpperCase()] ?? null),
         numberFormatter: (rank) => labels[rank] ?? null,
     };
 }
@@ -139,29 +225,36 @@ export const LEVEL_COLUMN = {
     floatingFilterComponentParams: { suppressFilterButton: true },
 };
 export const SONG_COLUMN = {
-    // takes the room left over: at least enough for a short title even on phones (compact)
-    headerName: 'Song', field: 'name', flex: 1, minWidth: 80, cellRenderer: SongCell,
+    // takes the room left over; long titles ellipsize rather than forcing the other columns narrower
+    headerName: 'Song', field: 'name', flex: 1, minWidth: 0, cellRenderer: SongCell,
     filter: 'agTextColumnFilter', floatingFilter: true, filterParams: TEXT_FILTER,
 };
 export const GRADE_COLUMN = {
-    colId: 'grade', headerName: 'Grade', field: 'gradeText', width: 100, cellRenderer: GradeCell, comparator: comparing(byScore),
+    colId: 'grade', headerName: 'Grade', field: 'gradeText', width: 108, minWidth: 108, cellRenderer: GradeCell, comparator: comparing(byScore),
     // right-aligned like its cells, so the grade sits by the plate
     headerClass: 'ag-right-aligned-header phx2-grid-near-next', cellClass: 'phx2-grid-near-next',
     // by rank: a fail counts as the grade it reached; a STAGE BREAK (no grade) never matches
     filter: 'agNumberColumnFilter', floatingFilter: true, filterValueGetter: ({ data }) => gradeRank(data.grade),
     filterParams: rankFilter(GRADES.map(([, label]) => label)),
+    floatingFilterComponent: RankFloatingFilter,
+    floatingFilterComponentParams: { label: 'Grade', labels: GRADES.map(([, label]) => label), suppressFilterButton: true },
 };
 export const PLATE_COLUMN = {
-    colId: 'plate', headerName: 'Plate', field: 'plate', width: 84, cellRenderer: PlateCell,
+    colId: 'plate', headerName: 'Plate', field: 'plate', width: 84, minWidth: 84, cellRenderer: PlateCell,
     comparator: comparing((a, b) => (PLATES.indexOf(a.plate) - PLATES.indexOf(b.plate)) || byScore(a, b)),
     // by rank, RG to PG: only cleared plays have a plate
     filter: 'agNumberColumnFilter', floatingFilter: true,
     filterValueGetter: ({ data }) => (data.cleared && data.plate ? PLATES.indexOf(data.plate) : null),
     filterParams: rankFilter(PLATES.map((plate) => plate.toUpperCase())),
+    floatingFilterComponent: RankFloatingFilter,
+    floatingFilterComponentParams: { label: 'Plate', labels: PLATES.map((plate) => plate.toUpperCase()), suppressFilterButton: true },
 };
 export const SCORE_COLUMN = {
     colId: 'score', headerName: 'Score', field: 'score', width: 120, cellRenderer: ScoreCell, comparator: comparing(byScore),
     ...NUMBER_FILTER_COLUMN,
+    filterParams: SCORE_FILTER,
+    floatingFilterComponent: ScoreFloatingFilterComponent,
+    floatingFilterComponentParams: { suppressFilterButton: true },
 };
 
 const DEFAULT_COLUMN = { sortable: true, suppressMenu: true, resizable: false };
@@ -171,14 +264,14 @@ const DEFAULT_COLUMN = { sortable: true, suppressMenu: true, resizable: false };
 const JACKET_FOLD = [480, ['jacket']];
 
 // Below this grid width (phones) the grid goes compact: smaller text, padding, images and rows
-// (.phx2-grid-compact in Phx2.css), and these columns narrower, so the song, level, grade, plate and
-// score fit without scrolling sideways. Columns not in a grid are skipped.
+// (.phx2-grid-compact in Phx2.css). Grade and Plate keep enough width for their filters; Song shrinks
+// to the remaining space and ellipsizes. Columns not in a grid are skipped.
 const COMPACT_WIDTH = 600;
-const COMPACT_COLUMNS = { jacket: 72, levelNumber: 42, grade: 62, plate: 52, score: 70, scorePlayed: 74, pumbility: 70, rank: 28, points: 54 };
-// narrower still below this grid width (320px phones), just fitting what's in them, as the columns above
-// and the song's minimum come to more than that
+const COMPACT_COLUMNS = { jacket: 72, levelNumber: 42, score: 70, scorePlayed: 74, pumbility: 70, rank: 28, points: 54 };
+// narrower still below this grid width (320px phones); Song can become very narrow, while the filter
+// columns remain usable.
 const TINY_WIDTH = 310;
-const TINY_COLUMNS = { levelNumber: 38, grade: 48, plate: 44, score: 60, scorePlayed: 62, pumbility: 60, rank: 24, points: 50 };
+const TINY_COLUMNS = { levelNumber: 38, score: 60, scorePlayed: 62, pumbility: 60, rank: 24, points: 50 };
 // shorter headers where the full one won't fit beside its sort arrow
 const COMPACT_HEADERS = { levelNumber: 'Lv.' };
 

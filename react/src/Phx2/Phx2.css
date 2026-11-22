@@ -74,6 +74,56 @@
     display: none;
 }
 
+/* score filters show their comparison operator beside the value; grades and plates use a finite
+   dropdown instead of asking players to remember the rank labels. */
+.phx2-root .phx2-grid .phx2-grid-floating-filter {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    width: 100%;
+    min-width: 0;
+    height: 100%;
+}
+.phx2-root .phx2-grid .phx2-grid-floating-filter select,
+.phx2-root .phx2-grid .phx2-grid-floating-filter input {
+    height: 24px;
+    min-width: 0;
+    border: 1px solid var(--ag-border-color);
+    border-radius: 4px;
+    color: var(--ag-foreground-color);
+    background: var(--ag-background-color);
+    font: inherit;
+    font-size: 12px;
+}
+.phx2-root .phx2-grid .phx2-grid-floating-filter .phx2-grid-filter-operator {
+    flex: 0 0 30px;
+    width: 30px;
+    padding: 0 1px;
+    text-align: center;
+}
+.phx2-root .phx2-grid .phx2-grid-floating-filter .phx2-grid-filter-value {
+    flex: 1 1 auto;
+    width: 100%;
+    padding: 0 3px;
+}
+.phx2-root .phx2-grid .phx2-grid-rank-filter {
+    justify-content: center;
+}
+.phx2-root .phx2-grid .phx2-grid-rank-filter .phx2-grid-filter-value {
+    flex: 0 0 58px;
+    width: 58px;
+}
+.phx2-root .phx2-grid .phx2-grid-rank-filter-plate .phx2-grid-filter-value {
+    flex-basis: 40px;
+    width: 40px;
+}
+.phx2-root .phx2-grid .phx2-grid-floating-filter input {
+    appearance: textfield;
+}
+.phx2-root .phx2-grid .phx2-grid-floating-filter input::placeholder {
+    color: var(--ag-secondary-foreground-color);
+}
+
 /* compact grids (phones; scoreGrid.jsx's COMPACT_WIDTH): smaller text, padding and images, so more
    columns fit. !important where a column sets its own padding inline (Level, jacket). */
 .phx2-root .phx2-grid.phx2-grid-compact {
