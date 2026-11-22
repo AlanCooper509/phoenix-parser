@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Box, Button, Flex, Group, HStack, Image, NativeSelect, Progress, Separator, SimpleGrid, Text, VStack } from '@chakra-ui/react';
+import { Box, Flex, HStack, Image, NativeSelect, Progress, Separator, SimpleGrid, Text, VStack } from '@chakra-ui/react';
 import { Chart } from 'react-chartjs-2';
 import ChartJS from 'chart.js/auto';
 
@@ -12,6 +12,7 @@ import {
     TINY, titleLadder, UnfilledFifty,
 } from './shared';
 import { levelRows } from './stats';
+import { FILTER_STYLE, FilterButtons as SharedFilterButtons } from './shared';
 
 // Overview: progress toward the next PUMBILITY tier and singles and doubles titles, then how much
 // of each level is cleared and how well, as a chart (bars: % of the level's charts cleared; line:
@@ -26,9 +27,6 @@ const COOP_BAR_FILL = 'rgba(4, 164, 35, 0.7)';
 const TEXT = '#a1a1aa';
 const GRID = 'rgba(255, 255, 255, 0.06)';
 
-// one size for every toggle and select beside it (Overview, score tables, Breakdown): smaller on phones.
-// Set as styles: a responsive `size` doesn't take effect here.
-export const FILTER_STYLE = { h: { base: '8', sm: '9' }, fontSize: { base: 'xs', sm: 'sm' } };
 // the large number at the top right of that card
 export const HERO_VALUE_STYLE = {
     fontFamily: "'Oxanium', sans-serif", fontWeight: '800', fontSize: { base: 'clamp(18px, 6.4vw, 24px)', sm: '3xl', md: '4xl' }, lineHeight: '1',
@@ -39,20 +37,9 @@ export const HERO_BAR_MARGIN = '16px';
 // the darker card a tab's progress and chart sit in (Overview, Breakdown)
 export const PANEL_STYLE = { bg: 'bg.subtle', borderWidth: '1px', borderColor: 'border', borderRadius: 'lg', p: { base: '4', md: '6' } };
 
-export function FilterButtons({ value, onChange, options = FILTERS }) {
-    return (
-        <Group attached>
-            {/* [key, label, why it's unavailable, if it is] */}
-            {options.map(([key, label, unavailable]) => (
-                <Button
-                    key={key} size="sm" px={{ base: '1.5', sm: '3.5' }} {...FILTER_STYLE} colorPalette="phx2" variant={value === key ? 'solid' : 'outline'}
-                    aria-pressed={value === key} onClick={() => onChange(key)} disabled={Boolean(unavailable)} title={unavailable || undefined}
-                >
-                    {label}
-                </Button>
-            ))}
-        </Group>
-    );
+export { FILTER_STYLE };
+export function FilterButtons({ options = FILTERS, ...props }) {
+    return <SharedFilterButtons options={options} {...props} />;
 }
 
 function levelLabel(filter, level) {

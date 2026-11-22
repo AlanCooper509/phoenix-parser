@@ -16,6 +16,7 @@ import ScoreGrid, {
 import {
     COOP_HEIGHT, FILTER_STYLE, FilterButtons, HEADING_SIZE, HERO_BAR_MARGIN, HERO_VALUE_STYLE, PANEL_STYLE, TITLE, useSizedBox,
 } from './UserOverview';
+import { HOLD_MS } from './UserScores';
 
 // Breakdown: one level at a time (as on the Phoenix (1) Breakdown tab): how many of its charts are
 // cleared, how those clears spread across grades, and the level's charts, cleared or remaining.
@@ -411,8 +412,9 @@ function GoalProgress({ name, phoneName, shortName, rows, total, typeTotals, goa
     );
 }
 
-// no sort to start: the rows come most recently attempted first
-const COLUMNS = [JACKET_COLUMN, LEVEL_COLUMN, SONG_COLUMN, GRADE_COLUMN, PLATE_COLUMN, SCORE_COLUMN];
+// no sort to start: the rows come most recently attempted first. The level's step ball stays (it tells
+// singles from doubles), but without its filter: the tab is one level at a time.
+const COLUMNS = [JACKET_COLUMN, { ...LEVEL_COLUMN, filter: false, floatingFilter: false }, SONG_COLUMN, GRADE_COLUMN, PLATE_COLUMN, SCORE_COLUMN];
 
 // The level's charts that meet the goal, or those remaining, one at a time, the open one in the URL
 // (?view=remaining, or nothing): its heading beside the other's name and count, which switches to it (as
@@ -463,9 +465,11 @@ function ChartTables({ rows, total, listStatus, gridKey, goal }) {
     const remainingTotal = total - met.length;
     // the Remaining rows are still coming: the heading says how many there'll be
     const partial = view === 'remaining' && listStatus !== 'ready';
-    // the rows passing the grid's filters (as in the Overview's heading); until it says, all of them
+    // the rows passing the grid's filters (as in the Overview's heading), with the rows they were counted
+    // from: just after switching lists the grid still reports the other list's, so until it counts these,
+    // all of them
     const [filtered, setFiltered] = useState(null);
-    const count = partial ? remainingTotal : (filtered ?? shown.length);
+    const count = partial ? remainingTotal : (filtered?.of === shown ? filtered.count : shown.length);
 
     const title = view === 'met' ? <GoalName goal={goal} size={HEADING_ICON} /> : 'Remaining';
     const other = view === 'met'
@@ -500,7 +504,7 @@ function ChartTables({ rows, total, listStatus, gridKey, goal }) {
             <Box display={shown.length > 0 ? undefined : 'none'}>
                 <ScoreGrid
                     key={gridKey} rowData={shown} columnDefs={COLUMNS}
-                    onModelUpdated={({ api }) => setFiltered(api.getDisplayedRowCount())}
+                    onModelUpdated={({ api }) => setFiltered({ of: api.getGridOption('rowData'), count: api.getDisplayedRowCount() })}
                 />
             </Box>
             {shown.length === 0 && empty && <Text color="fg.muted">{empty}</Text>}
@@ -514,15 +518,31 @@ function UserBreakdown({ name, number, view, scores, counts, info }) {
     // the goal shown is in the URL (?goal=s; nothing for Pass), so a shared link opens on it
     const [params, setParams] = useSearchParams();
     const goal = GOALS.find(({ key }) => key === params.get('goal')) ?? GOALS[0];
-    const setGoal = (key) => setParams((current) => {
-        const updated = new URLSearchParams(current);
-        if (key === GOALS[0].key) {
-            updated.delete('goal');
-        } else {
-            updated.set('goal', key);
+    // a new level (or type) mounts a fresh grid, and a new goal swaps the rows, which leave the tables no
+    // height until they draw: the tables keep their old height meanwhile, so the page doesn't shrink and
+    // scroll back to the top (as on the Scores tab)
+    const tables = useRef(null);
+    const [hold, setHold] = useState(null);
+    useEffect(() => {
+        if (hold === null) {
+            return undefined;
         }
-        return updated;
-    }, { replace: true });
+        const timer = setTimeout(() => setHold(null), HOLD_MS);
+        return () => clearTimeout(timer);
+    }, [hold]);
+    const holdTables = () => setHold(tables.current?.offsetHeight ?? null);
+    const setGoal = (key) => {
+        holdTables();
+        setParams((current) => {
+            const updated = new URLSearchParams(current);
+            if (key === GOALS[0].key) {
+                updated.delete('goal');
+            } else {
+                updated.set('goal', key);
+            }
+            return updated;
+        }, { replace: true });
+    };
     const start = useMemo(() => highestCleared(scores), [scores]);
     const { type, level } = parseView(view) || { type: 'all', level: start || 20 };
     // the level last shown for singles / doubles, to go back to from co-op (which picks players instead)
@@ -530,7 +550,10 @@ function UserBreakdown({ name, number, view, scores, counts, info }) {
     if (type !== 'c') {
         lastLevel.current = level;
     }
-    const show = (nextType, nextLevel) => navigate(`${userPath('phx2', name, number, `breakdown/${viewOf(nextType, nextLevel)}`)}${search}`);
+    const show = (nextType, nextLevel) => {
+        holdTables();
+        navigate(`${userPath('phx2', name, number, `breakdown/${viewOf(nextType, nextLevel)}`)}${search}`);
+    };
 
     // levels with charts of the type picked (co-op: player counts)
     const levels = useMemo(() => {
@@ -631,7 +654,9 @@ function UserBreakdown({ name, number, view, scores, counts, info }) {
                     </VStack>
                 </VStack>
             </VStack>
-            <ChartTables rows={rows} total={total} listStatus={listStatus} goal={goal} gridKey={`${type}|${level}`} />
+            <Box ref={tables} minH={hold ? `${hold}px` : undefined}>
+                <ChartTables rows={rows} total={total} listStatus={listStatus} goal={goal} gridKey={`${type}|${level}`} />
+            </Box>
         </VStack>
     );
 }

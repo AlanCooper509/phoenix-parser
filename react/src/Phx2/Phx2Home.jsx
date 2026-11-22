@@ -10,7 +10,7 @@ import getUsers from '../API/users';
 import { fromPiugameUrl } from '../Helpers/assets';
 import { userPath } from '../Helpers/paths';
 import {
-    DAY, PAGE_WIDTH, SMALL_PHONE, TAB_SIZES, WinterSnow, Phx2Layout, PlayerTitle, formatPumbility, pumbilityTier, timeAgo,
+    DAY, FilterButtons, PAGE_WIDTH, SMALL_PHONE, TAB_SIZES, WinterSnow, Phx2Layout, PlayerTitle, formatPumbility, pumbilityTier, timeAgo,
 } from './shared';
 
 // PROTOTYPE: Phoenix 2 home page at /phx2 (Chakra UI, dark; see shared.jsx).
@@ -238,15 +238,7 @@ function Phx2Home() {
                             </Tabs.List>
                             <HStack gap="1" fontSize="sm">
                                 <Text color="fg.muted" me="1">Sort</Text>
-                                {[['recent', 'Recent'], ['pumbility', 'PUMBILITY']].map(([value, label]) => (
-                                    <Badge
-                                        key={value} as="button" cursor="pointer" size="md"
-                                        variant={sortBy === value ? 'solid' : 'outline'} colorPalette="phx2"
-                                        onClick={() => setSortBy(value)}
-                                    >
-                                        {label}
-                                    </Badge>
-                                ))}
+                                <FilterButtons value={sortBy} onChange={setSortBy} options={[['recent', 'Recent'], ['pumbility', 'PUMBILITY']]} />
                             </HStack>
                         </Flex>
                         {['today', 'week', 'all'].map((tab) => (

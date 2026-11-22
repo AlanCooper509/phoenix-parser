@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import {
-    ChakraProvider, Theme, Badge, Box, Center, Container, createToaster, Flex, Heading, HStack, Image, Link, Progress, ProgressCircle,
+    ChakraProvider, Theme, Badge, Box, Button, Center, Container, createToaster, Flex, Group, Heading, HStack, Image, Link, Progress, ProgressCircle,
     Stack, Text, Toast, Toaster,
 } from '@chakra-ui/react';
 import { LuCheck } from 'react-icons/lu';
@@ -504,5 +504,39 @@ export function ChartBadge({ type, level, ...props }) {
         <Badge colorPalette={CHART_COLORS[type] || 'gray'} variant="subtle" fontVariantNumeric="tabular-nums" whiteSpace="nowrap" {...props}>
             {players ? `C${players}` : `${type.toUpperCase()}${String(level).replace(/^0/, '')}`}
         </Badge>
+    );
+}
+
+// ---- toggles (Overview, score tables, Breakdown, home)
+
+// one size for every toggle and select beside it (Overview, score tables, Breakdown): smaller on phones.
+// Set as styles: a responsive `size` doesn't take effect here.
+export const FILTER_STYLE = { h: { base: '8', sm: '9' }, fontSize: { base: 'xs', sm: 'sm' } };
+// Every toggle is outlined: the one picked in its color over a faint tint of it, the rest plain gray. The
+// game types have their own colors, as their bars and step balls do (singles red, doubles green, co-op
+// yellow: the bars' shades, not the palettes' lighter text tones, which read washed out on the dark
+// background), and every type together gray, apart from doubles' green; any other toggle the site's green.
+const TYPE_COLORS = { s: 'red.500', d: 'green.500', c: 'yellow.400', both: 'gray.200', all: 'gray.200' };
+function toggleStyle(color, picked) {
+    return picked
+        ? { bg: `color-mix(in srgb, {colors.${color}} 14%, transparent)`, color, borderColor: color, zIndex: 1, _hover: { bg: `color-mix(in srgb, {colors.${color}} 22%, transparent)` } }
+        : { bg: 'transparent', color: 'fg.muted', borderColor: 'border.emphasized', _hover: { bg: 'bg.muted', color: 'fg' } };
+}
+
+export function FilterButtons({ value, onChange, options }) {
+    const typed = options.some(([key]) => key in TYPE_COLORS);
+    return (
+        <Group attached>
+            {/* [key, label, why it's unavailable, if it is] */}
+            {options.map(([key, label, unavailable]) => (
+                <Button
+                    key={key} size="sm" px={{ base: '1.5', sm: '3.5' }} {...FILTER_STYLE} variant="outline"
+                    {...toggleStyle((typed && TYPE_COLORS[key]) || 'phx2.500', value === key)}
+                    aria-pressed={value === key} onClick={() => onChange(key)} disabled={Boolean(unavailable)} title={unavailable || undefined}
+                >
+                    {label}
+                </Button>
+            ))}
+        </Group>
     );
 }
