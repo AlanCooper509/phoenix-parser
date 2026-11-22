@@ -18,7 +18,7 @@ export function mockUsers(name = '') {
 }
 
 function legacyScores(scores) {
-    return scores.reduce((groups, score, index) => {
+    return scores.reduce((groups, score) => {
         const key = score.type === 'c' ? score.level : String(score.level).padStart(2, '0');
         const entry = {
             ...score,
@@ -48,10 +48,10 @@ export function mockUser(game, name, number) {
         player: String(name || base.info.player).toUpperCase(),
         number: `#${String(number || base.info.number).replace(/^#/, '')}`,
     }, userIndex);
-    const scores = fixture.scores.map((score) => ({ ...score }));
+    const scores = base.scores.map((score) => ({ ...score }));
     const recents = [
-        ...fixture.scores.slice(0, 12),
-        ...fixture.recentFailures,
+        ...base.scores.slice(0, 12),
+        ...(base.recentFailures || []),
     ].map((score, index) => ({
         ...score,
         date: new Date(Date.now() - index * 60 * 60 * 1000).toISOString(),
@@ -61,18 +61,33 @@ export function mockUser(game, name, number) {
     return {
         info,
         scores: game === 'phx1' ? legacyScores(scores) : scores,
-        titles: fixture.titles,
-        pumbility: fixture.pumbility,
+        titles: base.titles,
+        pumbility: base.pumbility,
         recents,
     };
 }
 
+function chartCatalog() {
+    const charts = new Map();
+    fixture.users.flatMap((user) => user.scores).forEach((score) => {
+        charts.set(`${score.jacket}|${score.type}|${score.level}`, score);
+    });
+    return [...charts.values()];
+}
+
 export function mockChartStats() {
+    const catalog = chartCatalog();
     const counts = {};
     for (let level = 1; level <= 29; level += 1) {
-        counts[String(level).padStart(2, '0')] = { total: 4, singles: 2, doubles: 2 };
+        const atLevel = catalog.filter((score) => Number(score.level) === level);
+        const singles = atLevel.filter((score) => score.type === 's').length + 1;
+        const doubles = atLevel.filter((score) => score.type === 'd').length + 1;
+        counts[String(level).padStart(2, '0')] = { total: singles + doubles, singles, doubles };
     }
-    counts.coop = { n2: 2, n3: 2, n4: 2, n5: 2 };
+    counts.coop = Object.fromEntries(['n2', 'n3', 'n4', 'n5'].map((level) => [
+        level,
+        catalog.filter((score) => score.type === 'c' && score.level === level).length + 1,
+    ]));
     return counts;
 }
 
@@ -97,28 +112,32 @@ function unplayedChart(type, level) {
 }
 
 export function mockChartsForLevel(level) {
+    const catalog = chartCatalog();
     if (level === 'coop') {
         return Object.fromEntries(['n2', 'n3', 'n4', 'n5'].map((coopLevel) => [
             coopLevel,
-            fixture.scores.filter((score) => score.type === 'c' && score.level === coopLevel).map(chartFromScore)
+            catalog.filter((score) => score.type === 'c' && score.level === coopLevel).map(chartFromScore)
                 .concat(unplayedChart('c', coopLevel)),
         ]));
     }
 
     const numericLevel = Number(level);
     return Object.fromEntries(['s', 'd'].map((type) => {
-        const played = fixture.scores.filter((score) => score.type === type && Number(score.level) === numericLevel);
+        const played = catalog.filter((score) => score.type === type && Number(score.level) === numericLevel);
         return [type, played.map(chartFromScore).concat(unplayedChart(type, numericLevel))];
     }));
 }
 
 export function mockSyncResult(game, name, number) {
     const user = mockUser(game, name, number);
+    const scores = game === 'phx1'
+        ? Object.values(user.scores).flatMap((group) => group.scores || [])
+        : user.scores;
     return {
         info: user.info,
-        scores: fixture.scores.length,
-        pumbility: fixture.pumbility.length,
-        titles: fixture.titles.length,
+        scores: scores.length,
+        pumbility: user.pumbility.length,
+        titles: user.titles.length,
         user,
     };
 }

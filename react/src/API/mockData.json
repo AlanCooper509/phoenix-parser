@@ -7,7 +7,33 @@
         "title": { "text": "SPEED STAR", "color": "col5" },
         "avatar": "/logo512.png",
         "pumbility": { "tier": "GOLD Lv.3", "value": 18420, "icon": 11 }
-      }
+      },
+      "titles": ["INTERMEDIATE Lv.10", "ADVANCED Lv.1"],
+      "pumbility": [],
+      "scores": [
+        { "type": "s", "level": 10, "name": "Sample Song 01", "jacket": "4f617606e7751b2dc2559d80f09c40bf", "score": 450000, "grade": "f", "plate": "rg" },
+        { "type": "d", "level": 11, "name": "Sample Song 02", "jacket": "4f617606e7751b2dc2559d80f09c40bf", "score": 520000, "grade": "d", "plate": "fg" },
+        { "type": "s", "level": 12, "name": "Sample Song 03", "jacket": "4f617606e7751b2dc2559d80f09c40bf", "score": 620000, "grade": "c", "plate": "tg" },
+        { "type": "d", "level": 13, "name": "Sample Song 04", "jacket": "4f617606e7751b2dc2559d80f09c40bf", "score": 720000, "grade": "b", "plate": "mg" },
+        { "type": "s", "level": 14, "name": "Sample Song 05", "jacket": "4f617606e7751b2dc2559d80f09c40bf", "score": 820000, "grade": "a", "plate": "sg" },
+        { "type": "d", "level": 15, "name": "Sample Song 06", "jacket": "4f617606e7751b2dc2559d80f09c40bf", "score": 905000, "grade": "a_p", "plate": "eg" },
+        { "type": "s", "level": 16, "name": "Sample Song 07", "jacket": "4f617606e7751b2dc2559d80f09c40bf", "score": 925000, "grade": "aa", "plate": "ug" },
+        { "type": "d", "level": 17, "name": "Sample Song 08", "jacket": "4f617606e7751b2dc2559d80f09c40bf", "score": 945000, "grade": "aa_p", "plate": "pg" },
+        { "type": "s", "level": 18, "name": "Sample Song 09", "jacket": "4f617606e7751b2dc2559d80f09c40bf", "score": 952000, "grade": "aaa", "plate": "rg" },
+        { "type": "d", "level": 19, "name": "Sample Song 10", "jacket": "4f617606e7751b2dc2559d80f09c40bf", "score": 962000, "grade": "aaa_p", "plate": "fg" },
+        { "type": "s", "level": 20, "name": "Sample Song 11", "jacket": "4f617606e7751b2dc2559d80f09c40bf", "score": 972000, "grade": "s", "plate": "tg" },
+        { "type": "d", "level": 21, "name": "Sample Song 12", "jacket": "4f617606e7751b2dc2559d80f09c40bf", "score": 977000, "grade": "s_p", "plate": "mg" },
+        { "type": "s", "level": 22, "name": "Sample Song 13", "jacket": "4f617606e7751b2dc2559d80f09c40bf", "score": 982000, "grade": "ss", "plate": "sg" },
+        { "type": "d", "level": 23, "name": "Sample Song 14", "jacket": "4f617606e7751b2dc2559d80f09c40bf", "score": 987000, "grade": "ss_p", "plate": "eg" },
+        { "type": "s", "level": 24, "name": "Sample Song 15", "jacket": "4f617606e7751b2dc2559d80f09c40bf", "score": 992000, "grade": "sss", "plate": "ug" },
+        { "type": "d", "level": 25, "name": "Sample Song 16", "jacket": "4f617606e7751b2dc2559d80f09c40bf", "score": 997000, "grade": "sss_p", "plate": "pg" },
+        { "type": "c", "level": "n2", "name": "Sample Co-op 2", "jacket": "4f617606e7751b2dc2559d80f09c40bf", "score": 985000, "grade": "ss_p", "plate": "pg" },
+        { "type": "c", "level": "n3", "name": "Sample Co-op 3", "jacket": "4f617606e7751b2dc2559d80f09c40bf", "score": 990000, "grade": "sss", "plate": "pg" }
+      ],
+      "recentFailures": [
+        { "type": "s", "level": 24, "name": "Sample Failed Play", "jacket": "4f617606e7751b2dc2559d80f09c40bf", "score": 980000, "grade": "x_ss", "plate": null },
+        { "type": "d", "level": 22, "name": "Sample Stage Break", "jacket": "4f617606e7751b2dc2559d80f09c40bf", "score": null, "grade": null, "plate": null, "stageBreak": true }
+      ]
     },
     {
       "info": {
@@ -16,7 +42,21 @@
         "title": { "text": "CHART HUNTER", "color": "col7" },
         "avatar": "/logo512.png",
         "pumbility": { "tier": "DIAMOND Lv.2", "value": 17280, "icon": 22 }
-      }
+      },
+      "titles": ["INTERMEDIATE Lv.10", "ADVANCED Lv.7", "EXPERT Lv.2"],
+      "pumbility": [],
+      "scores": [
+        { "type": "s", "level": 17, "name": "Steph's Skyline", "jacket": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "score": 975500, "grade": "s_p", "plate": "pg" },
+        { "type": "d", "level": 18, "name": "Steph's Overdrive", "jacket": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "score": 988300, "grade": "ss_p", "plate": "ug" },
+        { "type": "s", "level": 20, "name": "Steph's Starlight", "jacket": "cccccccccccccccccccccccccccccccc", "score": 996200, "grade": "sss_p", "plate": "pg" },
+        { "type": "d", "level": 21, "name": "Steph's Momentum", "jacket": "dddddddddddddddddddddddddddddddd", "score": 992400, "grade": "sss", "plate": "eg" },
+        { "type": "s", "level": 23, "name": "Steph's Flashpoint", "jacket": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", "score": 981400, "grade": "ss", "plate": "sg" },
+        { "type": "d", "level": 25, "name": "Steph's Breakthrough", "jacket": "ffffffffffffffffffffffffffffffff", "score": 970800, "grade": "s", "plate": "tg" },
+        { "type": "c", "level": "n4", "name": "Steph's Co-op Run", "jacket": "11111111111111111111111111111111", "score": 990000, "grade": "sss", "plate": "pg" }
+      ],
+      "recentFailures": [
+        { "type": "s", "level": 22, "name": "Steph's Failed Run", "jacket": "22222222222222222222222222222222", "score": 970000, "grade": "x_s", "plate": null }
+      ]
     },
     {
       "info": {
@@ -25,33 +65,22 @@
         "title": { "text": "NIGHT OWL", "color": "col3" },
         "avatar": "/logo512.png",
         "pumbility": { "tier": "SILVER Lv.4", "value": 13950, "icon": 7 }
-      }
+      },
+      "titles": ["INTERMEDIATE Lv.3"],
+      "pumbility": [],
+      "scores": [
+        { "type": "s", "level": 10, "name": "Pumper's First Step", "jacket": "33333333333333333333333333333333", "score": 508000, "grade": "d", "plate": "rg" },
+        { "type": "d", "level": 12, "name": "Pumper's Warmup", "jacket": "44444444444444444444444444444444", "score": 725000, "grade": "b", "plate": "fg" },
+        { "type": "s", "level": 14, "name": "Pumper's Challenge", "jacket": "55555555555555555555555555555555", "score": 905000, "grade": "a_p", "plate": "tg" },
+        { "type": "d", "level": 16, "name": "Pumper's Clear", "jacket": "66666666666666666666666666666666", "score": 942000, "grade": "aa_p", "plate": "mg" },
+        { "type": "s", "level": 18, "name": "Pumper's Failed Chart", "jacket": "77777777777777777777777777777777", "score": 790000, "grade": "x_a", "plate": null },
+        { "type": "d", "level": 20, "name": "Pumper's Stage Break", "jacket": "88888888888888888888888888888888", "score": null, "grade": null, "plate": null, "stageBreak": true },
+        { "type": "c", "level": "n2", "name": "Pumper's Co-op", "jacket": "99999999999999999999999999999999", "score": 820000, "grade": "a", "plate": "pg" }
+      ],
+      "recentFailures": [
+        { "type": "s", "level": 19, "name": "Pumper's Recent Miss", "jacket": "abababababababababababababababab", "score": 700000, "grade": "x_b", "plate": null },
+        { "type": "d", "level": 21, "name": "Pumper's Recent Break", "jacket": "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd", "score": null, "grade": null, "plate": null, "stageBreak": true }
+      ]
     }
-  ],
-  "scores": [
-    { "type": "s", "level": 10, "name": "Sample Song 01", "jacket": "4f617606e7751b2dc2559d80f09c40bf", "score": 450000, "grade": "f", "plate": "rg" },
-    { "type": "d", "level": 11, "name": "Sample Song 02", "jacket": "4f617606e7751b2dc2559d80f09c40bf", "score": 520000, "grade": "d", "plate": "fg" },
-    { "type": "s", "level": 12, "name": "Sample Song 03", "jacket": "4f617606e7751b2dc2559d80f09c40bf", "score": 620000, "grade": "c", "plate": "tg" },
-    { "type": "d", "level": 13, "name": "Sample Song 04", "jacket": "4f617606e7751b2dc2559d80f09c40bf", "score": 720000, "grade": "b", "plate": "mg" },
-    { "type": "s", "level": 14, "name": "Sample Song 05", "jacket": "4f617606e7751b2dc2559d80f09c40bf", "score": 820000, "grade": "a", "plate": "sg" },
-    { "type": "d", "level": 15, "name": "Sample Song 06", "jacket": "4f617606e7751b2dc2559d80f09c40bf", "score": 905000, "grade": "a_p", "plate": "eg" },
-    { "type": "s", "level": 16, "name": "Sample Song 07", "jacket": "4f617606e7751b2dc2559d80f09c40bf", "score": 925000, "grade": "aa", "plate": "ug" },
-    { "type": "d", "level": 17, "name": "Sample Song 08", "jacket": "4f617606e7751b2dc2559d80f09c40bf", "score": 945000, "grade": "aa_p", "plate": "pg" },
-    { "type": "s", "level": 18, "name": "Sample Song 09", "jacket": "4f617606e7751b2dc2559d80f09c40bf", "score": 952000, "grade": "aaa", "plate": "rg" },
-    { "type": "d", "level": 19, "name": "Sample Song 10", "jacket": "4f617606e7751b2dc2559d80f09c40bf", "score": 962000, "grade": "aaa_p", "plate": "fg" },
-    { "type": "s", "level": 20, "name": "Sample Song 11", "jacket": "4f617606e7751b2dc2559d80f09c40bf", "score": 972000, "grade": "s", "plate": "tg" },
-    { "type": "d", "level": 21, "name": "Sample Song 12", "jacket": "4f617606e7751b2dc2559d80f09c40bf", "score": 977000, "grade": "s_p", "plate": "mg" },
-    { "type": "s", "level": 22, "name": "Sample Song 13", "jacket": "4f617606e7751b2dc2559d80f09c40bf", "score": 982000, "grade": "ss", "plate": "sg" },
-    { "type": "d", "level": 23, "name": "Sample Song 14", "jacket": "4f617606e7751b2dc2559d80f09c40bf", "score": 987000, "grade": "ss_p", "plate": "eg" },
-    { "type": "s", "level": 24, "name": "Sample Song 15", "jacket": "4f617606e7751b2dc2559d80f09c40bf", "score": 992000, "grade": "sss", "plate": "ug" },
-    { "type": "d", "level": 25, "name": "Sample Song 16", "jacket": "4f617606e7751b2dc2559d80f09c40bf", "score": 997000, "grade": "sss_p", "plate": "pg" },
-    { "type": "c", "level": "n2", "name": "Sample Co-op 2", "jacket": "4f617606e7751b2dc2559d80f09c40bf", "score": 985000, "grade": "ss_p", "plate": "pg" },
-    { "type": "c", "level": "n3", "name": "Sample Co-op 3", "jacket": "4f617606e7751b2dc2559d80f09c40bf", "score": 990000, "grade": "sss", "plate": "pg" }
-  ],
-  "recentFailures": [
-    { "type": "s", "level": 24, "name": "Sample Failed Play", "jacket": "4f617606e7751b2dc2559d80f09c40bf", "score": 980000, "grade": "x_ss", "plate": null },
-    { "type": "d", "level": 22, "name": "Sample Stage Break", "jacket": "4f617606e7751b2dc2559d80f09c40bf", "score": null, "grade": null, "plate": null, "stageBreak": true }
-  ],
-  "titles": ["INTERMEDIATE Lv.10", "ADVANCED Lv.1"],
-  "pumbility": []
+  ]
 }

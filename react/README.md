@@ -9,7 +9,7 @@ React app built with [Vite](https://vite.dev).
 - `npm run build`: production build into `build/`.
 - `npm run preview`: serve the production build locally.
 
-With `npm run dev:mock`, open http://localhost:3000 and use the home-page search or sample player cards as usual. The mock mode covers user lookup, player pages, chart stats/lists, and sync responses.
+With `npm run dev:mock`, open http://localhost:3000 and use the home-page search or sample player cards as usual. Each fixture user has their own scores, titles, and recent failures/stage breaks. The mock mode covers user lookup, player pages, chart stats/lists, and sync responses.
 
 ## Deploy
 
