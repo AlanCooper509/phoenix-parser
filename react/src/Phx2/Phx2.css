@@ -74,54 +74,86 @@
     display: none;
 }
 
-/* score filters show their comparison operator beside the value; grades and plates use a finite
-   dropdown instead of asking players to remember the rank labels. */
+/* Score, Grade and Plate filters: the comparison operator and the value (a list for grades and plates)
+   joined in one box, like the Song filter's. A notch in the corner marks what opens a list: unlike the
+   browser's arrow, it takes no width. In use, it's outlined and tinted as a picked toggle is. */
 .phx2-root .phx2-grid .phx2-grid-floating-filter {
     display: flex;
-    align-items: center;
-    gap: 2px;
     width: 100%;
     min-width: 0;
-    height: 100%;
+    height: 32px;
+    overflow: hidden;
+    border: 1px solid var(--ag-input-border-color, var(--ag-border-color));
+    border-radius: 4px;
+}
+.phx2-root .phx2-grid .phx2-grid-floating-filter:hover {
+    border-color: rgba(255, 255, 255, 0.3);
+}
+.phx2-root .phx2-grid .phx2-grid-floating-filter.phx2-grid-filter-active {
+    border-color: #04a423;
+    background: rgba(4, 164, 35, 0.14);
+}
+.phx2-root .phx2-grid .phx2-grid-floating-filter:focus-within {
+    border-color: #04a423;
 }
 .phx2-root .phx2-grid .phx2-grid-floating-filter select,
 .phx2-root .phx2-grid .phx2-grid-floating-filter input {
-    height: 24px;
+    appearance: none;
+    height: 100%;
     min-width: 0;
-    border: 1px solid var(--ag-border-color);
-    border-radius: 4px;
-    color: var(--ag-foreground-color);
-    background: var(--ag-background-color);
+    border: 0;
+    border-radius: 0;
+    outline: none;
+    padding: 0 2px;
+    color: var(--ag-secondary-foreground-color);
+    background: transparent;
     font: inherit;
     font-size: 12px;
+    text-align: center;
+    text-align-last: center;
+}
+.phx2-root .phx2-grid .phx2-grid-floating-filter select {
+    cursor: pointer;
+    background: linear-gradient(135deg, transparent 50%, currentColor 50%) right 2px bottom 2px / 4px 4px no-repeat;
+}
+.phx2-root .phx2-grid .phx2-grid-floating-filter select:hover,
+.phx2-root .phx2-grid .phx2-grid-floating-filter select:focus-visible {
+    background-color: rgba(255, 255, 255, 0.08);
+}
+/* the opened list, which the browser draws on white otherwise */
+.phx2-root .phx2-grid .phx2-grid-floating-filter option {
+    color: #fafafa;
+    background: #222327;
 }
 .phx2-root .phx2-grid .phx2-grid-floating-filter .phx2-grid-filter-operator {
-    flex: 0 0 30px;
-    width: 30px;
-    padding: 0 1px;
-    text-align: center;
+    flex: 0 0 24px;
+    border-right: 1px solid var(--ag-border-color);
 }
 .phx2-root .phx2-grid .phx2-grid-floating-filter .phx2-grid-filter-value {
-    flex: 1 1 auto;
-    width: 100%;
-    padding: 0 3px;
+    flex: 1 1 0;
+    width: 0;
 }
-.phx2-root .phx2-grid .phx2-grid-rank-filter {
-    justify-content: center;
-}
-.phx2-root .phx2-grid .phx2-grid-rank-filter .phx2-grid-filter-value {
-    flex: 0 0 58px;
-    width: 58px;
-}
-.phx2-root .phx2-grid .phx2-grid-rank-filter-plate .phx2-grid-filter-value {
-    flex-basis: 40px;
-    width: 40px;
-}
-.phx2-root .phx2-grid .phx2-grid-floating-filter input {
-    appearance: textfield;
+.phx2-root .phx2-grid .phx2-grid-filter-active .phx2-grid-filter-value {
+    color: var(--ag-foreground-color);
 }
 .phx2-root .phx2-grid .phx2-grid-floating-filter input::placeholder {
     color: var(--ag-secondary-foreground-color);
+}
+/* the header's own icon for a filter in use, which crowds out narrow headers: the green box shows it */
+.phx2-root .phx2-grid .ag-header-cell:is([col-id="grade"], [col-id="plate"], [col-id="score"], [col-id="scorePlayed"]) .ag-filter-icon {
+    display: none;
+}
+/* tighter in compact grids' narrow columns, and just the value in the narrowest */
+.phx2-root .phx2-grid.phx2-grid-compact .phx2-grid-floating-filter select,
+.phx2-root .phx2-grid.phx2-grid-compact .phx2-grid-floating-filter input {
+    padding: 0;
+    font-size: 11px;
+}
+.phx2-root .phx2-grid.phx2-grid-compact .phx2-grid-floating-filter .phx2-grid-filter-operator {
+    flex-basis: 16px;
+}
+.phx2-root .phx2-grid.phx2-grid-tiny .phx2-grid-floating-filter .phx2-grid-filter-operator {
+    display: none;
 }
 
 /* compact grids (phones; scoreGrid.jsx's COMPACT_WIDTH): smaller text, padding and images, so more

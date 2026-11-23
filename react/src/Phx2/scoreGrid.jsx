@@ -133,7 +133,7 @@ function ScoreFloatingFilter(props, ref) {
     };
 
     return (
-        <div className="phx2-grid-floating-filter">
+        <div className={`phx2-grid-floating-filter${value === '' ? '' : ' phx2-grid-filter-active'}`}>
             <select
                 className="phx2-grid-filter-operator" aria-label="Score filter operator" title={OPERATOR_NAMES[operator]}
                 value={operator} onChange={(event) => (value === '' ? setOperator(event.target.value) : update(event.target.value, value))}
@@ -169,7 +169,7 @@ const RankFloatingFilter = forwardRef(function RankFloatingFilter({ labels, labe
     };
 
     return (
-        <div className={`phx2-grid-floating-filter phx2-grid-rank-filter phx2-grid-rank-filter-${label.toLowerCase()}`}>
+        <div className={`phx2-grid-floating-filter phx2-grid-rank-filter phx2-grid-rank-filter-${label.toLowerCase()}${value === '' ? '' : ' phx2-grid-filter-active'}`}>
             <select
                 className="phx2-grid-filter-operator" aria-label={`${label} filter operator`} title={OPERATOR_NAMES[operator]}
                 value={operator} onChange={(event) => (value === '' ? setOperator(event.target.value) : update(event.target.value, value))}
@@ -225,12 +225,12 @@ export const LEVEL_COLUMN = {
     floatingFilterComponentParams: { suppressFilterButton: true },
 };
 export const SONG_COLUMN = {
-    // takes the room left over; long titles ellipsize rather than forcing the other columns narrower
-    headerName: 'Song', field: 'name', flex: 1, minWidth: 0, cellRenderer: SongCell,
+    // takes the room left over: at least enough for a short title even on phones (compact)
+    headerName: 'Song', field: 'name', flex: 1, minWidth: 80, cellRenderer: SongCell,
     filter: 'agTextColumnFilter', floatingFilter: true, filterParams: TEXT_FILTER,
 };
 export const GRADE_COLUMN = {
-    colId: 'grade', headerName: 'Grade', field: 'gradeText', width: 108, minWidth: 108, cellRenderer: GradeCell, comparator: comparing(byScore),
+    colId: 'grade', headerName: 'Grade', field: 'gradeText', width: 108, cellRenderer: GradeCell, comparator: comparing(byScore),
     // right-aligned like its cells, so the grade sits by the plate
     headerClass: 'ag-right-aligned-header phx2-grid-near-next', cellClass: 'phx2-grid-near-next',
     // by rank: a fail counts as the grade it reached; a STAGE BREAK (no grade) never matches
@@ -240,7 +240,7 @@ export const GRADE_COLUMN = {
     floatingFilterComponentParams: { label: 'Grade', labels: GRADES.map(([, label]) => label), suppressFilterButton: true },
 };
 export const PLATE_COLUMN = {
-    colId: 'plate', headerName: 'Plate', field: 'plate', width: 84, minWidth: 84, cellRenderer: PlateCell,
+    colId: 'plate', headerName: 'Plate', field: 'plate', width: 84, cellRenderer: PlateCell,
     comparator: comparing((a, b) => (PLATES.indexOf(a.plate) - PLATES.indexOf(b.plate)) || byScore(a, b)),
     // by rank, RG to PG: only cleared plays have a plate
     filter: 'agNumberColumnFilter', floatingFilter: true,
@@ -264,14 +264,14 @@ const DEFAULT_COLUMN = { sortable: true, suppressMenu: true, resizable: false };
 const JACKET_FOLD = [480, ['jacket']];
 
 // Below this grid width (phones) the grid goes compact: smaller text, padding, images and rows
-// (.phx2-grid-compact in Phx2.css). Grade and Plate keep enough width for their filters; Song shrinks
-// to the remaining space and ellipsizes. Columns not in a grid are skipped.
+// (.phx2-grid-compact in Phx2.css), and these columns narrower, with their filters tightened to match, so
+// the song, level, grade, plate and score fit without scrolling sideways. Columns not in a grid are skipped.
 const COMPACT_WIDTH = 600;
-const COMPACT_COLUMNS = { jacket: 72, levelNumber: 42, score: 70, scorePlayed: 74, pumbility: 70, rank: 28, points: 54 };
-// narrower still below this grid width (320px phones); Song can become very narrow, while the filter
-// columns remain usable.
+const COMPACT_COLUMNS = { jacket: 72, levelNumber: 42, grade: 62, plate: 52, score: 70, scorePlayed: 74, pumbility: 70, rank: 28, points: 54 };
+// narrower still below this grid width (320px phones), just fitting what's in them, as the columns above
+// and the song's minimum come to more than that; their filters hide the operator
 const TINY_WIDTH = 310;
-const TINY_COLUMNS = { levelNumber: 38, score: 60, scorePlayed: 62, pumbility: 60, rank: 24, points: 50 };
+const TINY_COLUMNS = { levelNumber: 38, grade: 48, plate: 44, score: 60, scorePlayed: 62, pumbility: 60, rank: 24, points: 50 };
 // shorter headers where the full one won't fit beside its sort arrow
 const COMPACT_HEADERS = { levelNumber: 'Lv.' };
 
