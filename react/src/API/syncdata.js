@@ -1,10 +1,14 @@
 import axios from 'axios';
 
 import getHostPath from './getHostPath';
+import { isMockMode, mockSyncResult } from './mockData';
 
 // resolves to { info, scores, titles, pumbility } counts from the sync;
 // rejects with an Error whose message is meant for the user
 async function postSyncData(game, name, number, sid) {
+    if (isMockMode) {
+        return mockSyncResult(game, name, number);
+    }
     try {
         const response = await axios.post(`${getHostPath()}/api/${game}/sync/${name}/${number}`, {
             sid: sid

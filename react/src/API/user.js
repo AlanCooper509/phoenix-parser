@@ -1,6 +1,7 @@
 import axios from 'axios';
 
 import getHostPath from './getHostPath';
+import { isMockMode, mockUser } from './mockData';
 
 // placeholder profile for a user that has never synced (or couldn't be loaded)
 export function newUserInfo(name, number) {
@@ -9,6 +10,9 @@ export function newUserInfo(name, number) {
 
 // resolves to { info, scores, titles, pumbility }
 async function getUser(game, name, number) {
+    if (isMockMode) {
+        return mockUser(game, name, number);
+    }
     const response = await axios.get(`${getHostPath()}/api/${game}/user/${name}/${number}`);
     return response.data;
 }
