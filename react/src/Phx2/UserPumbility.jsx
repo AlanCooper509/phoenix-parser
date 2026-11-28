@@ -1,151 +1,530 @@
-import { useMemo } from 'react';
-import { Box, Heading, HStack, Image, Table, Text, VStack } from '@chakra-ui/react';
+import { useLayoutEffect, useMemo, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { Box, Grid, HStack, Image, Separator, Text, VStack } from '@chakra-ui/react';
+import { LuTrendingUp } from 'react-icons/lu';
+import { Chart } from 'react-chartjs-2';
+import ChartJS from 'chart.js/auto';
 
-import { ChartBadge, ExpBar, formatPumbility, pumbilityTier, TierName } from './shared';
-import { pumbilityProgress } from './pumbility';
-import { newChartTargets } from './stats';
-import { TypeProgress } from './UserOverview';
+import { gradeImg, stepballImg } from '../Helpers/assets';
+import {
+    bestFifty, chartValue, DOUBLE_MILESTONES, GRADES, gradeLabel, progressAlong, pumbilityProgress, scoreValue, SINGLE_MILESTONES,
+} from './pumbility';
+import { ExpBar, formatPumbility, pumbilityTier, TierName, tierOfPoints, titleOfPoints, TitleText, UnfilledFifty } from './shared';
+import {
+    COOP_HEIGHT, FILTER_STYLE, FilterButtons, HEADING_SIZE, HERO_VALUE_STYLE, PANEL_STYLE, TITLE, useSizedBox,
+} from './UserOverview';
+import UserTopFifty from './UserTopFifty';
 
-// PUMBILITY: where a player's total comes from and what it takes for a chart to count. Values use the Phoenix 2 formula (see pumbility.js).
+// PUMBILITY, laid out as the Overview and Breakdown: All / Singles / Doubles on top, then one card with the
+// progress toward the next tier (or title), the best 50 as a chart and what new clears and upgrades would
+// add, then the best 50 themselves. Values use the Phoenix 2 formula (see pumbility.js).
 
-function Section({ title, description, children }) {
+const FILTERS = [['both', 'All'], ['s', 'Singles'], ['d', 'Doubles']];
+// as Overview's, in the URL (?type=singles; nothing for All)
+const FILTER_PARAMS = { s: 'singles', d: 'doubles' };
+const TYPE_NAMES = { both: 'Singles and Doubles', s: 'Singles', d: 'Doubles' };
+const TYPE_COLORS = { s: 'red.500', d: 'green.500' };
+const TEXT = '#a1a1aa';
+const GRID = 'rgba(255, 255, 255, 0.06)';
+const HERO_MARKER_ROOM = 44;
+const STEPBALL_SIZE = 30;
+
+// The best fifty of the type picked: their values (highest first), total and floor (the 50th best,
+// which a chart has to beat to count), and the scores themselves
+function fiftyOf(scores, filter) {
+    const ofType = filter === 'both' ? scores : scores.filter((s) => s.type === filter);
+    const valued = ofType.map((score) => ({ score, value: scoreValue(score) })).filter(({ value }) => value > 0)
+        .sort((a, b) => b.value - a.value).slice(0, 50);
+    const { top, total, floor } = bestFifty(valued.map(({ value }) => value));
+    return { top, total, floor, scores: valued.map(({ score }) => score), full: top.length === 50 };
+}
+
+// ---- the card's progress: toward the next tier level (All) or title (Singles, Doubles), zoomed in
+
+function Hero({ info, fifty, filter }) {
+    const all = filter === 'both';
+    const value = all ? (info.pumbility?.value ?? fifty.total) : fifty.total;
+    const progress = all ? pumbilityProgress(value) : progressAlong(filter === 's' ? SINGLE_MILESTONES : DOUBLE_MILESTONES, value);
+    const tier = pumbilityTier(info.pumbility);
+    const color = all ? tier.color : TYPE_COLORS[filter];
+    let heading = <Text fontSize={HEADING_SIZE} fontWeight="bold" color="fg.muted">{all ? 'No tier yet' : `No ${TYPE_NAMES[filter].toLowerCase()} title yet`}</Text>;
+    if (progress.current) {
+        heading = all
+            ? <TierName tier={progress.current.name} fontSize={HEADING_SIZE} lineHeight="1.3" />
+            : <TitleText title={progress.current.title} fontSize={HEADING_SIZE} lineHeight="1.3" />;
+    }
     return (
-        <VStack align="stretch" gap="3">
-            <Box>
-                <Heading as="h2" size="lg">{title}</Heading>
-                {description && <Text color="fg.muted" fontSize="sm" mt="1">{description}</Text>}
-            </Box>
-            {children}
-        </VStack>
+        <Box>
+            <HStack justify="space-between" align="center" gap={{ base: '2', sm: '4' }} mb="1">
+                <HStack gap="2.5" minW="0">
+                    {heading}
+                    <UnfilledFifty counted={fifty.top.length} what={all ? 'charts' : TYPE_NAMES[filter].toLowerCase()} color={color} />
+                </HStack>
+                <Text {...HERO_VALUE_STYLE}>{formatPumbility(value)}</Text>
+            </HStack>
+            <ExpBar
+                value={value} progress={progress} color={color} size="md" markerRoom={HERO_MARKER_ROOM}
+                marker={all ? tier.icon : stepballImg('phx2', filter)} markerSize={all ? undefined : STEPBALL_SIZE}
+                points={false}
+                // what a chart has to beat to count, where the Overview has the rank
+                footer={fifty.full ? (
+                    <Text flexShrink="0" title="Your 50th best chart: a new clear counts once it's worth more">
+                        50th best <Text as="span" color="fg" fontWeight="semibold">{formatPumbility(fifty.floor)}</Text>
+                    </Text>
+                ) : (
+                    <Text flexShrink="0" title="Until your best 50 is full, every clear of a single or double from Lv.10 adds to it">
+                        Every clear counts
+                    </Text>
+                )}
+            />
+        </Box>
     );
 }
 
-// mirrors piugame's own PUMBILITY box: tier icon, tier and total, with how far it is to the next level
-function Total({ pumbility, summary }) {
-    const tier = pumbilityTier(pumbility);
-    const value = pumbility?.value ?? summary.total;
+// ---- the card's chart: the best 50 themselves, highest first, each in the color of the tier its points
+// reach x 50, with a line at the average a chart needs for the next tier (or title)
+
+// the tiers' colors as on the PUMBILITY ladder (shared.jsx), as a canvas needs them: not theme tokens
+const TIER_HEX = {
+    BRONZE: '#d4843e', SILVER: '#d4d4d8', GOLD: '#efbf00', PLATINUM: '#5eead4', DIAMOND: '#3b82f6',
+    'RED BERYL': 'rgb(255, 0, 0)', ALEXANDRITE: '#a855f7', 'ABYSS ABSOLUTE': '#fed7aa',
+};
+const TITLE_MILESTONES = { s: SINGLE_MILESTONES, d: DOUBLE_MILESTONES };
+// What a chart's points reach x 50, and its color: on All the tier, on Singles or Doubles the title (as their
+// ladders on the Overview are colored)
+function reachOf(points, filter) {
+    if (filter !== 'both') {
+        return titleOfPoints(points, TITLE_MILESTONES[filter]) ?? { name: 'no title', color: TEXT };
+    }
+    const tier = tierOfPoints(points);
+    return tier ? { name: tier.name, color: TIER_HEX[Object.keys(TIER_HEX).find((name) => tier.name.startsWith(name))] } : { name: 'no tier', color: TEXT };
+}
+// a color, see-through by `alpha` (0 to 1)
+function fade(color, alpha) {
+    if (color.startsWith('#')) {
+        return `${color}${Math.round(alpha * 255).toString(16).padStart(2, '0')}`;
+    }
+    return color.replace(/^rgb\((.*)\)$/, `rgba($1, ${alpha})`);
+}
+
+// Lines across the chart at an average: the next milestone's (dashed, labelled above it on the right) and the
+// player's own (dotted, labelled below it on the left), so the two labels stay apart however close the lines
+const averageLines = {
+    id: 'averageLines',
+    afterDatasetsDraw(chart, args, { lines = [] }) {
+        const { ctx, chartArea: { left, right }, scales: { y } } = chart;
+        for (const { value, label, color, dash, below } of lines) {
+            if (!value || value < y.min || value > y.max) {
+                continue;
+            }
+            const at = Math.round(y.getPixelForValue(value)) + 0.5;
+            ctx.save();
+            ctx.strokeStyle = color;
+            ctx.globalAlpha = 0.75;
+            ctx.setLineDash(dash);
+            ctx.beginPath();
+            ctx.moveTo(left, at);
+            ctx.lineTo(right, at);
+            ctx.stroke();
+            // on a dark backing, so it reads over any bar's color
+            ctx.setLineDash([]);
+            ctx.globalAlpha = 1;
+            ctx.font = '600 11px sans-serif';
+            const width = ctx.measureText(label).width;
+            const x = below ? left + 4 : right - 4 - width;
+            const top = below ? at + 3 : at - 3 - 15;
+            ctx.fillStyle = 'rgba(20, 21, 24, 0.85)';
+            ctx.fillRect(x - 4, top, width + 8, 15);
+            ctx.fillStyle = color;
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(label, x, top + 8);
+            ctx.restore();
+        }
+    },
+};
+const FIFTY_PLUGINS = [averageLines];
+// what the chart's called, short enough for phones: "TUSA: PUMBILITY", "TUSA: Singles PUMBILITY"
+const chartTitle = (player, filter, what) => `${player}: ${filter === 'both' ? '' : `${TYPE_NAMES[filter]} `}${what}`;
+
+function FiftyChart({ fifty, filter, info, next, value }) {
+    const [box, sized] = useSizedBox();
+    const { data, options } = useMemo(() => {
+        const points = fifty.scores.map(scoreValue);
+        const average = next ? next.value / 50 : null;
+        const own = value / 50;
+        // from just under the lowest bar (or a line), so the differences between them show
+        const low = Math.floor(Math.min(...points, average ?? Infinity, own) / 10) * 10 - 10;
+        const high = Math.ceil(Math.max(...points, average ?? 0, own) / 10) * 10;
+        return {
+            data: {
+                labels: points.map((v, i) => String(i + 1)),
+                datasets: [{
+                    data: points, backgroundColor: points.map((v) => fade(reachOf(v, filter).color, 0.7)), borderColor: points.map((v) => reachOf(v, filter).color), borderWidth: 1,
+                    borderRadius: 2, categoryPercentage: 0.9, barPercentage: 0.9,
+                }],
+            },
+            options: {
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true, text: chartTitle(info.player, filter, 'PUMBILITY'),
+                        color: TITLE.color, font: { size: TITLE.size, weight: TITLE.weight }, padding: { top: 0, bottom: TITLE.gap },
+                    },
+                    legend: { display: false },
+                    averageLines: {
+                        lines: [
+                            { value: average, label: next ? `${next.name}: ${formatPumbility(average)}` : '', color: '#e4e4e7', dash: [5, 4] },
+                            { value: own, label: `Your average: ${formatPumbility(own)}`, color: '#4ade80', dash: [2, 3], below: true },
+                        ],
+                    },
+                    tooltip: {
+                        callbacks: {
+                            title: (items) => {
+                                const score = fifty.scores[items[0].dataIndex];
+                                return `#${items[0].dataIndex + 1} ${score.name}`;
+                            },
+                            label: (item) => {
+                                const score = fifty.scores[item.dataIndex];
+                                return ` ${score.type.toUpperCase()}${Number(score.level)} ${gradeLabel(score.grade)}: ${formatPumbility(item.raw)} (${reachOf(item.raw, filter).name})`;
+                            },
+                        },
+                    },
+                },
+                scales: {
+                    x: { ticks: { color: TEXT, maxRotation: 0, autoSkip: true, autoSkipPadding: 8 }, grid: { display: false } },
+                    y: { min: Math.max(0, low), max: high, ticks: { color: TEXT }, grid: { color: GRID }, title: { display: true, text: 'Points', color: TEXT } },
+                },
+            },
+        };
+    }, [fifty, filter, info.player, next, value]);
     return (
-        <HStack gap="4">
-            {tier.icon && <Image src={tier.icon} alt="" boxSize={{ base: '72px', md: '96px' }} my="-3" />}
-            <Box flex="1" minW="0">
-                {pumbility?.tier && <TierName tier={pumbility.tier} fontSize={{ base: 'md', md: 'lg' }} />}
-                <Text fontFamily="'Oxanium', sans-serif" fontWeight="800" fontSize={{ base: '3xl', md: '4xl' }} lineHeight="1.1" fontVariantNumeric="tabular-nums">
-                    {formatPumbility(value)}
-                </Text>
-                <ExpBar
-                    value={value} progress={pumbilityProgress(value)} color={tier.color} maxW="480px" mt="2" mb="1"
-                />
-                {/* until 50 charts are cleared there's no 50th best to beat: every clear counts */}
-                <Text color="fg.muted" fontSize="sm" mt="1">
-                    {summary.topScores.length < 50 ? (
-                        <>
-                            The sum of your best 50 charts. With {summary.topScores.length} cleared so far, every new clear
-                            (of a single or double, Lv.10 and up) adds to it.
-                        </>
-                    ) : (
-                        <>
-                            The sum of your best 50 charts. A chart counts once it's worth more than your 50th best,{' '}
-                            <Text as="span" color="fg" fontWeight="semibold">{formatPumbility(summary.floor)}</Text>.
-                        </>
-                    )}
-                </Text>
-            </Box>
+        <Box ref={box} h={COOP_HEIGHT}>
+            {sized && (fifty.scores.length
+                ? <Chart type="bar" data={data} options={options} plugins={FIFTY_PLUGINS} />
+                : <Text color="fg.muted" textAlign="center" pt="20">No clears counting toward PUMBILITY yet.</Text>)}
+        </Box>
+    );
+}
+
+// ---- under the chart: what the best 50 are made of, by type and level, as one thin bar (highest levels first),
+// each part as wide as its share, named under it where there's room
+
+const TYPE_BAR = { s: 'red.500', d: 'green.500' };
+
+function Composition({ fifty }) {
+    const parts = useMemo(() => {
+        const groups = new Map();
+        for (const score of fifty.scores) {
+            const key = `${score.type.toUpperCase()}${Number(score.level)}`;
+            const group = groups.get(key) || { key, type: score.type, level: Number(score.level), count: 0, points: 0 };
+            group.count += 1;
+            group.points += scoreValue(score);
+            groups.set(key, group);
+        }
+        // each type's highest level strongest, fading down its levels
+        const sorted = [...groups.values()].sort((a, b) => b.level - a.level || a.type.localeCompare(b.type));
+        return sorted.map((group) => {
+            const ofType = sorted.filter((g) => g.type === group.type);
+            const step = ofType.indexOf(group);
+            return { ...group, alpha: Math.max(35, 90 - step * 18) };
+        });
+    }, [fifty]);
+    if (!parts.length) {
+        return null;
+    }
+    const total = fifty.scores.length;
+    return (
+        <Box>
+            <HStack gap="2px" h="10px" borderRadius="full" overflow="hidden">
+                {parts.map(({ key, type, count, points, alpha }) => (
+                    <Box
+                        key={key} h="full" flex={`${count} 0 0`} bg={`${TYPE_BAR[type]}/${alpha}`}
+                        title={`${key}: ${count} of your best ${total}, ${formatPumbility(points)}`}
+                    />
+                ))}
+            </HStack>
+            <HStack gap="2px" mt="1" fontSize="xs" color="fg.muted" fontVariantNumeric="tabular-nums">
+                {parts.map(({ key, count }) => (
+                    // named where its part is wide enough (about 1 in 12 of them)
+                    <Text key={key} flex={`${count} 0 0`} minW="0" textAlign="center" truncate>
+                        {count / total >= 0.08 ? <>{key} <Text as="span" color="fg">{count}</Text></> : ''}
+                    </Text>
+                ))}
+            </HStack>
+        </Box>
+    );
+}
+
+// ---- Next clears: what one more clear, or one grade up, adds at each level and grade
+
+// grades a new clear can be aimed at, lowest first, and the levels (doubles' numbering) to look at
+const AIM_GRADES = GRADES.filter(([key]) => key !== 'f' && key !== 'd' && key !== 'c' && key !== 'b');
+const PRICE_LEVELS = Array.from({ length: 20 }, (_, i) => 29 - i);
+
+// How many charts worth `value` it takes to get from `total` to `target`: each new one replaces the
+// lowest of the best fifty (or fills it, while it isn't full). null if they never would.
+function clearsToReach(value, top, total, target) {
+    if (!target || total >= target) {
+        return null;
+    }
+    const best = [...top];
+    let sum = total;
+    for (let k = 1; k <= 50; k++) {
+        if (best.length < 50) {
+            best.push(value);
+            sum += value;
+        } else {
+            const lowest = best[best.length - 1];
+            if (value <= lowest) {
+                return null;
+            }
+            sum += value - lowest;
+            best[best.length - 1] = value;
+        }
+        best.sort((a, b) => b - a);
+        if (sum >= target - 1e-6) {
+            return k;
+        }
+    }
+    return null;
+}
+
+// a row's charts: doubles at its level and singles one below (priced one level up), of the types shown that
+// have charts there (`counts`, the chart counts per level, while they load: all)
+function rowParts(level, filter, counts) {
+    const has = (type, at) => !counts || (counts[String(at).padStart(2, '0')]?.[type === 's' ? 'singles' : 'doubles'] ?? 0) > 0;
+    return [
+        ...(filter !== 's' && has('d', level) ? [`D${level}`] : []),
+        ...(filter !== 'd' && level - 1 >= 10 && has('s', level - 1) ? [`S${level - 1}`] : []),
+    ];
+}
+
+const MODES = [['new', 'New'], ['upgrade', 'Upgrade']];
+
+// Every level that counts is listed, but when there are more than fit the grid opens scrolled to the player's
+// own: just above their highest clear (a stretch, REACH_ABOVE levels up) at the right, lower levels to its left.
+const REACH_ABOVE = 2;
+
+function NextClears({ scores, fifty, filter, next, mode, counts }) {
+    // singles are priced as doubles one level up: the rows go by doubles' levels either way
+    const valueAt = (level, grade) => chartValue('d', level, grade, null);
+    const priceLevel = (score) => Number(score.level) + (score.type === 's' ? 1 : 0);
+    // the highest level cleared, of the types shown (none yet: every level)
+    const reach = scores
+        .filter((score) => (filter === 'both' ? score.type === 's' || score.type === 'd' : score.type === filter) && scoreValue(score) > 0)
+        .reduce((best, score) => Math.max(best, priceLevel(score)), 0) || Infinity;
+
+    let rows;
+    if (mode === 'new') {
+        // every level where some grade would count, and the grades from the lowest that does anywhere
+        rows = PRICE_LEVELS.filter((level) => rowParts(level, filter, counts).length)
+            .map((level) => ({
+                level,
+                cells: AIM_GRADES.map(([grade]) => {
+                    const value = valueAt(level, grade);
+                    const gain = fifty.full ? value - fifty.floor : value;
+                    return gain > 0.005 ? { grade, value, gain, count: clearsToReach(value, fifty.top, fifty.total, next?.value) } : { grade, value };
+                }),
+            }))
+            .filter((row) => row.cells.some((cell) => cell.gain));
+    } else {
+        // the levels with charts in the best fifty, and how many there sit at each grade
+        const levels = [...new Set(fifty.scores.map(priceLevel))].sort((a, b) => b - a);
+        rows = levels.map((level) => ({
+            level,
+            cells: AIM_GRADES.map(([grade], i) => {
+                if (i === 0) {
+                    return { grade };
+                }
+                const below = AIM_GRADES[i - 1][0];
+                const gain = valueAt(level, grade) - valueAt(level, below);
+                const charts = fifty.scores.filter((s) => priceLevel(s) === level && s.grade === below).length;
+                return { grade, value: valueAt(level, grade), gain, charts, below };
+            }),
+        }));
+    }
+    // the level the grid opens at: the highest listed at most REACH_ABOVE over the highest clear
+    const focus = rows.find((row) => row.level <= reach + REACH_ABOVE)?.level ?? rows[rows.length - 1]?.level;
+    const grid = useRef(null);
+    useLayoutEffect(() => {
+        const column = grid.current?.querySelector(`thead th[data-level="${focus}"]`);
+        if (column) {
+            grid.current.scrollLeft = Math.max(0, column.offsetLeft + column.offsetWidth - grid.current.clientWidth);
+        }
+    }, [focus, mode, filter, rows.length]);
+
+    const firstGrade = Math.min(...rows.map((row) => row.cells.findIndex((cell) => cell.gain > 0 && (mode === 'new' || cell.charts))).filter((i) => i >= 0));
+    const grades = AIM_GRADES.slice(Number.isFinite(firstGrade) ? firstGrade : 0);
+
+    if (!rows.length) {
+        return <Text color="fg.muted">{mode === 'new' ? 'No new clear would raise your PUMBILITY.' : 'No charts in your best 50 yet.'}</Text>;
+    }
+    const shown = grades.map(([grade]) => grade);
+    const cellOf = (row, grade) => row.cells.find((cell) => cell.grade === grade);
+    const gradeHead = (grade) => (
+        // the grade's art (named on hover), after the trend icon on Upgrade; no wider than its column
+        <HStack as="span" gap="0.5" justify="center" title={mode === 'upgrade' ? `Up to ${gradeLabel(grade)}` : gradeLabel(grade)}>
+            {mode === 'upgrade' && <Box as={LuTrendingUp} boxSize="3.5" color="phx2.fg" flexShrink="0" />}
+            <Image src={gradeImg('phx2', grade)} alt={gradeLabel(grade)} h={{ base: '18px', md: '22px' }} w="auto" maxW="full" minW="0" objectFit="contain" />
         </HStack>
     );
-}
-
-// how many of the best 50, and how many points, come from each level of singles and doubles
-function Sources({ topScores, values }) {
-    const groups = new Map();
-    for (const score of topScores) {
-        const key = `${score.type}${Number(score.level)}`;
-        const group = groups.get(key) || { type: score.type, level: Number(score.level), count: 0, points: 0 };
-        group.count += 1;
-        group.points += values.get(score);
-        groups.set(key, group);
-    }
-    const rows = [...groups.values()].sort((a, b) => b.points - a.points);
-    const most = Math.max(...rows.map((r) => r.count));
+    // a level's charts: on phones one name per line, rather than widen the column
+    const levelHead = (row) => rowParts(row.level, filter, counts).map((part, i) => (
+        <Box as="span" key={part} display={{ base: 'block', md: 'inline' }}>
+            {i > 0 && <Box as="span" display={{ base: 'none', md: 'inline' }}> / </Box>}
+            {part}
+        </Box>
+    ));
+    // best grade first, lowest level first (as the Overview's level chart reads, left to right)
+    const gradeRows = [...shown].reverse();
+    const levelColumns = [...rows].reverse();
     return (
-        <VStack align="stretch" gap="2">
-            {rows.map((row) => (
-                <HStack key={`${row.type}${row.level}`} gap="3">
-                    <ChartBadge type={row.type} level={row.level} w="10" justifyContent="center" flexShrink="0" />
-                    <Box flex="1" minW="0">
-                        <Box h="2" w={`${(100 * row.count) / most}%`} minW="2" bg="phx2.solid" borderRadius="full" />
-                    </Box>
-                    <Text w="8ch" textAlign="end" fontVariantNumeric="tabular-nums" flexShrink="0">
-                        {row.count} {row.count === 1 ? 'chart' : 'charts'}
-                    </Text>
-                    <Text w="9ch" textAlign="end" fontVariantNumeric="tabular-nums" color="fg.muted" flexShrink="0">
-                        {formatPumbility(row.points)}
-                    </Text>
-                </HStack>
-            ))}
-        </VStack>
-    );
-}
-
-function NewCharts({ targets }) {
-    if (!targets.length) {
-        return <Text color="fg.muted">No unplayed charts can reach your best 50 yet.</Text>;
-    }
-    return (
-        <Table.ScrollArea>
-            <Table.Root size="sm" variant="line">
-                <Table.Header>
-                    <Table.Row>
-                        <Table.ColumnHeader>Level</Table.ColumnHeader>
-                        <Table.ColumnHeader>Grade needed</Table.ColumnHeader>
-                        <Table.ColumnHeader textAlign="end">Unplayed</Table.ColumnHeader>
-                    </Table.Row>
-                </Table.Header>
-                <Table.Body>
-                    {targets.map(({ type, level, grade, unplayed }) => (
-                        <Table.Row key={`${type}${level}`}>
-                            <Table.Cell><ChartBadge type={type} level={level} /></Table.Cell>
-                            <Table.Cell fontVariantNumeric="tabular-nums">
-                                {grade[1]} <Text as="span" color="fg.muted" fontSize="sm">({grade[2].toLocaleString()}+)</Text>
-                            </Table.Cell>
-                            <Table.Cell textAlign="end" fontVariantNumeric="tabular-nums">{unplayed}</Table.Cell>
-                        </Table.Row>
+        // Grades down, levels across: a row is what one grade is worth at each level. Scrolls sideways when
+        // there are more levels than fit, the grades staying put. Not stretched to the card on wide screens.
+        <Box ref={grid} overflowX="auto">
+            <Box
+                as="table" w={{ base: 'full', md: 'auto' }} mx="auto" css={{ borderCollapse: 'separate', borderSpacing: '3px' }}
+                fontVariantNumeric="tabular-nums"
+            >
+                <thead>
+                    <tr>
+                        {/* over the grades: empty, their art says what they are */}
+                        <Box as="th" position="sticky" left="0" bg="bg.subtle" zIndex="1" aria-label="Grade" />
+                        {levelColumns.map((row) => (
+                            // centered over its column, every label's last line on the same line as the others'
+                            <Box
+                                as="th" key={row.level} data-level={row.level} fontSize={{ base: 'xs', md: 'sm' }} fontWeight="semibold" whiteSpace="nowrap"
+                                lineHeight="1.2" pb="1" textAlign="center" verticalAlign="bottom" minW={{ md: '84px' }}
+                            >
+                                {levelHead(row)}
+                            </Box>
+                        ))}
+                    </tr>
+                </thead>
+                <tbody>
+                    {gradeRows.map((grade) => (
+                        <tr key={grade}>
+                            <Box as="th" pe={{ base: '1', md: '2' }} position="sticky" left="0" bg="bg.subtle" zIndex="1">{gradeHead(grade)}</Box>
+                            {levelColumns.map((row) => <PlanCell key={row.level} cell={cellOf(row, grade)} mode={mode} next={next} filter={filter} />)}
+                        </tr>
                     ))}
-                </Table.Body>
-            </Table.Root>
-        </Table.ScrollArea>
+                </tbody>
+            </Box>
+        </Box>
     );
 }
+
+function PlanCell({ cell, mode, next, filter }) {
+    const tier = cell.value && tierOfPoints(cell.value);
+    const reach = cell.value && reachOf(cell.value, filter);
+    const counts = mode === 'new' ? cell.gain > 0 : cell.charts > 0;
+    let title;
+    let detail = null;
+    if (mode === 'new' && counts) {
+        title = `A ${gradeLabel(cell.grade)} here is worth ${formatPumbility(cell.value)} (× 50 = ${reach.name}), adding ${formatPumbility(cell.gain)}`;
+        if (cell.count) {
+            title += `; ${cell.count} like it reach ${next.name}`;
+        }
+    } else if (mode === 'upgrade' && cell.gain) {
+        title = `${gradeLabel(cell.below)} to ${gradeLabel(cell.grade)} adds ${formatPumbility(cell.gain)}; ${cell.charts} of your best 50 here ${cell.charts === 1 ? 'is' : 'are'} ${gradeLabel(cell.below)}`;
+        detail = cell.charts ? `${cell.charts} at ${gradeLabel(cell.below)}` : null;
+    }
+    return (
+        <Box
+            as="td" textAlign="center" px={{ base: '1', md: '1.5' }} py="1.5" borderRadius="md" title={title} verticalAlign="middle"
+            bg={counts && reach ? fade(reach.color, 0.18) : 'transparent'} opacity={counts ? 1 : 0.35}
+        >
+            <HStack gap="1" justify="center">
+                {/* the tier's icon on All (titles have none), but not on phones, where it's the gain that has to fit */}
+                {counts && tier && filter === 'both' && <Image src={tier.icon} alt={tier.name} boxSize="28px" my="-5px" ms="-1" flexShrink="0" display={{ base: 'none', md: 'block' }} />}
+                <Text fontSize={{ base: 'xs', md: 'sm' }} fontWeight={counts ? 'semibold' : 'normal'} color={counts ? 'fg' : 'fg.subtle'} whiteSpace="nowrap">
+                    {cell.gain ? `+${cell.gain.toFixed(1)}` : '-'}
+                </Text>
+            </HStack>
+            {/* how many of yours are at the grade below, on Upgrade */}
+            {mode === 'upgrade' && <Text fontSize="2xs" color="fg.muted" whiteSpace="nowrap" minH="1em">{detail}</Text>}
+        </Box>
+    );
+}
+
+// ---- the tab
 
 function UserPumbility({ scores, counts, summary, info }) {
-    const { pumbility } = info;
-    const targets = useMemo(() => (counts ? newChartTargets(scores, counts, summary.floor) : []), [scores, counts, summary]);
+    const [params, setParams] = useSearchParams();
+    const setParam = (key, value) => setParams((current) => {
+        const updated = new URLSearchParams(current);
+        if (value) {
+            updated.set(key, value);
+        } else {
+            updated.delete(key);
+        }
+        return updated;
+    }, { replace: true });
+    const filter = Object.keys(FILTER_PARAMS).find((key) => FILTER_PARAMS[key] === params.get('type')) ?? 'both';
+    const mode = params.get('mode') === 'upgrade' ? 'upgrade' : 'new';
+
+    const fifty = useMemo(() => fiftyOf(scores, filter), [scores, filter]);
+    const all = filter === 'both';
+    const value = all ? (info.pumbility?.value ?? fifty.total) : fifty.total;
+    const next = (all ? pumbilityProgress(value) : progressAlong(filter === 's' ? SINGLE_MILESTONES : DOUBLE_MILESTONES, value)).next;
+
+    // what plates add to a clear at the level most of the best 50 are, from the least (FG) to the most (PG): the
+    // grid's numbers assume none
+    const usual = useMemo(() => {
+        const tally = new Map();
+        for (const score of fifty.scores) {
+            const key = `${score.type}${Number(score.level)}`;
+            tally.set(key, { type: score.type, level: Number(score.level), count: (tally.get(key)?.count ?? 0) + 1 });
+        }
+        return [...tally.values()].sort((a, b) => b.count - a.count || b.level - a.level)[0] ?? null;
+    }, [fifty]);
+    const plateRange = usual && ['fg', 'pg'].map((plate) => chartValue(usual.type, usual.level, 'ss', plate) - chartValue(usual.type, usual.level, 'ss', null));
+    const fiftyName = { both: 'Overall PUMBILITY', s: 'Singles PUMBILITY', d: 'Doubles PUMBILITY' }[filter];
 
     return (
         <VStack align="stretch" gap="10">
-            <VStack align="stretch" gap="8">
-                <Total pumbility={pumbility} summary={summary} />
-                {/* each toward its next title (the Overview shows the whole way) */}
-                <TypeProgress info={info} scores={scores} />
+            <VStack align="stretch" gap="3">
+                <FilterButtons value={filter} options={FILTERS} onChange={(f) => setParam('type', FILTER_PARAMS[f])} />
+                <VStack align="stretch" gap="8" separator={<Separator borderColor="border.emphasized" borderTopWidth="2px" />} {...PANEL_STYLE}>
+                    <Hero info={info} fifty={fifty} filter={filter} />
+                    <VStack align="stretch" gap="4">
+                        <FiftyChart fifty={fifty} filter={filter} info={info} next={next} value={value} />
+                        <Composition fifty={fifty} />
+                        <HStack display={{ base: 'none', sm: 'flex' }} minH={FILTER_STYLE.h} color="fg.muted">
+                            <Text fontSize="xs" fontStyle="italic" minW="0" truncate>
+                                Synced: {new Date(info.timestamp * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                            </Text>
+                        </HStack>
+                    </VStack>
+                    {/* what to aim for next, titled as the chart above it is */}
+                    <VStack align="stretch" gap="3">
+                        {/* one row: the title centered as the chart's is, with New / Upgrade on the right (an empty column
+                            as wide on the left keeps it centered); on phones, without the room, the title starts the row */}
+                        <Grid templateColumns={{ base: '1fr auto', md: '1fr auto 1fr' }} alignItems="center" columnGap="3">
+                            <Box display={{ base: 'none', md: 'block' }} />
+                            <Box textAlign={{ base: 'start', md: 'center' }} minW="0">
+                                <Text
+                                    color={TITLE.color} fontFamily={ChartJS.defaults.font.family}
+                                    fontSize={{ base: '14px', sm: `${TITLE.size}px` }} fontWeight={TITLE.weight} lineHeight="1.2"
+                                >
+                                    {chartTitle(info.player, filter, 'Next Score')}
+                                </Text>
+                                {plateRange && (
+                                    <Text fontSize="xs" color="fg.muted" mt="0.5">
+                                        (plates add +{plateRange[0].toFixed(1)} to +{plateRange[1].toFixed(1)} at {usual.type.toUpperCase()}{usual.level})
+                                    </Text>
+                                )}
+                            </Box>
+                            <Box justifySelf="end">
+                                <FilterButtons value={mode} options={MODES} onChange={(m) => setParam('mode', m === 'upgrade' ? 'upgrade' : null)} />
+                            </Box>
+                        </Grid>
+                        <NextClears scores={scores} fifty={fifty} filter={filter} next={next} mode={mode} counts={counts} />
+                    </VStack>
+                </VStack>
             </VStack>
-
-            <Section title="Where it comes from" description="Your best 50 charts by level, and the points each level adds.">
-                <Sources topScores={summary.topScores} values={summary.valueOf} />
-            </Section>
-
-            {/* below 50 charts counting, any clear makes the best 50: the per-level table would be all F */}
-            {summary.topScores.length < 50 ? (
-                <Section title="New charts that would count">
-                    <Text color="fg.muted">
-                        Until your best 50 is full, the first clear of any single or double from Lv.10 counts, and higher
-                        levels are worth more.
-                    </Text>
-                </Section>
-            ) : (
-                <Section title="New charts that would count" description="The grade a first clear needs to make your best 50, by level.">
-                    <NewCharts targets={targets} />
-                </Section>
-            )}
-
+            <UserTopFifty scores={scores} summary={summary} type={filter === 'both' ? 'all' : filter} title={fiftyName} />
         </VStack>
     );
 }

@@ -1,19 +1,32 @@
-import { useMemo, useState } from 'react';
-import { Text } from '@chakra-ui/react';
+import { useMemo } from 'react';
+import { HStack, Image, Text } from '@chakra-ui/react';
 
 import {
     GRADE_COLUMN, gridRow, JACKET_COLUMN, LEVEL_COLUMN, NUMBER_FILTER_COLUMN, PLATE_COLUMN, ScoreTable, SONG_COLUMN,
 } from './scoreGrid';
-import { formatPumbility } from './shared';
+import { formatPumbility, tierOfPoints } from './shared';
 
 // The charts that make up a PUMBILITY, laid out like Best Scores: rank, jacket, level, song, grade,
-// plate and points, highest first. All is the total's best 50 (as piugame lists it); Singles and
-// Doubles switch to the best 50 behind singles or doubles PUMBILITY instead of filtering it.
+// plate and points, highest first. `type` (the PUMBILITY tab's All / Singles / Doubles) picks the best 50:
+// All is the total's (as piugame lists it); Singles and Doubles are those behind singles or doubles PUMBILITY.
 function RankCell({ data }) {
     return <Text color="fg.muted" fontVariantNumeric="tabular-nums">{data.rank}</Text>;
 }
+// the points with the tier fifty charts like it would add up to (380 x 50 = 19,000: ALEXANDRITE Lv.1)
 function PointsCell({ data }) {
-    return <Text fontVariantNumeric="tabular-nums">{formatPumbility(data.points)}</Text>;
+    const tier = tierOfPoints(data.points);
+    return (
+        // the icon's full size even on phones, where the number in it would otherwise be too small to read
+        <HStack gap="1" h="full" justify="end">
+            {tier && (
+                <Image
+                    src={tier.icon} alt={tier.name} title={`${formatPumbility(data.points)} × 50 = ${formatPumbility(data.points * 50)}: ${tier.name}`}
+                    boxSize="30px" my="-4px" flexShrink="0"
+                />
+            )}
+            <Text fontVariantNumeric="tabular-nums">{formatPumbility(data.points)}</Text>
+        </HStack>
+    );
 }
 const TOP_FIFTY_COLUMNS = [
     // not sortable: the rows come in rank order, and clearing another column's sort returns to it
@@ -23,10 +36,8 @@ const TOP_FIFTY_COLUMNS = [
     SONG_COLUMN,
     GRADE_COLUMN,
     PLATE_COLUMN,
-    { headerName: 'Points', field: 'points', width: 120, cellRenderer: PointsCell, ...NUMBER_FILTER_COLUMN },
+    { headerName: 'Points', field: 'points', width: 130, cellRenderer: PointsCell, headerClass: 'ag-right-aligned-header', ...NUMBER_FILTER_COLUMN },
 ];
-const TOP_FIFTY_TYPES = [['all', 'All'], ['s', 'Singles'], ['d', 'Doubles']];
-const TITLES = { all: 'Overall PUMBILITY', s: 'Singles PUMBILITY', d: 'Doubles PUMBILITY' };
 
 // the best 50 counting charts of `type` (or of singles and doubles alike), as grid rows
 function topFifty(scores, values, type) {
@@ -37,13 +48,12 @@ function topFifty(scores, values, type) {
         .map((score, i) => ({ ...gridRow(score), rank: i + 1, points: values.get(score) }));
 }
 
-function UserTopFifty({ scores, summary, nav }) {
-    const [type, setType] = useState('all');
+function UserTopFifty({ scores, summary, type, title, nav }) {
     const rows = useMemo(() => topFifty(scores, summary.valueOf, type), [scores, summary, type]);
     return (
         <ScoreTable
-            title={TITLES[type]} nav={nav} rowData={rows} columnDefs={TOP_FIFTY_COLUMNS}
-            types={TOP_FIFTY_TYPES} onTypeChange={setType}
+            // a fresh grid per type: its rows are a different best 50
+            key={type} title={title} nav={nav} rowData={rows} columnDefs={TOP_FIFTY_COLUMNS} type={type}
             footer={rows.length < 50 && (
                 <Text fontSize="sm" color="fg.muted" mt="3">{rows.length} of 50 so far: clear more charts to fill the rest.</Text>
             )}

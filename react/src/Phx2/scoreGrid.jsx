@@ -226,7 +226,7 @@ export const LEVEL_COLUMN = {
 };
 export const SONG_COLUMN = {
     // takes the room left over: at least enough for a short title even on phones (compact)
-    headerName: 'Song', field: 'name', flex: 1, minWidth: 80, cellRenderer: SongCell,
+    headerName: 'Song', field: 'name', flex: 1, minWidth: 76, cellRenderer: SongCell,
     filter: 'agTextColumnFilter', floatingFilter: true, filterParams: TEXT_FILTER,
 };
 export const GRADE_COLUMN = {
@@ -267,7 +267,7 @@ const JACKET_FOLD = [480, ['jacket']];
 // (.phx2-grid-compact in Phx2.css), and these columns narrower, with their filters tightened to match, so
 // the song, level, grade, plate and score fit without scrolling sideways. Columns not in a grid are skipped.
 const COMPACT_WIDTH = 600;
-const COMPACT_COLUMNS = { jacket: 72, levelNumber: 42, grade: 62, plate: 52, score: 70, scorePlayed: 74, pumbility: 70, rank: 28, points: 54 };
+const COMPACT_COLUMNS = { jacket: 72, levelNumber: 42, grade: 62, plate: 48, score: 70, scorePlayed: 74, pumbility: 70, rank: 28, points: 84 };
 // narrower still below this grid width (320px phones), just fitting what's in them, as the columns above
 // and the song's minimum come to more than that; their filters hide the operator
 const TINY_WIDTH = 310;

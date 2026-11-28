@@ -12,7 +12,6 @@ import { pumbilitySummary } from './stats';
 import UserOverview from './UserOverview';
 import UserPumbility from './UserPumbility';
 import UserScores, { HOLD_MS } from './UserScores';
-import UserTopFifty from './UserTopFifty';
 import UserBreakdown from './UserBreakdown';
 import SyncPanel, { SyncForm } from './SyncForm';
 
@@ -192,12 +191,7 @@ function Phx2User() {
                         {tab === 'breakdown' && <UserBreakdown name={name} number={number} view={view} scores={user.scores} counts={counts} info={user.info} />}
                     </Tabs.Content>
                     <Tabs.Content value="pumbility" pt="6">
-                        {tab === 'pumbility' && (
-                            <VStack align="stretch" gap="10">
-                                <UserPumbility scores={user.scores} counts={counts} summary={summary} info={user.info} />
-                                <UserTopFifty scores={user.scores} summary={summary} />
-                            </VStack>
-                        )}
+                        {tab === 'pumbility' && <UserPumbility scores={user.scores} counts={counts} summary={summary} info={user.info} />}
                     </Tabs.Content>
                 </Tabs.Root>
                 </Box>

@@ -9,7 +9,7 @@ import Snowfall from 'react-snowfall';
 
 import { pumbilityImg, songImg } from '../Helpers/assets';
 import isWinterTheme from '../Helpers/isWinter';
-import { TIER_STARTS } from './pumbility';
+import { progressAlong, pumbilityProgress, TIER_STARTS } from './pumbility';
 import system from './theme';
 import './Phx2.css';
 
@@ -202,6 +202,12 @@ export function pumbilityTier(pumbility) {
 // A PUMBILITY tier's name ("RED BERYL Lv.5") in the gradient piugame gives its [P.B] title (col1
 // BRONZE ... col7 ALEXANDRITE), drawn like the singles and doubles titles: no outline, dark end
 // lightened. ABYSS ABSOLUTE has no known title colors and keeps its plain color.
+// a chart's points as a tier: what fifty charts like it would add up to (380 x 50 = 19,000: ALEXANDRITE Lv.1)
+export function tierOfPoints(points) {
+    const tier = pumbilityProgress(points * 50).current;
+    return tier && { name: tier.name, icon: pumbilityImg('phx2', tier.icon), color: pumbilityTier({ tier: tier.name }).color };
+}
+
 export function TierName({ tier, ...props }) {
     const index = PUMBILITY_TIERS.findIndex(([name]) => tier?.startsWith(name));
     if (index < 0) {
@@ -285,6 +291,17 @@ const segmentEnd = (segments, i) => (100 * totalWeight(segments.slice(0, i + 1))
 // PLATINUM's teal for the titles' pale blue (col4), the titles' red (col6) for RED BERYL
 const TITLE_LADDER_COLORS = { col3: GRADE_COLORS.s, col4: 'teal.300' };
 const TIER_LADDER_COLORS = { GOLD: GRADE_COLORS.s, 'RED BERYL': TITLE_GRADIENTS.col6[0] };
+
+// The title a chart's points reach x 50 along `milestones` (SINGLE_MILESTONES, DOUBLE_MILESTONES), in its
+// color on the title ladders, as a color a canvas can use
+export function titleOfPoints(points, milestones) {
+    const title = progressAlong(milestones, points * 50).current;
+    if (!title) {
+        return null;
+    }
+    const color = TITLE_LADDER_COLORS[title.title.color] || TITLE_GRADIENTS[title.title.color][0];
+    return { name: title.name, color: color === 'teal.300' ? '#5eead4' : color };
+}
 
 // PUMBILITY: BRONZE to ALEXANDRITE, five levels each (ABYSS ABSOLUTE at the very end)
 export const PUMBILITY_LADDER = withStart(TIER_STARTS.slice(0, -1).map(([name, start], i) => {
