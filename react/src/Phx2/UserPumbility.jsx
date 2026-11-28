@@ -11,7 +11,7 @@ import {
 } from './pumbility';
 import { ExpBar, formatPumbility, pumbilityTier, TierName, tierOfPoints, titleOfPoints, TitleText, UnfilledFifty } from './shared';
 import {
-    COOP_HEIGHT, FILTER_STYLE, FilterButtons, HEADING_SIZE, HERO_VALUE_STYLE, PANEL_STYLE, TITLE, useSizedBox,
+    COOP_HEIGHT, FilterButtons, HEADING_SIZE, HERO_VALUE_STYLE, PANEL_STYLE, TITLE, useSizedBox,
 } from './UserOverview';
 import UserTopFifty from './UserTopFifty';
 
@@ -530,11 +530,6 @@ function UserPumbility({ scores, counts, summary, info }) {
                         {/* a light line, the level table being more of the best 50 rather than a section of its own */}
                         <Separator borderColor="border" />
                         <Composition fifty={fifty} />
-                        <HStack display={{ base: 'none', sm: 'flex' }} minH={FILTER_STYLE.h} color="fg.muted">
-                            <Text fontSize="xs" fontStyle="italic" minW="0" truncate>
-                                Synced: {new Date(info.timestamp * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                            </Text>
-                        </HStack>
                     </VStack>
                     {/* what to aim for next, titled as the chart above it is */}
                     <VStack align="stretch" gap="3">

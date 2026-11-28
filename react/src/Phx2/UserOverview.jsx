@@ -478,12 +478,9 @@ function UserOverview({ info, scores, counts, summary, filter, onFilterChange })
                     <Progression info={info} scores={scores} filter={filter} />
                     <VStack align="stretch" gap="4">
                         {coop ? <CoopRows rows={rows} info={info} /> : <LevelChart rows={chartRows} filter={filter} info={info} />}
-                        {/* one line, as tall as the selects even on Co-op, which has none. No date on phones, where
-                            it wouldn't fit beside them: the header says when it was synced */}
+                        {/* the level range, on the right. One line, as tall as the selects even on Co-op, which has
+                            none (so switching to it doesn't shift the page), except on phones */}
                         <HStack display={{ base: coop ? 'none' : 'flex', sm: 'flex' }} justify="space-between" gap="3" minH={FILTER_STYLE.h} fontSize="sm" color="fg.muted">
-                            <Text display={{ base: 'none', sm: 'block' }} fontSize="xs" fontStyle="italic" minW="0" truncate>
-                                Synced: {new Date(info.timestamp * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                            </Text>
                             {rows.length > 0 && !coop && (
                                 <HStack gap="2" ms="auto" flexShrink="0" css={{ [TINY]: { gap: '4px' } }}>
                                     <LevelSelect label="From level" value={range.from} levels={range.levels} onChange={range.setFrom} />

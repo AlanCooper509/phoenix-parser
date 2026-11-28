@@ -646,11 +646,6 @@ function UserBreakdown({ name, number, view, scores, counts, info }) {
                     <GoalProgress name={levelName} phoneName={{ all: `LEVEL ${level}`, s: `SINGLE ${level}`, d: `DOUBLE ${level}`, c: `CO-OP x${level}` }[type]} shortName={{ all: `Lv. ${level}`, s: `S${level}`, d: `D${level}`, c: `C${level}` }[type]} rows={rows} total={total} typeTotals={typeTotals} goal={goal} onGoalChange={setGoal} type={type} level={level} />
                     <VStack align="stretch" gap="4">
                         <GradeChart rows={rows} title={`${info.player}: ${chartName} Best Scores`} average={average} clearPercent={total ? (100 * cleared.length) / total : 0} goal={goal} />
-                        <HStack display={{ base: 'none', sm: 'flex' }} minH={FILTER_STYLE.h} color="fg.muted">
-                            <Text fontSize="xs" fontStyle="italic" minW="0" truncate>
-                                Synced: {new Date(info.timestamp * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                            </Text>
-                        </HStack>
                     </VStack>
                 </VStack>
             </VStack>
