@@ -128,7 +128,9 @@ const OPERATOR_NAMES = {
     greaterThanOrEqual: 'Greater than or equal to', lessThan: 'Less than', lessThanOrEqual: 'Less than or equal to',
 };
 
-function ScoreFloatingFilter(props, ref) {
+// The filter under a number column (Score, Points, PB): an operator (≥ to start) and the value, in the
+// table's own style; `label` names the column
+function ValueFloatingFilter({ label = 'Score', ...props }, ref) {
     const [operator, setOperator] = useState('greaterThanOrEqual');
     const [value, setValue] = useState('');
 
@@ -150,19 +152,19 @@ function ScoreFloatingFilter(props, ref) {
     return (
         <div className={`phx2-grid-floating-filter${value === '' ? '' : ' phx2-grid-filter-active'}`}>
             <select
-                className="phx2-grid-filter-operator" aria-label="Score filter operator" title={OPERATOR_NAMES[operator]}
+                className="phx2-grid-filter-operator" aria-label={`${label} filter operator`} title={OPERATOR_NAMES[operator]}
                 value={operator} onChange={(event) => (value === '' ? setOperator(event.target.value) : update(event.target.value, value))}
             >
                 {FILTER_OPERATORS.map(([type, symbol]) => <option key={type} value={type}>{symbol}</option>)}
             </select>
             <input
-                className="phx2-grid-filter-value" type="text" inputMode="numeric" aria-label="Filter score"
-                placeholder="Score" value={value} onChange={(event) => update(operator, event.target.value)}
+                className="phx2-grid-filter-value" type="text" inputMode="decimal" aria-label={`Filter ${label.toLowerCase()}`}
+                placeholder={label} value={value} onChange={(event) => update(operator, event.target.value)}
             />
         </div>
     );
 }
-const ScoreFloatingFilterComponent = forwardRef(ScoreFloatingFilter);
+const ValueFloatingFilterComponent = forwardRef(ValueFloatingFilter);
 
 const RankFloatingFilter = forwardRef(function RankFloatingFilter({ labels, label, ...props }, ref) {
     const [operator, setOperator] = useState('greaterThanOrEqual');
@@ -258,12 +260,17 @@ export const PLATE_COLUMN = {
     floatingFilterComponent: RankFloatingFilter,
     floatingFilterComponentParams: { label: 'Plate', labels: PLATES.map((plate) => plate.toUpperCase()), suppressFilterButton: true },
 };
-export const SCORE_COLUMN = {
-    colId: 'score', headerName: 'Score', field: 'score', width: 120, cellRenderer: ScoreCell, comparator: comparing(byScore),
+// a number column's filter, as Score's: an operator and a value (`label` names it), at least the value to start
+export const valueFilterColumn = (label) => ({
     ...NUMBER_FILTER_COLUMN,
     filterParams: SCORE_FILTER,
-    floatingFilterComponent: ScoreFloatingFilterComponent,
-    floatingFilterComponentParams: { suppressFilterButton: true },
+    floatingFilterComponent: ValueFloatingFilterComponent,
+    floatingFilterComponentParams: { suppressFilterButton: true, label },
+});
+
+export const SCORE_COLUMN = {
+    colId: 'score', headerName: 'Score', field: 'score', width: 120, cellRenderer: ScoreCell, comparator: comparing(byScore),
+    ...valueFilterColumn('Score'),
 };
 
 const DEFAULT_COLUMN = { sortable: true, suppressMenu: true, resizable: false };

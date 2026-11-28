@@ -5,7 +5,7 @@ import { useSearchParams } from 'react-router-dom';
 import { coopValue } from './pumbility';
 import { FilterButtons } from './UserOverview';
 import {
-    GRADE_COLUMN, gridRow, LEVEL_COLUMN, NUMBER_FILTER_COLUMN, PLATE_COLUMN, SCORE_COLUMN, ScoreTable, SONG_COLUMN,
+    GRADE_COLUMN, gridRow, LEVEL_COLUMN, PLATE_COLUMN, SCORE_COLUMN, ScoreTable, SONG_COLUMN, valueFilterColumn,
 } from './scoreGrid';
 import { formatPumbility } from './shared';
 
@@ -49,7 +49,7 @@ const COLUMNS = [
     {
         colId: 'pumbility', headerName: 'Rating', headerTooltip: 'What the chart adds to PUMBILITY (CO-OP Rating for co-op charts)',
         field: 'pumbility', width: 120, cellRenderer: PumbilityCell, hide: true,
-        ...NUMBER_FILTER_COLUMN,
+        ...valueFilterColumn('Rating'),
     },
 ];
 

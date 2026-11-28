@@ -140,7 +140,7 @@
     color: var(--ag-secondary-foreground-color);
 }
 /* the header's own icon for a filter in use, which crowds out narrow headers: the green box shows it */
-.phx2-root .phx2-grid .ag-header-cell:is([col-id="grade"], [col-id="plate"], [col-id="score"], [col-id="scorePlayed"]) .ag-filter-icon {
+.phx2-root .phx2-grid .ag-header-cell:is([col-id="grade"], [col-id="plate"], [col-id="score"], [col-id="scorePlayed"], [col-id="points"], [col-id="pumbility"]) .ag-filter-icon {
     display: none;
 }
 /* tighter in compact grids' narrow columns, and just the value in the narrowest */
