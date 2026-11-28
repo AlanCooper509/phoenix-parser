@@ -313,7 +313,6 @@ function LadderHero({ heading, rank, what, badge, value, progress, color, marker
                     and the heading is cut short only if it still doesn't fit */}
                 <HStack gap="2.5" rowGap="0" minW="0" wrap={{ base: 'nowrap', sm: 'wrap' }}>
                     {heading}
-                    {badge}
                 </HStack>
                 <Text
                     {...HERO_VALUE_STYLE}
@@ -326,9 +325,16 @@ function LadderHero({ heading, rank, what, badge, value, progress, color, marker
                 // the same room whatever the marker (tier icon or step ball), so switching views doesn't shift the page
                 markerRoom={HERO_MARKER_ROOM}
                 trackPercent={ladderPercent(segments, value)} track={(filled) => <Ladder segments={segments} filled={filled} ticks={ticks} />}
-                // the ladder shows the way along; under it, the player's rank (if ranked) and what's left to the
-                // next milestone
-                points={false} footer={<RankLine rank={rank} what={what} />}
+                // the ladder shows the way along; under it, the player's rank (if ranked), how full their best 50 is
+                // (`badge`, while it isn't: there, not beside the heading, so a long title isn't cut short) and what's
+                // left to the next milestone
+                points={false}
+                footer={(
+                    <HStack gap="3" flexShrink="0">
+                        <RankLine rank={rank} what={what} />
+                        {badge}
+                    </HStack>
+                )}
             />
         </Box>
     );

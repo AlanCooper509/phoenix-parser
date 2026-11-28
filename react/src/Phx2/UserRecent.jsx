@@ -3,7 +3,7 @@ import { EmptyState, Heading, Text, VStack } from '@chakra-ui/react';
 import { LuHistory } from 'react-icons/lu';
 
 import {
-    GRADE_COLUMN, gridRow, JACKET_COLUMN, LEVEL_COLUMN, PLATE_COLUMN, SCORE_COLUMN, ScoreTable, SONG_COLUMN, TableHeading,
+    GRADE_COLUMN, gridRow, LEVEL_COLUMN, PLATE_COLUMN, SCORE_COLUMN, ScoreTable, SONG_COLUMN, TableHeading,
 } from './scoreGrid';
 import { timeAgo } from './shared';
 
@@ -58,7 +58,6 @@ function PlayedCell({ data }) {
 }
 
 const COLUMNS = [
-    JACKET_COLUMN,
     LEVEL_COLUMN,
     SONG_COLUMN,
     GRADE_COLUMN,

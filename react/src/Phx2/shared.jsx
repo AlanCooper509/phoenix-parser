@@ -202,10 +202,20 @@ export function pumbilityTier(pumbility) {
 // A PUMBILITY tier's name ("RED BERYL Lv.5") in the gradient piugame gives its [P.B] title (col1
 // BRONZE ... col7 ALEXANDRITE), drawn like the singles and doubles titles: no outline, dark end
 // lightened. ABYSS ABSOLUTE has no known title colors and keeps its plain color.
-// a chart's points as a tier: what fifty charts like it would add up to (380 x 50 = 19,000: ALEXANDRITE Lv.1)
+// the tiers' colors as on the PUMBILITY ladder, as plain colors (a canvas can't use theme tokens)
+const TIER_COLORS = {
+    BRONZE: '#d4843e', SILVER: '#d4d4d8', GOLD: '#efbf00', PLATINUM: '#5eead4', DIAMOND: '#3b82f6',
+    'RED BERYL': 'rgb(255, 0, 0)', ALEXANDRITE: '#a855f7', 'ABYSS ABSOLUTE': '#fed7aa',
+};
+
+// a chart's points as a tier: what fifty charts like it would add up to (380 x 50 = 19,000: ALEXANDRITE Lv.1),
+// with its icon and its color on the ladder
 export function tierOfPoints(points) {
     const tier = pumbilityProgress(points * 50).current;
-    return tier && { name: tier.name, icon: pumbilityImg('phx2', tier.icon), color: pumbilityTier({ tier: tier.name }).color };
+    return tier && {
+        name: tier.name, icon: pumbilityImg('phx2', tier.icon),
+        color: TIER_COLORS[Object.keys(TIER_COLORS).find((name) => tier.name.startsWith(name))],
+    };
 }
 
 export function TierName({ tier, ...props }) {

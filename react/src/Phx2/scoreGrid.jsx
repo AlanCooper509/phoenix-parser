@@ -4,10 +4,10 @@ import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-quartz.css';
 import { Box, Checkbox, Heading, HStack, Image, Separator, Text } from '@chakra-ui/react';
 
-import { chartBallImg, gradeImg, plateImg } from '../Helpers/assets';
+import { chartBallImg, gradeImg, plateImg, songImg } from '../Helpers/assets';
 
 import { GRADES, gradeLabel, gradeRank, isCleared, PLATE_NAMES } from './pumbility';
-import { ChartBadge, Jacket, SMALL_PHONE } from './shared';
+import { ChartBadge, SMALL_PHONE } from './shared';
 import { FILTER_STYLE, FilterButtons } from './UserOverview';
 
 // The ag-grid behind Best Scores and Recently Played: its dark theme recolored to Phoenix 2 (.phx2-grid
@@ -47,11 +47,26 @@ function LevelCell({ data }) {
     );
 }
 
-function JacketCell({ data }) {
-    return <HStack {...middle}><Jacket jacket={data.jacket} w="80px" className="phx2-grid-jacket" /></HStack>;
-}
+// the song's jacket from the cell's left edge, easing out under its name (so phones, too narrow for the art
+// beside the name, still have it)
+const JACKET_FADE = 'linear-gradient(to right, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.6) 30%, rgba(0, 0, 0, 0.3) 60%, rgba(0, 0, 0, 0.1) 85%, transparent 100%)';
 
 function SongCell({ data }) {
+    if (data.jacket) {
+        return (
+            <Box position="relative" h="full" display="flex" alignItems="center">
+                <Box
+                    // the row's full height, a little in from the cell's left edge, rounded, so it sits in the row as a soft tile rather than a hard block
+                    position="absolute" top="0" bottom="0" left="calc(4px - var(--ag-cell-horizontal-padding))" borderRadius="md"
+                    // the whole fade within the cell, however narrow (phones): up to 216px, from near the cell's edge
+                    w="calc(100% + var(--ag-cell-horizontal-padding) - 4px)" maxW="216px"
+                    bgImage={`url(${songImg('phx2', data.jacket)})`} bgSize="cover" bgPosition="center" opacity="0.6"
+                    css={{ maskImage: JACKET_FADE, WebkitMaskImage: JACKET_FADE }}
+                />
+                <Text position="relative" truncate title={data.name} textShadow="0 1px 3px rgba(0, 0, 0, 0.9)" fontWeight="medium">{data.name}</Text>
+            </Box>
+        );
+    }
     return <Text truncate title={data.name}>{data.name}</Text>;
 }
 
@@ -209,12 +224,6 @@ function rankFilter(labels) {
 
 // ---- columns
 
-// the song's jacket, first: jacket, then level, then song
-export const JACKET_COLUMN = {
-    // the jacket at 80px wide (45px tall, its 16:9), with tighter padding than other cells
-    colId: 'jacket', headerName: '', width: 100, cellRenderer: JacketCell, sortable: false,
-    cellStyle: { paddingLeft: '10px', paddingRight: '10px' },
-};
 export const LEVEL_COLUMN = {
     // just wider than the 40px step ball (and "Level" with a sort arrow), with tighter padding than other
     // cells, so it sits close to the song
@@ -259,15 +268,11 @@ export const SCORE_COLUMN = {
 
 const DEFAULT_COLUMN = { sortable: true, suppressMenu: true, resizable: false };
 
-// below this grid width the jacket (decoration: the song's name is beside it) folds away, so the
-// data columns need less sideways scrolling on phones
-const JACKET_FOLD = [480, ['jacket']];
-
 // Below this grid width (phones) the grid goes compact: smaller text, padding, images and rows
 // (.phx2-grid-compact in Phx2.css), and these columns narrower, with their filters tightened to match, so
 // the song, level, grade, plate and score fit without scrolling sideways. Columns not in a grid are skipped.
 const COMPACT_WIDTH = 600;
-const COMPACT_COLUMNS = { jacket: 72, levelNumber: 42, grade: 62, plate: 48, score: 70, scorePlayed: 74, pumbility: 70, rank: 28, points: 84 };
+const COMPACT_COLUMNS = { levelNumber: 42, grade: 62, plate: 48, score: 70, scorePlayed: 74, pumbility: 70, rank: 28, points: 84 };
 // narrower still below this grid width (320px phones), just fitting what's in them, as the columns above
 // and the song's minimum come to more than that; their filters hide the operator
 const TINY_WIDTH = 310;
@@ -305,7 +310,7 @@ function layoutColumns(columnDefs, width, fold) {
 const NO_FOLD = [];
 
 const ScoreGrid = forwardRef(function ScoreGrid({ fold: moreFold = NO_FOLD, columnDefs, ...props }, ref) {
-    const fold = useMemo(() => [JACKET_FOLD, ...moreFold], [moreFold]);
+    const fold = moreFold;
     // measured before the grid first draws, so it starts in the right layout (no flash of the wide one
     // on phones); null until then
     const box = useRef(null);
@@ -372,7 +377,7 @@ const ScoreGrid = forwardRef(function ScoreGrid({ fold: moreFold = NO_FOLD, colu
                     ref={ref}
                     columnDefs={startColumns}
                     defaultColDef={DEFAULT_COLUMN}
-                    // room for the 45px-tall jackets (smaller when compact)
+                    // room for the 40px step balls (smaller when compact)
                     rowHeight={compact ? 44 : 56}
                     domLayout="autoHeight"
                     onGridSizeChanged={fitColumns}

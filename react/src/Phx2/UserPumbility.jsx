@@ -56,25 +56,25 @@ function Hero({ info, fifty, filter }) {
     return (
         <Box>
             <HStack justify="space-between" align="center" gap={{ base: '2', sm: '4' }} mb="1">
-                <HStack gap="2.5" minW="0">
-                    {heading}
-                    <UnfilledFifty counted={fifty.top.length} what={all ? 'charts' : TYPE_NAMES[filter].toLowerCase()} color={color} />
-                </HStack>
+                {/* the heading alone beside the value, cut short only if it must be: how full the best 50 is goes
+                    under the bar */}
+                <Box minW="0">{heading}</Box>
                 <Text {...HERO_VALUE_STYLE}>{formatPumbility(value)}</Text>
             </HStack>
             <ExpBar
                 value={value} progress={progress} color={color} size="md" markerRoom={HERO_MARKER_ROOM}
                 marker={all ? tier.icon : stepballImg('phx2', filter)} markerSize={all ? undefined : STEPBALL_SIZE}
                 points={false}
-                // what a chart has to beat to count, where the Overview has the rank
+                // where the Overview has the rank: what a chart has to beat to count, or while the best 50 aren't all
+                // there yet (every clear counting), how many are
                 footer={fifty.full ? (
                     <Text flexShrink="0" title="Your 50th best chart: a new clear counts once it's worth more">
                         50th best <Text as="span" color="fg" fontWeight="semibold">{formatPumbility(fifty.floor)}</Text>
                     </Text>
                 ) : (
-                    <Text flexShrink="0" title="Until your best 50 is full, every clear of a single or double from Lv.10 adds to it">
-                        Every clear counts
-                    </Text>
+                    <Box flexShrink="0">
+                        <UnfilledFifty counted={fifty.top.length} what={all ? 'charts' : TYPE_NAMES[filter].toLowerCase()} color={color} />
+                    </Box>
                 )}
             />
         </Box>
@@ -84,11 +84,6 @@ function Hero({ info, fifty, filter }) {
 // ---- the card's chart: the best 50 themselves, highest first, each in the color of the tier its points
 // reach x 50, with a line at the average a chart needs for the next tier (or title)
 
-// the tiers' colors as on the PUMBILITY ladder (shared.jsx), as a canvas needs them: not theme tokens
-const TIER_HEX = {
-    BRONZE: '#d4843e', SILVER: '#d4d4d8', GOLD: '#efbf00', PLATINUM: '#5eead4', DIAMOND: '#3b82f6',
-    'RED BERYL': 'rgb(255, 0, 0)', ALEXANDRITE: '#a855f7', 'ABYSS ABSOLUTE': '#fed7aa',
-};
 const TITLE_MILESTONES = { s: SINGLE_MILESTONES, d: DOUBLE_MILESTONES };
 // What a chart's points reach x 50, and its color: on All the tier, on Singles or Doubles the title (as their
 // ladders on the Overview are colored)
@@ -97,7 +92,7 @@ function reachOf(points, filter) {
         return titleOfPoints(points, TITLE_MILESTONES[filter]) ?? { name: 'no title', color: TEXT };
     }
     const tier = tierOfPoints(points);
-    return tier ? { name: tier.name, color: TIER_HEX[Object.keys(TIER_HEX).find((name) => tier.name.startsWith(name))] } : { name: 'no tier', color: TEXT };
+    return tier ?? { name: 'no tier', color: TEXT };
 }
 // a color, see-through by `alpha` (0 to 1)
 function fade(color, alpha) {
@@ -315,35 +310,31 @@ function NextClears({ scores, fifty, filter, next, mode, counts }) {
         .filter((score) => (filter === 'both' ? score.type === 's' || score.type === 'd' : score.type === filter) && scoreValue(score) > 0)
         .reduce((best, score) => Math.max(best, priceLevel(score)), 0) || Infinity;
 
-    let rows;
-    if (mode === 'new') {
-        // every level where some grade would count, and the grades from the lowest that does anywhere
-        rows = PRICE_LEVELS.filter((level) => rowParts(level, filter, counts).length)
-            .map((level) => ({
-                level,
-                cells: AIM_GRADES.map(([grade]) => {
-                    const value = valueAt(level, grade);
-                    const gain = fifty.full ? value - fifty.floor : value;
-                    return gain > 0.005 ? { grade, value, gain, count: clearsToReach(value, fifty.top, fifty.total, next?.value) } : { grade, value };
-                }),
-            }))
-            .filter((row) => row.cells.some((cell) => cell.gain));
-    } else {
-        // the levels with charts in the best fifty, and how many there sit at each grade
-        const levels = [...new Set(fifty.scores.map(priceLevel))].sort((a, b) => b - a);
-        rows = levels.map((level) => ({
+    // New: every level where some grade would count, and the grades from the lowest that does anywhere. Upgrade
+    // has the same levels and grades, so switching between them keeps the grid's shape (and where it's scrolled to)
+    const newRows = PRICE_LEVELS.filter((level) => rowParts(level, filter, counts).length)
+        .map((level) => ({
             level,
-            cells: AIM_GRADES.map(([grade], i) => {
-                if (i === 0) {
-                    return { grade };
-                }
-                const below = AIM_GRADES[i - 1][0];
-                const gain = valueAt(level, grade) - valueAt(level, below);
-                const charts = fifty.scores.filter((s) => priceLevel(s) === level && s.grade === below).length;
-                return { grade, value: valueAt(level, grade), gain, charts, below };
+            cells: AIM_GRADES.map(([grade]) => {
+                const value = valueAt(level, grade);
+                const gain = fifty.full ? value - fifty.floor : value;
+                return gain > 0.005 ? { grade, value, gain, count: clearsToReach(value, fifty.top, fifty.total, next?.value) } : { grade, value };
             }),
-        }));
-    }
+        }))
+        .filter((row) => row.cells.some((cell) => cell.gain));
+    // Upgrade: one grade up from the one below, wherever any of the best fifty sit at that one (a "-" elsewhere)
+    const rows = mode === 'new' ? newRows : newRows.map(({ level }) => ({
+        level,
+        cells: AIM_GRADES.map(([grade], i) => {
+            if (i === 0) {
+                return { grade };
+            }
+            const below = AIM_GRADES[i - 1][0];
+            const gain = valueAt(level, grade) - valueAt(level, below);
+            const charts = fifty.scores.filter((s) => priceLevel(s) === level && s.grade === below).length;
+            return { grade, value: valueAt(level, grade), gain, charts, below };
+        }),
+    }));
     // the level the grid opens at: the highest listed at most REACH_ABOVE over the highest clear
     const focus = rows.find((row) => row.level <= reach + REACH_ABOVE)?.level ?? rows[rows.length - 1]?.level;
     const grid = useRef(null);
@@ -352,20 +343,19 @@ function NextClears({ scores, fifty, filter, next, mode, counts }) {
         if (column) {
             grid.current.scrollLeft = Math.max(0, column.offsetLeft + column.offsetWidth - grid.current.clientWidth);
         }
-    }, [focus, mode, filter, rows.length]);
+    }, [focus, filter, rows.length]);
 
-    const firstGrade = Math.min(...rows.map((row) => row.cells.findIndex((cell) => cell.gain > 0 && (mode === 'new' || cell.charts))).filter((i) => i >= 0));
+    const firstGrade = Math.min(...newRows.map((row) => row.cells.findIndex((cell) => cell.gain > 0)).filter((i) => i >= 0));
     const grades = AIM_GRADES.slice(Number.isFinite(firstGrade) ? firstGrade : 0);
 
     if (!rows.length) {
-        return <Text color="fg.muted">{mode === 'new' ? 'No new clear would raise your PUMBILITY.' : 'No charts in your best 50 yet.'}</Text>;
+        return <Text color="fg.muted">No new clear would raise your PUMBILITY.</Text>;
     }
     const shown = grades.map(([grade]) => grade);
     const cellOf = (row, grade) => row.cells.find((cell) => cell.grade === grade);
     const gradeHead = (grade) => (
-        // the grade's art (named on hover), after the trend icon on Upgrade; no wider than its column
+        // the grade's art (named on hover), the same size on New and Upgrade; no wider than its column
         <HStack as="span" gap="0.5" justify="center" title={mode === 'upgrade' ? `Up to ${gradeLabel(grade)}` : gradeLabel(grade)}>
-            {mode === 'upgrade' && <Box as={LuTrendingUp} boxSize="3.5" color="phx2.fg" flexShrink="0" />}
             <Image src={gradeImg('phx2', grade)} alt={gradeLabel(grade)} h={{ base: '18px', md: '22px' }} w="auto" maxW="full" minW="0" objectFit="contain" />
         </HStack>
     );
@@ -384,18 +374,22 @@ function NextClears({ scores, fifty, filter, next, mode, counts }) {
         // there are more levels than fit, the grades staying put. Not stretched to the card on wide screens.
         <Box ref={grid} overflowX="auto">
             <Box
-                as="table" w={{ base: 'full', md: 'auto' }} mx="auto" css={{ borderCollapse: 'separate', borderSpacing: '3px' }}
+                as="table" w={{ base: 'full', md: 'auto' }} mx="auto"
+                css={{ borderCollapse: 'separate', borderSpacing: '3px', '@media screen and (max-width: 767.98px)': { borderSpacing: '2px' } }}
                 fontVariantNumeric="tabular-nums"
             >
                 <thead>
                     <tr>
-                        {/* over the grades: empty, their art says what they are */}
-                        <Box as="th" position="sticky" left="0" bg="bg.subtle" zIndex="1" aria-label="Grade" />
+                        {/* over the grades: empty on New, their art says what they are; on Upgrade the trend icon, once
+                            for all of them (each row is one grade up, to its grade) */}
+                        <Box as="th" position="sticky" left="0" bg="bg.subtle" zIndex="1" aria-label={mode === 'upgrade' ? 'Up to grade' : 'Grade'} verticalAlign="bottom" pb="1">
+                            {mode === 'upgrade' && <Box as={LuTrendingUp} boxSize="4" color="phx2.fg" mx="auto" title="One grade up, to" />}
+                        </Box>
                         {levelColumns.map((row) => (
                             // centered over its column, every label's last line on the same line as the others'
                             <Box
                                 as="th" key={row.level} data-level={row.level} fontSize={{ base: 'xs', md: 'sm' }} fontWeight="semibold" whiteSpace="nowrap"
-                                lineHeight="1.2" pb="1" textAlign="center" verticalAlign="bottom" minW={{ md: '84px' }}
+                                lineHeight="1.2" pb="1" textAlign="center" verticalAlign="bottom" w={CELL_SIZE.w} minW={CELL_SIZE.minW} maxW={CELL_SIZE.maxW}
                             >
                                 {levelHead(row)}
                             </Box>
@@ -405,7 +399,9 @@ function NextClears({ scores, fifty, filter, next, mode, counts }) {
                 <tbody>
                     {gradeRows.map((grade) => (
                         <tr key={grade}>
-                            <Box as="th" pe={{ base: '1', md: '2' }} position="sticky" left="0" bg="bg.subtle" zIndex="1">{gradeHead(grade)}</Box>
+                            {/* at least as wide as the widest grade's art: with more levels than fit, the table squeezes its
+                                columns, and would squeeze the art away */}
+                            <Box as="th" pe={{ base: '1', md: '2' }} minW={{ base: '38px', md: '52px' }} position="sticky" left="0" bg="bg.subtle" zIndex="1">{gradeHead(grade)}</Box>
                             {levelColumns.map((row) => <PlanCell key={row.level} cell={cellOf(row, grade)} mode={mode} next={next} filter={filter} />)}
                         </tr>
                     ))}
@@ -415,12 +411,15 @@ function NextClears({ scores, fifty, filter, next, mode, counts }) {
     );
 }
 
+// every level's column and cell the same size in New and Upgrade: room for the widest (a tier icon and +117.4,
+// or +2.6 ×12), slimmer on phones, where there's no icon
+const CELL_SIZE = { w: { base: '42px', md: '96px' }, minW: { base: '42px', md: '96px' }, maxW: { base: '42px', md: '96px' }, h: { base: '30px', md: '33px' } };
+
 function PlanCell({ cell, mode, next, filter }) {
     const tier = cell.value && tierOfPoints(cell.value);
     const reach = cell.value && reachOf(cell.value, filter);
     const counts = mode === 'new' ? cell.gain > 0 : cell.charts > 0;
     let title;
-    let detail = null;
     if (mode === 'new' && counts) {
         title = `A ${gradeLabel(cell.grade)} here is worth ${formatPumbility(cell.value)} (× 50 = ${reach.name}), adding ${formatPumbility(cell.gain)}`;
         if (cell.count) {
@@ -428,22 +427,28 @@ function PlanCell({ cell, mode, next, filter }) {
         }
     } else if (mode === 'upgrade' && cell.gain) {
         title = `${gradeLabel(cell.below)} to ${gradeLabel(cell.grade)} adds ${formatPumbility(cell.gain)}; ${cell.charts} of your best 50 here ${cell.charts === 1 ? 'is' : 'are'} ${gradeLabel(cell.below)}`;
-        detail = cell.charts ? `${cell.charts} at ${gradeLabel(cell.below)}` : null;
     }
     return (
         <Box
-            as="td" textAlign="center" px={{ base: '1', md: '1.5' }} py="1.5" borderRadius="md" title={title} verticalAlign="middle"
+            // one size whatever's in it, so New and Upgrade lay the grid out the same
+            as="td" position="relative" textAlign="center" {...CELL_SIZE} px={{ base: '0.5', md: '1.5' }} borderRadius="md" title={title} verticalAlign="middle"
             bg={counts && reach ? fade(reach.color, 0.18) : 'transparent'} opacity={counts ? 1 : 0.35}
         >
-            <HStack gap="1" justify="center">
+            <HStack gap={{ base: '0.5', md: '1' }} justify="center">
                 {/* the tier's icon on All (titles have none), but not on phones, where it's the gain that has to fit */}
                 {counts && tier && filter === 'both' && <Image src={tier.icon} alt={tier.name} boxSize="28px" my="-5px" ms="-1" flexShrink="0" display={{ base: 'none', md: 'block' }} />}
                 <Text fontSize={{ base: 'xs', md: 'sm' }} fontWeight={counts ? 'semibold' : 'normal'} color={counts ? 'fg' : 'fg.subtle'} whiteSpace="nowrap">
-                    {cell.gain ? `+${cell.gain.toFixed(1)}` : '-'}
+                    {counts ? `+${cell.gain.toFixed(1)}` : '-'}
                 </Text>
+                {/* on Upgrade, how many of yours sit at the grade below */}
             </HStack>
-            {/* how many of yours are at the grade below, on Upgrade */}
-            {mode === 'upgrade' && <Text fontSize="2xs" color="fg.muted" whiteSpace="nowrap" minH="1em">{detail}</Text>}
+            {/* on Upgrade, how many of yours sit at the grade below: tucked in the corner, so the gain stays centered
+                where New has it */}
+            {mode === 'upgrade' && counts && (
+                <Text position="absolute" right={{ base: '2px', md: '4px' }} bottom={{ base: '0', md: '1px' }} fontSize={{ base: '8px', md: '9px' }} lineHeight="1" color="fg.muted" whiteSpace="nowrap">
+                    ×{cell.charts}
+                </Text>
+            )}
         </Box>
     );
 }

@@ -5,7 +5,7 @@ import { useSearchParams } from 'react-router-dom';
 import { coopValue } from './pumbility';
 import { FilterButtons } from './UserOverview';
 import {
-    GRADE_COLUMN, gridRow, JACKET_COLUMN, LEVEL_COLUMN, NUMBER_FILTER_COLUMN, PLATE_COLUMN, SCORE_COLUMN, ScoreTable, SONG_COLUMN,
+    GRADE_COLUMN, gridRow, LEVEL_COLUMN, NUMBER_FILTER_COLUMN, PLATE_COLUMN, SCORE_COLUMN, ScoreTable, SONG_COLUMN,
 } from './scoreGrid';
 import { formatPumbility } from './shared';
 
@@ -41,7 +41,6 @@ function PumbilityCell({ data }) {
 }
 
 const COLUMNS = [
-    JACKET_COLUMN,
     { ...LEVEL_COLUMN, ...VALUE_SORTS.score[0] },
     SONG_COLUMN,
     GRADE_COLUMN,

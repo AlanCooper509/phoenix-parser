@@ -11,7 +11,7 @@ import { GRADES, gradeForScore, gradeLabel, isCleared } from './pumbility';
 import { arrowImg, chartBallImg, gradeImg, plateImg } from '../Helpers/assets';
 import { EASE_OUT_QUART, FILL_TRANSITION, GRADE_COLORS, PHONE, SMALL_PHONE } from './shared';
 import ScoreGrid, {
-    GRADE_COLUMN, gridRow, JACKET_COLUMN, LEVEL_COLUMN, PLATE_COLUMN, SCORE_COLUMN, SONG_COLUMN, TableHeading, ViewLink,
+    GRADE_COLUMN, gridRow, LEVEL_COLUMN, PLATE_COLUMN, SCORE_COLUMN, SONG_COLUMN, TableHeading, ViewLink,
 } from './scoreGrid';
 import {
     COOP_HEIGHT, FILTER_STYLE, FilterButtons, HEADING_SIZE, HERO_BAR_MARGIN, HERO_VALUE_STYLE, PANEL_STYLE, TITLE, useSizedBox,
@@ -414,7 +414,7 @@ function GoalProgress({ name, phoneName, shortName, rows, total, typeTotals, goa
 
 // no sort to start: the rows come most recently attempted first. The level's step ball stays (it tells
 // singles from doubles), but without its filter: the tab is one level at a time.
-const COLUMNS = [JACKET_COLUMN, { ...LEVEL_COLUMN, filter: false, floatingFilter: false }, SONG_COLUMN, GRADE_COLUMN, PLATE_COLUMN, SCORE_COLUMN];
+const COLUMNS = [{ ...LEVEL_COLUMN, filter: false, floatingFilter: false }, SONG_COLUMN, GRADE_COLUMN, PLATE_COLUMN, SCORE_COLUMN];
 
 // The level's charts that meet the goal, or those remaining, one at a time, the open one in the URL
 // (?view=remaining, or nothing): its heading beside the other's name and count, which switches to it (as
