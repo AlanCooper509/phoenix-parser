@@ -228,6 +228,72 @@
     margin: 0 2px;
 }
 
+/* compact grids' shared Grade / Plate column (scoreGrid.jsx): cells drawn both ways, one shown by width */
+.phx2-root .phx2-grid-compact .phx2-grid-wide-only,
+.phx2-root .phx2-grid:not(.phx2-grid-compact) .phx2-grid-compact-only {
+    display: none;
+}
+/* the grade a little larger than in its own column, with the plate small at its lower right corner, hanging
+   just past it */
+.phx2-root .phx2-grid-compact .phx2-grid-compact-only .phx2-grid-grade {
+    height: 23px;
+}
+.phx2-root .phx2-grid-tiny .phx2-grid-compact-only .phx2-grid-grade {
+    height: 21px;
+}
+.phx2-root .phx2-grid .phx2-grid-corner-plate {
+    height: 10px;
+    right: -8px;
+    bottom: -5px;
+}
+.phx2-root .phx2-grid-tiny .phx2-grid-corner-plate {
+    height: 9px;
+    right: -5px;
+}
+/* its header: the label and swap button centered over the cells, whichever way its wide header aligns */
+.phx2-root .phx2-grid .phx2-grid-swap {
+    display: none;
+}
+.phx2-root .phx2-grid-compact .ag-header-cell:is([col-id="grade"], [col-id="plate"]) .ag-cell-label-container {
+    flex-direction: row;
+    justify-content: center;
+    gap: 2px;
+}
+.phx2-root .phx2-grid-compact .ag-header-cell:is([col-id="grade"], [col-id="plate"]) .ag-header-cell-label {
+    flex: 0 1 auto;
+    flex-direction: row;
+}
+.phx2-root .phx2-grid-compact .ag-header-cell:is([col-id="grade"], [col-id="plate"]) {
+    padding-left: 4px;
+    padding-right: 4px;
+}
+.phx2-root .phx2-grid-compact .phx2-grid-swap {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    border: 0;
+    border-radius: 4px;
+    color: var(--ag-secondary-foreground-color);
+    background: rgba(255, 255, 255, 0.06);
+    cursor: pointer;
+}
+.phx2-root .phx2-grid-compact .phx2-grid-swap:hover,
+.phx2-root .phx2-grid-compact .phx2-grid-swap:focus-visible {
+    color: var(--ag-foreground-color);
+    background: rgba(255, 255, 255, 0.14);
+    outline: none;
+}
+/* the other one, out of sight, still filters: the button in the filter's green */
+.phx2-root .phx2-grid-swap-filtered .phx2-grid-swap {
+    color: #04a423;
+    background: rgba(4, 164, 35, 0.18);
+    box-shadow: inset 0 0 0 1px #04a423;
+}
+
 /* a centered column header (Recently Played's Judgments) */
 .phx2-root .phx2-grid .phx2-grid-center .ag-header-cell-label {
     justify-content: center;

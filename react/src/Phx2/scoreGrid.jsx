@@ -73,32 +73,64 @@ function SongCell({ data }) {
 // piugame's grade art (a fail's is its cracked x_ version); a STAGE BREAK has none. Right-aligned,
 // next to the plate. The words wrap to two lines where the column is narrow (compact).
 const GRADE_TEXT = { textAlign: 'end', whiteSpace: 'normal', lineHeight: '1.2' };
-function GradeCell({ data }) {
+// the grade's art, or what stands in for it
+function GradeArt({ data, ...textProps }) {
     if (data.unplayed) {
-        return <HStack {...middle} justify="end"><Text color="fg.subtle" {...GRADE_TEXT}>Not played</Text></HStack>;
+        return <Text color="fg.subtle" {...GRADE_TEXT} {...textProps}>Not played</Text>;
     }
     if (data.stageBreak || !data.grade) {
         // just "Break" in compact grids (Phx2.css), so it stays on one line
         return (
-            <HStack {...middle} justify="end">
-                <Text color="fg.muted" {...GRADE_TEXT}>
-                    <span className="phx2-grid-full">Stage break</span><span className="phx2-grid-short">Break</span>
-                </Text>
-            </HStack>
+            <Text color="fg.muted" {...GRADE_TEXT} {...textProps}>
+                <span className="phx2-grid-full">Stage break</span><span className="phx2-grid-short">Break</span>
+            </Text>
         );
     }
     const label = `${gradeLabel(data.grade)}${data.cleared ? '' : ' (failed)'}`;
-    return <HStack {...middle} justify="end"><Image src={gradeImg('phx2', data.grade)} alt={label} title={label} h="28px" w="auto" className="phx2-grid-grade" /></HStack>;
+    return <Image src={gradeImg('phx2', data.grade)} alt={label} title={label} h="28px" w="auto" className="phx2-grid-grade" />;
+}
+
+// Compact grids (phones) show the grade and plate in one column, Grade or Plate by its header's swap button
+// (ScoreGrid): the grade, with the plate small at its lower right corner, as in "AAA_TG"
+function GradePlate({ data }) {
+    const plate = data.cleared && data.plate;
+    return (
+        <HStack {...middle} justify="center" className="phx2-grid-compact-only">
+            <Box position="relative" lineHeight="0">
+                <GradeArt data={data} textAlign="center" />
+                {plate && (
+                    <Image
+                        src={plateImg('phx2', plate)} alt={PLATE_NAMES[plate]} title={PLATE_NAMES[plate]} className="phx2-grid-corner-plate"
+                        position="absolute" w="auto" filter="drop-shadow(0 1px 2px rgba(0, 0, 0, 0.9))"
+                    />
+                )}
+            </Box>
+        </HStack>
+    );
+}
+
+function GradeCell({ data }) {
+    return (
+        <>
+            <HStack {...middle} justify="end" className="phx2-grid-wide-only"><GradeArt data={data} /></HStack>
+            <GradePlate data={data} />
+        </>
+    );
 }
 
 function PlateCell({ data }) {
-    if (!data.cleared || !data.plate) {
-        return <Text color="fg.subtle">-</Text>;
-    }
+    const plate = !data.cleared || !data.plate
+        ? <Text color="fg.subtle" className="phx2-grid-wide-only">-</Text>
+        : (
+            <HStack {...middle} className="phx2-grid-wide-only">
+                <Image src={plateImg('phx2', data.plate)} alt={PLATE_NAMES[data.plate]} title={PLATE_NAMES[data.plate]} h="20px" w="auto" className="phx2-grid-plate" />
+            </HStack>
+        );
     return (
-        <HStack {...middle}>
-            <Image src={plateImg('phx2', data.plate)} alt={PLATE_NAMES[data.plate]} title={PLATE_NAMES[data.plate]} h="20px" w="auto" className="phx2-grid-plate" />
-        </HStack>
+        <>
+            {plate}
+            <GradePlate data={data} />
+        </>
     );
 }
 
@@ -240,8 +272,24 @@ export const SONG_COLUMN = {
     headerName: 'Song', field: 'name', flex: 1, minWidth: 76, cellRenderer: SongCell,
     filter: 'agTextColumnFilter', floatingFilter: true, filterParams: TEXT_FILTER,
 };
+// ag-grid's own header (its sort on clicking the label), with a button beside the label that swaps the shared
+// Grade / Plate column to the other (ScoreGrid handles the click; Phx2.css shows it only in compact grids)
+const SWAP_ICON = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg>';
+const swapHeader = (other) => ({
+    template: `<div class="ag-cell-label-container" role="presentation">
+        <span ref="eMenu" class="ag-header-icon ag-header-cell-menu-button" aria-hidden="true"></span>
+        <div ref="eLabel" class="ag-header-cell-label" role="presentation">
+            <span ref="eText" class="ag-header-cell-text"></span>
+            <span ref="eFilter" class="ag-header-icon ag-header-label-icon ag-filter-icon" aria-hidden="true"></span>
+            <ag-sort-indicator ref="eSortIndicator"></ag-sort-indicator>
+        </div>
+        <button type="button" class="phx2-grid-swap" data-swap="${other.toLowerCase()}" title="Show ${other} (and its filter)" aria-label="Show ${other}">${SWAP_ICON}</button>
+    </div>`,
+});
+
 export const GRADE_COLUMN = {
     colId: 'grade', headerName: 'Grade', field: 'gradeText', width: 108, cellRenderer: GradeCell, comparator: comparing(byScore),
+    headerComponentParams: swapHeader('Plate'),
     // right-aligned like its cells, so the grade sits by the plate
     headerClass: 'ag-right-aligned-header phx2-grid-near-next', cellClass: 'phx2-grid-near-next',
     // by rank: a fail counts as the grade it reached; a STAGE BREAK (no grade) never matches
@@ -251,7 +299,7 @@ export const GRADE_COLUMN = {
     floatingFilterComponentParams: { label: 'Grade', labels: GRADES.map(([, label]) => label), suppressFilterButton: true },
 };
 export const PLATE_COLUMN = {
-    colId: 'plate', headerName: 'Plate', field: 'plate', width: 84, cellRenderer: PlateCell,
+    colId: 'plate', headerName: 'Plate', field: 'plate', width: 84, cellRenderer: PlateCell, headerComponentParams: swapHeader('Grade'),
     comparator: comparing((a, b) => (PLATES.indexOf(a.plate) - PLATES.indexOf(b.plate)) || byScore(a, b)),
     // by rank, RG to PG: only cleared plays have a plate
     filter: 'agNumberColumnFilter', floatingFilter: true,
@@ -279,25 +327,33 @@ const DEFAULT_COLUMN = { sortable: true, suppressMenu: true, resizable: false };
 // (.phx2-grid-compact in Phx2.css), and these columns narrower, with their filters tightened to match, so
 // the song, level, grade, plate and score fit without scrolling sideways. Columns not in a grid are skipped.
 const COMPACT_WIDTH = 600;
-const COMPACT_COLUMNS = { levelNumber: 42, grade: 62, plate: 48, score: 70, scorePlayed: 74, pumbility: 70, rank: 28, points: 84 };
+// Grade and Plate share one column there (one shown at a time, the same width, so swapping doesn't shift the grid)
+const COMPACT_COLUMNS = { levelNumber: 42, grade: 74, plate: 74, score: 70, scorePlayed: 74, pumbility: 70, rank: 28, points: 84 };
 // narrower still below this grid width (320px phones), just fitting what's in them, as the columns above
 // and the song's minimum come to more than that; their filters hide the operator
 const TINY_WIDTH = 310;
-const TINY_COLUMNS = { levelNumber: 38, grade: 48, plate: 44, score: 60, scorePlayed: 62, pumbility: 60, rank: 24, points: 50 };
+const TINY_COLUMNS = { levelNumber: 38, grade: 62, plate: 62, score: 60, scorePlayed: 62, pumbility: 60, rank: 24, points: 50 };
+// the columns that take turns in compact grids, and the one shown first
+const SWAPPING = ['grade', 'plate'];
 // shorter headers where the full one won't fit beside its sort arrow
 const COMPACT_HEADERS = { levelNumber: 'Lv.' };
 
 const columnId = (colDef) => colDef.colId ?? colDef.field;
 
-// the columns as laid out for a grid `width` wide: compact widths and headers below COMPACT_WIDTH, and
-// the folded columns hidden (or their narrow stand-ins shown)
-function layoutColumns(columnDefs, width, fold) {
+const swaps = (columnDefs) => SWAPPING.every((id) => columnDefs.some((colDef) => columnId(colDef) === id));
+
+// the columns as laid out for a grid `width` wide: compact widths and headers below COMPACT_WIDTH, the
+// folded columns hidden (or their narrow stand-ins shown), and there, of Grade and Plate, only `swapped`
+function layoutColumns(columnDefs, width, fold, swapped) {
     const compact = width < COMPACT_WIDTH;
     const hidden = new Map();
     fold.forEach(([foldWidth, colIds, narrowColIds = []]) => {
         colIds.forEach((id) => hidden.set(id, width < foldWidth));
         narrowColIds.forEach((id) => hidden.set(id, width >= foldWidth));
     });
+    if (swaps(columnDefs)) {
+        SWAPPING.forEach((id) => hidden.set(id, compact && id !== swapped));
+    }
     return columnDefs.map((colDef) => {
         const id = columnId(colDef);
         return {
@@ -316,8 +372,12 @@ function layoutColumns(columnDefs, width, fold) {
 // ag-grid re-apply their definitions, undoing sorts and shown columns) on every render
 const NO_FOLD = [];
 
-const ScoreGrid = forwardRef(function ScoreGrid({ fold: moreFold = NO_FOLD, columnDefs, ...props }, ref) {
+const ScoreGrid = forwardRef(function ScoreGrid({ fold: moreFold = NO_FOLD, columnDefs, onFilterChanged, ...props }, ref) {
     const fold = moreFold;
+    // compact grids' shared Grade / Plate column: which is shown, and which have filters in use (so the swap
+    // button can say the other, out of sight, still filters)
+    const [swapped, setSwapped] = useState(SWAPPING[0]);
+    const [filtered, setFiltered] = useState([]);
     // measured before the grid first draws, so it starts in the right layout (no flash of the wide one
     // on phones); null until then
     const box = useRef(null);
@@ -333,7 +393,7 @@ const ScoreGrid = forwardRef(function ScoreGrid({ fold: moreFold = NO_FOLD, colu
         startWidth.current = width;
     }
     const startColumns = useMemo(
-        () => (startWidth.current === null ? null : layoutColumns(columnDefs, startWidth.current, fold)),
+        () => (startWidth.current === null ? null : layoutColumns(columnDefs, startWidth.current, fold, swapped)),
         [columnDefs, fold, width === null], // eslint-disable-line react-hooks/exhaustive-deps
     );
     useLayoutEffect(() => {
@@ -349,7 +409,7 @@ const ScoreGrid = forwardRef(function ScoreGrid({ fold: moreFold = NO_FOLD, colu
         if (!clientWidth) {
             return;
         }
-        const laidOut = layoutColumns(columnDefs, clientWidth, fold);
+        const laidOut = layoutColumns(columnDefs, clientWidth, fold, swapped);
         setCompact(clientWidth < COMPACT_WIDTH);
         setTiny(clientWidth < TINY_WIDTH);
         // headers aren't column state: set on the grid's own copies of the definitions
@@ -362,7 +422,10 @@ const ScoreGrid = forwardRef(function ScoreGrid({ fold: moreFold = NO_FOLD, colu
         gridApi.refreshHeader();
         // only what the width decides: the compact-sized columns' widths and the folded columns'
         // visibility (others, like Best Scores' Score / PUMBILITY, keep whatever they were set to)
-        const folded = new Set(fold.flatMap(([, colIds, narrowColIds = []]) => [...colIds, ...narrowColIds]));
+        const folded = new Set([
+            ...fold.flatMap(([, colIds, narrowColIds = []]) => [...colIds, ...narrowColIds]),
+            ...(swaps(columnDefs) ? SWAPPING : []),
+        ]);
         gridApi.applyColumnState({
             state: laidOut
                 .filter((colDef) => gridApi.getColumn(columnId(colDef)) && (COMPACT_COLUMNS[columnId(colDef)] || folded.has(columnId(colDef))))
@@ -372,13 +435,32 @@ const ScoreGrid = forwardRef(function ScoreGrid({ fold: moreFold = NO_FOLD, colu
                     ...(folded.has(columnId(colDef)) && { hide: colDef.hide }),
                 })),
         });
-    }, [columnDefs, fold]);
+    }, [columnDefs, fold, swapped]);
     // rows already drawn take the new height
     useEffect(() => {
         api.current?.resetRowHeights();
     }, [compact]);
+    // Grade / Plate swapped: laid out again at the same width
+    useEffect(() => {
+        if (api.current && box.current) {
+            fitColumns({ api: api.current, clientWidth: box.current.clientWidth });
+        }
+    }, [swapped]); // eslint-disable-line react-hooks/exhaustive-deps
+    // the swap button in the shared column's header (a plain button in ag-grid's header template), beside the
+    // label rather than in it, so it doesn't sort too
+    const swap = (event) => {
+        const button = event.target.closest?.('.phx2-grid-swap');
+        if (button) {
+            event.stopPropagation();
+            setSwapped(button.dataset.swap);
+        }
+    };
+    const hiddenFilter = compact && filtered.some((id) => SWAPPING.includes(id) && id !== swapped);
+    const className = [
+        'ag-theme-quartz-dark phx2-grid', compact && 'phx2-grid-compact', tiny && 'phx2-grid-tiny', hiddenFilter && 'phx2-grid-swap-filtered',
+    ].filter(Boolean).join(' ');
     return (
-        <Box ref={box} className={`ag-theme-quartz-dark phx2-grid${compact ? ' phx2-grid-compact' : ''}${tiny ? ' phx2-grid-tiny' : ''}`} w="full">
+        <Box ref={box} className={className} w="full" onClick={swap}>
             {startColumns && (
                 <AgGridReact
                     ref={ref}
@@ -392,6 +474,10 @@ const ScoreGrid = forwardRef(function ScoreGrid({ fold: moreFold = NO_FOLD, colu
                     // columns can be dragged into another order (as on Phoenix 1), but not off the grid
                     suppressDragLeaveHidesColumns
                     suppressCellFocus
+                    onFilterChanged={(event) => {
+                        setFiltered(Object.keys(event.api.getFilterModel()));
+                        onFilterChanged?.(event);
+                    }}
                     {...props}
                 />
             )}
