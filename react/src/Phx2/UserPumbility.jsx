@@ -1,6 +1,6 @@
 import { useLayoutEffect, useMemo, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Box, Grid, HStack, Image, Separator, Text, VStack } from '@chakra-ui/react';
+import { Box, Grid, HStack, Image, Separator, Text, useBreakpointValue, VStack } from '@chakra-ui/react';
 import { LuTrendingUp } from 'react-icons/lu';
 import { Chart } from 'react-chartjs-2';
 import ChartJS from 'chart.js/auto';
@@ -144,6 +144,9 @@ const chartTitle = (player, filter, what) => `${player}: ${filter === 'both' ? '
 
 function FiftyChart({ fifty, filter, info, next, value }) {
     const [box, sized] = useSizedBox();
+    // on phones the plot gets the width: no "Rating" beside the axis (its numbers and the title say what it is),
+    // and smaller numbers closer to it
+    const narrow = useBreakpointValue({ base: true, md: false }) ?? false;
     const { data, options } = useMemo(() => {
         const points = fifty.scores.map(scoreValue);
         const average = next ? next.value / 50 : null;
@@ -169,7 +172,8 @@ function FiftyChart({ fifty, filter, info, next, value }) {
                     legend: { display: false },
                     averageLines: {
                         lines: [
-                            { value: average, label: next ? `${next.name}: ${formatPumbility(average)}` : '', color: '#e4e4e7', dash: [5, 4] },
+                            // in the next milestone's own color (its tier, or title), as the bars are in what each reaches
+                            { value: average, label: next ? `${next.name}: ${formatPumbility(average)}` : '', color: average ? reachOf(average, filter).color : TEXT, dash: [5, 4] },
                             { value: own, label: `Your average: ${formatPumbility(own)}`, color: '#4ade80', dash: [2, 3], below: true },
                         ],
                     },
@@ -187,12 +191,17 @@ function FiftyChart({ fifty, filter, info, next, value }) {
                     },
                 },
                 scales: {
-                    x: { ticks: { color: TEXT, maxRotation: 0, autoSkip: true, autoSkipPadding: 8 }, grid: { display: false } },
-                    y: { min: Math.max(0, low), max: high, ticks: { color: TEXT }, grid: { color: GRID }, title: { display: true, text: 'Points', color: TEXT } },
+                    // no numbers along the bottom (1 to 50, crowded on phones): the bars are the best 50, in order
+                    x: { ticks: { display: false }, grid: { display: false }, title: { display: true, text: 'Scores', color: TEXT } },
+                    y: {
+                        min: Math.max(0, low), max: high, grid: { color: GRID },
+                        ticks: { color: TEXT, font: { size: narrow ? 10 : 12 }, padding: narrow ? 2 : 3 },
+                        title: { display: !narrow, text: 'Rating', color: TEXT },
+                    },
                 },
             },
         };
-    }, [fifty, filter, info.player, next, value]);
+    }, [fifty, filter, info.player, next, value, narrow]);
     return (
         <Box ref={box} h={COOP_HEIGHT}>
             {sized && (fifty.scores.length
@@ -202,51 +211,74 @@ function FiftyChart({ fifty, filter, info, next, value }) {
     );
 }
 
-// ---- under the chart: what the best 50 are made of, by type and level, as one thin bar (highest levels first),
-// each part as wide as its share, named under it where there's room
+// ---- under the chart: what the best 50 are made of, as a small table: a row per type, a column per chart level,
+// each cell the count there, tinted in the type's color the more there are (as the Next Score grid is laid out)
 
 const TYPE_BAR = { s: 'red.500', d: 'green.500' };
 
 function Composition({ fifty }) {
-    const parts = useMemo(() => {
-        const groups = new Map();
-        for (const score of fifty.scores) {
-            const key = `${score.type.toUpperCase()}${Number(score.level)}`;
-            const group = groups.get(key) || { key, type: score.type, level: Number(score.level), count: 0, points: 0 };
-            group.count += 1;
-            group.points += scoreValue(score);
-            groups.set(key, group);
-        }
-        // each type's highest level strongest, fading down its levels
-        const sorted = [...groups.values()].sort((a, b) => b.level - a.level || a.type.localeCompare(b.type));
-        return sorted.map((group) => {
-            const ofType = sorted.filter((g) => g.type === group.type);
-            const step = ofType.indexOf(group);
-            return { ...group, alpha: Math.max(35, 90 - step * 18) };
-        });
+    const { types, levels, most } = useMemo(() => {
+        const counted = ['s', 'd'].map((type) => {
+            const byLevel = new Map();
+            for (const score of fifty.scores.filter((s) => s.type === type)) {
+                const level = Number(score.level);
+                const cell = byLevel.get(level) || { count: 0, points: 0 };
+                cell.count += 1;
+                cell.points += scoreValue(score);
+                byLevel.set(level, cell);
+            }
+            return { type, byLevel, count: [...byLevel.values()].reduce((sum, c) => sum + c.count, 0) };
+        }).filter(({ count }) => count > 0);
+        const all = counted.flatMap(({ byLevel }) => [...byLevel.keys()]);
+        return {
+            types: counted,
+            // every level from the lowest to the highest there, so the columns read as a run of levels
+            levels: all.length ? Array.from({ length: Math.max(...all) - Math.min(...all) + 1 }, (_, i) => Math.min(...all) + i) : [],
+            most: Math.max(0, ...counted.flatMap(({ byLevel }) => [...byLevel.values()].map((c) => c.count))),
+        };
     }, [fifty]);
-    if (!parts.length) {
+    if (!types.length) {
         return null;
     }
     const total = fifty.scores.length;
     return (
-        <Box>
-            <HStack gap="2px" h="10px" borderRadius="full" overflow="hidden">
-                {parts.map(({ key, type, count, points, alpha }) => (
-                    <Box
-                        key={key} h="full" flex={`${count} 0 0`} bg={`${TYPE_BAR[type]}/${alpha}`}
-                        title={`${key}: ${count} of your best ${total}, ${formatPumbility(points)}`}
-                    />
-                ))}
-            </HStack>
-            <HStack gap="2px" mt="1" fontSize="xs" color="fg.muted" fontVariantNumeric="tabular-nums">
-                {parts.map(({ key, count }) => (
-                    // named where its part is wide enough (about 1 in 12 of them)
-                    <Text key={key} flex={`${count} 0 0`} minW="0" textAlign="center" truncate>
-                        {count / total >= 0.08 ? <>{key} <Text as="span" color="fg">{count}</Text></> : ''}
-                    </Text>
-                ))}
-            </HStack>
+        // scrolls sideways only if there are more levels than fit, the type names staying put
+        <Box overflowX="auto">
+            <Box as="table" mx="auto" css={{ borderCollapse: 'separate', borderSpacing: '3px' }} fontVariantNumeric="tabular-nums">
+                <thead>
+                    <tr>
+                        <Box as="th" position="sticky" left="0" bg="bg.subtle" textAlign="start" fontSize="xs" color="fg.muted" fontWeight="medium" verticalAlign="bottom">Lv.</Box>
+                        {levels.map((level) => (
+                            <Box as="th" key={level} fontSize="xs" color="fg.muted" fontWeight="medium" textAlign="center" minW={{ base: '30px', md: '40px' }}>
+                                {level}
+                            </Box>
+                        ))}
+                    </tr>
+                </thead>
+                <tbody>
+                    {types.map(({ type, byLevel, count }) => (
+                        <tr key={type}>
+                            <Box as="th" textAlign="start" fontSize={{ base: 'xs', md: 'sm' }} fontWeight="semibold" color={TYPE_BAR[type]} whiteSpace="nowrap" pe="2" position="sticky" left="0" bg="bg.subtle">
+                                {TYPE_NAMES[type]} <Text as="span" color="fg.muted" fontWeight="normal">({count})</Text>
+                            </Box>
+                            {levels.map((level) => {
+                                const cell = byLevel.get(level);
+                                return (
+                                    <Box
+                                        as="td" key={level} h={{ base: '26px', md: '30px' }} textAlign="center" borderRadius="md" fontSize={{ base: 'xs', md: 'sm' }}
+                                        // stronger the more of the best 50 are there
+                                        bg={cell ? `${TYPE_BAR[type]}/${Math.round(15 + (55 * cell.count) / most)}` : 'transparent'}
+                                        color={cell ? 'fg' : 'fg.subtle'} fontWeight={cell ? 'semibold' : 'normal'}
+                                        title={cell ? `${type.toUpperCase()}${level}: ${cell.count} of your best ${total}, ${formatPumbility(cell.points)}` : undefined}
+                                    >
+                                        {cell ? cell.count : '-'}
+                                    </Box>
+                                );
+                            })}
+                        </tr>
+                    ))}
+                </tbody>
+            </Box>
         </Box>
     );
 }
@@ -295,7 +327,8 @@ function rowParts(level, filter, counts) {
     ];
 }
 
-const MODES = [['new', 'New'], ['upgrade', 'Upgrade']];
+// (Upscore is 'upgrade' in the URL, as it was named before)
+const MODES = [['new', 'New'], ['upgrade', 'Upscore']];
 
 // Every level that counts is listed, but when there are more than fit the grid opens scrolled to the player's
 // own: just above their highest clear (a stretch, REACH_ABOVE levels up) at the right, lower levels to its left.
@@ -310,7 +343,7 @@ function NextClears({ scores, fifty, filter, next, mode, counts }) {
         .filter((score) => (filter === 'both' ? score.type === 's' || score.type === 'd' : score.type === filter) && scoreValue(score) > 0)
         .reduce((best, score) => Math.max(best, priceLevel(score)), 0) || Infinity;
 
-    // New: every level where some grade would count, and the grades from the lowest that does anywhere. Upgrade
+    // New: every level where some grade would count, and the grades from the lowest that does anywhere. Upscore
     // has the same levels and grades, so switching between them keeps the grid's shape (and where it's scrolled to)
     const newRows = PRICE_LEVELS.filter((level) => rowParts(level, filter, counts).length)
         .map((level) => ({
@@ -322,7 +355,7 @@ function NextClears({ scores, fifty, filter, next, mode, counts }) {
             }),
         }))
         .filter((row) => row.cells.some((cell) => cell.gain));
-    // Upgrade: one grade up from the one below, wherever any of the best fifty sit at that one (a "-" elsewhere)
+    // Upscore: one grade up from the one below, wherever any of the best fifty sit at that one (a "-" elsewhere)
     const rows = mode === 'new' ? newRows : newRows.map(({ level }) => ({
         level,
         cells: AIM_GRADES.map(([grade], i) => {
@@ -354,7 +387,7 @@ function NextClears({ scores, fifty, filter, next, mode, counts }) {
     const shown = grades.map(([grade]) => grade);
     const cellOf = (row, grade) => row.cells.find((cell) => cell.grade === grade);
     const gradeHead = (grade) => (
-        // the grade's art (named on hover), the same size on New and Upgrade; no wider than its column
+        // the grade's art (named on hover), the same size on New and Upscore; no wider than its column
         <HStack as="span" gap="0.5" justify="center" title={mode === 'upgrade' ? `Up to ${gradeLabel(grade)}` : gradeLabel(grade)}>
             <Image src={gradeImg('phx2', grade)} alt={gradeLabel(grade)} h={{ base: '18px', md: '22px' }} w="auto" maxW="full" minW="0" objectFit="contain" />
         </HStack>
@@ -380,7 +413,7 @@ function NextClears({ scores, fifty, filter, next, mode, counts }) {
             >
                 <thead>
                     <tr>
-                        {/* over the grades: empty on New, their art says what they are; on Upgrade the trend icon, once
+                        {/* over the grades: empty on New, their art says what they are; on Upscore the trend icon, once
                             for all of them (each row is one grade up, to its grade) */}
                         <Box as="th" position="sticky" left="0" bg="bg.subtle" zIndex="1" aria-label={mode === 'upgrade' ? 'Up to grade' : 'Grade'} verticalAlign="bottom" pb="1">
                             {mode === 'upgrade' && <Box as={LuTrendingUp} boxSize="4" color="phx2.fg" mx="auto" title="One grade up, to" />}
@@ -411,7 +444,7 @@ function NextClears({ scores, fifty, filter, next, mode, counts }) {
     );
 }
 
-// every level's column and cell the same size in New and Upgrade: room for the widest (a tier icon and +117.4,
+// every level's column and cell the same size in New and Upscore: room for the widest (a tier icon and +117.4,
 // or +2.6 ×12), slimmer on phones, where there's no icon
 const CELL_SIZE = { w: { base: '42px', md: '96px' }, minW: { base: '42px', md: '96px' }, maxW: { base: '42px', md: '96px' }, h: { base: '30px', md: '33px' } };
 
@@ -430,7 +463,7 @@ function PlanCell({ cell, mode, next, filter }) {
     }
     return (
         <Box
-            // one size whatever's in it, so New and Upgrade lay the grid out the same
+            // one size whatever's in it, so New and Upscore lay the grid out the same
             as="td" position="relative" textAlign="center" {...CELL_SIZE} px={{ base: '0.5', md: '1.5' }} borderRadius="md" title={title} verticalAlign="middle"
             bg={counts && reach ? fade(reach.color, 0.18) : 'transparent'} opacity={counts ? 1 : 0.35}
         >
@@ -440,9 +473,8 @@ function PlanCell({ cell, mode, next, filter }) {
                 <Text fontSize={{ base: 'xs', md: 'sm' }} fontWeight={counts ? 'semibold' : 'normal'} color={counts ? 'fg' : 'fg.subtle'} whiteSpace="nowrap">
                     {counts ? `+${cell.gain.toFixed(1)}` : '-'}
                 </Text>
-                {/* on Upgrade, how many of yours sit at the grade below */}
             </HStack>
-            {/* on Upgrade, how many of yours sit at the grade below: tucked in the corner, so the gain stays centered
+            {/* on Upscore, how many of yours sit at the grade below: tucked in the corner, so the gain stays centered
                 where New has it */}
             {mode === 'upgrade' && counts && (
                 <Text position="absolute" right={{ base: '2px', md: '4px' }} bottom={{ base: '0', md: '1px' }} fontSize={{ base: '8px', md: '9px' }} lineHeight="1" color="fg.muted" whiteSpace="nowrap">
@@ -495,6 +527,8 @@ function UserPumbility({ scores, counts, summary, info }) {
                     <Hero info={info} fifty={fifty} filter={filter} />
                     <VStack align="stretch" gap="4">
                         <FiftyChart fifty={fifty} filter={filter} info={info} next={next} value={value} />
+                        {/* a light line, the level table being more of the best 50 rather than a section of its own */}
+                        <Separator borderColor="border" />
                         <Composition fifty={fifty} />
                         <HStack display={{ base: 'none', sm: 'flex' }} minH={FILTER_STYLE.h} color="fg.muted">
                             <Text fontSize="xs" fontStyle="italic" minW="0" truncate>
@@ -504,7 +538,7 @@ function UserPumbility({ scores, counts, summary, info }) {
                     </VStack>
                     {/* what to aim for next, titled as the chart above it is */}
                     <VStack align="stretch" gap="3">
-                        {/* one row: the title centered as the chart's is, with New / Upgrade on the right (an empty column
+                        {/* one row: the title centered as the chart's is, with New / Upscore on the right (an empty column
                             as wide on the left keeps it centered); on phones, without the room, the title starts the row */}
                         <Grid templateColumns={{ base: '1fr auto', md: '1fr auto 1fr' }} alignItems="center" columnGap="3">
                             <Box display={{ base: 'none', md: 'block' }} />

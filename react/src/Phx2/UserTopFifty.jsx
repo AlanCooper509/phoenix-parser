@@ -40,8 +40,8 @@ const topFiftyColumns = (type) => [
     GRADE_COLUMN,
     PLATE_COLUMN,
     {
-        headerName: 'Points', field: 'points', width: 130, cellRenderer: PointsCell, cellRendererParams: { milestones: TITLE_MILESTONES[type] },
-        headerClass: 'phx2-grid-center', ...valueFilterColumn('Points'),
+        headerName: 'Rating', field: 'points', width: 130, cellRenderer: PointsCell, cellRendererParams: { milestones: TITLE_MILESTONES[type] },
+        headerClass: 'phx2-grid-center', ...valueFilterColumn('Rating'),
     },
 ];
 

@@ -477,7 +477,9 @@ export function ExpBar({
             <Box position="relative" my={markerRoom ? `${((markerRoom === true ? markerSize : markerRoom) - BAR_HEIGHTS[size]) / 2}px` : undefined}>
                 {track ? track(filled) : (
                     <Progress.Root value={filled} size={size} aria-label={next ? `${label || 'Progress'} to ${next.name}` : label}>
-                        <Progress.Track bg="bg.emphasized" borderRadius="full">
+                        {/* Chakra's own md track is 10px: set to the height the room around it is worked out from (the
+                            Overview's ladder's 12px), so a hero's bar and footer sit where the Overview's do */}
+                        <Progress.Track bg="bg.emphasized" borderRadius="full" h={`${BAR_HEIGHTS[size]}px`}>
                             <Progress.Range bg={color} borderRadius="full" transition={FILL_TRANSITION} />
                         </Progress.Track>
                     </Progress.Root>

@@ -35,7 +35,7 @@ export const HERO_VALUE_STYLE = {
 // the room above and below a card's progress bar, for the marker riding it: (the marker's 44px - the bar's 12px) / 2
 export const HERO_BAR_MARGIN = '16px';
 // the darker card a tab's progress and chart sit in (Overview, Breakdown)
-export const PANEL_STYLE = { bg: 'bg.subtle', borderWidth: '1px', borderColor: 'border', borderRadius: 'lg', p: { base: '4', md: '6' } };
+export const PANEL_STYLE = { bg: 'bg.subtle', borderWidth: '1px', borderColor: 'border', borderRadius: 'lg', p: { base: '3', md: '6' } };
 
 export { FILTER_STYLE };
 export function FilterButtons({ options = FILTERS, ...props }) {
